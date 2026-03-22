@@ -1,0 +1,24 @@
+.btn-custom {
+    background-color: #a6d869;
+    color: rgb(255, 255, 255);
+    border: none;
+}
+
+.btn-custom:hover {
+    background-color: #41223b;
+    color: white;
+}
+
+.custom-header {
+    background-color: #9c69d8;
+    border-radius: 0 0 12px 12px;
+}
+
+.custom-header-text {
+    color: #ffffff !important;
+}
+
+.custom-number {
+    background-color: #9c69d8;
+    color: white;
+}
