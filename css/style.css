@@ -22,3 +22,29 @@
     background-color: #9c69d8;
     color: white;
 }
+
+.custom-color {
+    border-radius: 12px;
+    border-color: #9c69d8
+}
+
+.custom-color:hover {
+    background-color: #9c69d8;
+    color: white;
+}
+
+.btn-menu {
+    background-color: white;
+    color: #a6d869;
+    border: 1px solid #a6d869;
+}
+
+.btn-menu:hover {
+    background-color: #a6d869;
+    color: white;
+}
+
+.btn-menu:active {
+    background-color: #c45050 !important;
+    color: white !important;
+}
