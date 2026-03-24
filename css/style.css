@@ -1,12 +1,17 @@
 .btn-custom {
-    background-color: #a6d869;
-    color: rgb(255, 255, 255);
+    background-color: #a6d869  ;
+    color: rgb(255, 255, 255) !important;
     border: none;
 }
 
 .btn-custom:hover {
-    background-color: #41223b;
+    background-color: #b8e07f;
     color: white;
+}
+
+.btn-custom:active {
+    background-color: #8bb55a  !important;
+    color: white !important;
 }
 
 .custom-header {
@@ -47,4 +52,20 @@
 .btn-menu:active {
     background-color: #c45050 !important;
     color: white !important;
+}
+
+#logo {
+    font-family: 'Righteous', cursive;
+    font-size: 120%;    
+    color: #FFD700 !important;
+}
+
+.slogan{
+    font-size: 1.5rem;
+    margin: 0.5rem !important; 
+}
+
+.text-auth {
+    color: white !important;
+    font-size: 0.775rem !important;
 }
