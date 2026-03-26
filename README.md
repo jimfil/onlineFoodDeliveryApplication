@@ -18,7 +18,7 @@
 
 ## About
 
-**LogoFood** is a static front-end prototype for an online food delivery application. Users can browse restaurants, view menus, and place orders. Restaurant owners can manage their own menus through a dedicated admin panel.
+**LogoFood** is a full-stack application for an online food delivery platform. Users can browse restaurants, view menus, and place orders. Restaurant owners can manage their own menus through a dedicated admin panel. Right now, we have just developed the front-end part of the application.
 
 ---
 
