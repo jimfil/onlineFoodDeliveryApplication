@@ -40,12 +40,12 @@
 
                             <div class="col-md-6">
                                 <label for="firstName" class="form-label text-muted small fw-bold">Όνομα</label>
-                                <input type="text" id="firstName" class="form-control" placeholder="Γιώργος" required>
+                                <input type="text" id="firstName" class="form-control" placeholder="Γιώργος" pattern="[A-Za-zΑ-Ωα-ωΆΈΉΊΌΎΏάέήίόύώ\s\-]+" title="Παρακαλώ εισάγετε μόνο γράμματα" required>
                             </div>
 
                             <div class="col-md-6">
                                 <label for="lastName" class="form-label text-muted small fw-bold">Επώνυμο</label>
-                                <input type="text" id="lastName" class="form-control" placeholder="Παπαδόπουλος" required>
+                                <input type="text" id="lastName" class="form-control" placeholder="Παπαδόπουλος" pattern="[A-Za-zΑ-Ωα-ωΆΈΉΊΌΎΏάέήίόύώ\s\-]+" title="Παρακαλώ εισάγετε μόνο γράμματα" required>
                             </div>
 
                             <div class="col-12">
@@ -56,18 +56,18 @@
                             <div class="col-12">
                                 <label for="password" class="form-label text-muted small fw-bold">Κωδικός Πρόσβασης</label>
                                 <input type="password" id="password" class="form-control" placeholder="Τουλάχιστον 6 χαρακτήρες"
-                                    required>
+                                    pattern=".{6,}" title="Ο κωδικός πρέπει να περιέχει τουλάχιστον 6 χαρακτήρες" required>
                             </div>
 
                             <div class="col-12">
                                 <label for="confirmPassword" class="form-label text-muted small fw-bold">Επιβεβαίωση Κωδικού</label>
                                 <input type="password" id="confirmPassword" class="form-control" placeholder="Επαναλάβετε τον κωδικό"
-                                    required>
+                                    pattern=".{6,}" title="Ο κωδικός πρέπει να περιέχει τουλάχιστον 6 χαρακτήρες" required>
                             </div>
 
                             <div class="col-12">
                                 <label for="phone" class="form-label text-muted small fw-bold">Τηλέφωνο</label>
-                                <input type="tel" id="phone" class="form-control" placeholder="69xxxxxxxx" required>
+                                <input type="tel" id="phone" class="form-control" placeholder="69xxxxxxxx" pattern="69[0-9]{8}" title="Ο αριθμός πρέπει να είναι κινητό τηλέφωνο 10 ψηφίων (ξεκινάει από 69), π.χ. 6912345678" required>
                             </div>
 
                             <div class="col-12 mt-4">
