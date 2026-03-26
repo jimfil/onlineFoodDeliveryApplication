@@ -11,7 +11,6 @@
 - [Features](#features)
 - [Project Structure](#project-structure)
 - [Pages](#pages)
-- [Technologies](#technologies)
 - [How to Run](#how-to-run)
 
 ---
@@ -66,7 +65,7 @@ onlineFoodDeliveryApplication/
 
 ---
 
-## Pages
+## Pages (in-progress)
 
 | Page | File | Description |
 |------|------|-------------|
@@ -81,18 +80,6 @@ onlineFoodDeliveryApplication/
 
 ---
 
-## Technologies
-
-| Technology | Purpose |
-|------------|---------|
-| HTML5 | Page structure and semantics |
-| CSS3 | Custom styling (`css/style.css`) |
-| [Bootstrap 5.3](https://getbootstrap.com/) | Responsive layout and UI components |
-| [Bootstrap Icons 1.11](https://icons.getbootstrap.com/) | Icon set (admin panel) |
-| [Google Fonts – Righteous](https://fonts.google.com/specimen/Righteous) | Brand typography |
-| Vanilla JavaScript | Cart interactions, form validation, dynamic UI |
-
----
 
 ## How to Run
 
