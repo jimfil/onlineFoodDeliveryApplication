@@ -69,3 +69,33 @@
     color: white !important;
     font-size: 0.775rem !important;
 }
+
+.landing-wrapper {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #f8f9fa;
+}
+
+.landing-logo {
+    font-family: 'Righteous', cursive;
+    font-size: 5rem;
+    color: #9c69d8;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.address-box {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    width: 100%;
+    max-width: 500px;
+    border-top: 5px solid #a6d869;
+}
+
+.bg-white .text-auth {
+    color: #9c69d8 !important;
+}
