@@ -19,7 +19,7 @@
     <header class="custom-header py-4 shadow-sm">
         <div class="container d-flex justify-content-between align-items-center">
             <h1 class="h4 mb-0 custom-header-text fw-bold">
-                <a href="../browse.html" class="text-decoration-none text-dark" id="logo">logofood</a>
+                <a href="browse.html" class="text-decoration-none text-dark" id="logo">logofood</a>
             </h1>
             <div class="d-flex gap-2">
                 <a href="cart.html" class="btn btn-custom btn-sm fw-bold">
@@ -43,15 +43,19 @@
                         </h5>
                         <div class="row g-3">
                             <div class="col-md-8">
-                                <label for="guestStreet" class="form-label text-muted small fw-bold">Οδός & Αριθμός</label>
+                                <label for="guestStreet" class="form-label text-muted small fw-bold">Οδός &
+                                    Αριθμός</label>
                                 <input type="text" id="guestStreet" class="form-control" placeholder="π.χ. Ερμού 12">
                             </div>
                             <div class="col-md-4">
-                                <label for="guestFloor" class="form-label text-muted small fw-bold">Όροφος/Κουδούνι</label>
-                                <input type="text" id="guestFloor" class="form-control" placeholder="π.χ. 3ος / Παπαδόπουλος">
+                                <label for="guestFloor"
+                                    class="form-label text-muted small fw-bold">Όροφος/Κουδούνι</label>
+                                <input type="text" id="guestFloor" class="form-control"
+                                    placeholder="π.χ. 3ος / Παπαδόπουλος">
                             </div>
                             <div class="col-12">
-                                <label for="guestComments" class="form-label text-muted small fw-bold">Σχόλια για τον διανομέα</label>
+                                <label for="guestComments" class="form-label text-muted small fw-bold">Σχόλια για τον
+                                    διανομέα</label>
                                 <textarea id="guestComments" class="form-control" rows="2"
                                     placeholder="π.χ. Το κουδούνι δεν λειτουργεί, πάρτε με τηλέφωνο"></textarea>
                             </div>
@@ -78,19 +82,31 @@
                                     <div id="addressCollapse" class="accordion-collapse collapse"
                                         aria-labelledby="addressHeading" data-bs-parent="#addressAccordion">
                                         <div class="accordion-body p-0">
-                                            <div class="list-group">
-                                                <button type="button"
-                                                    class="list-group-item list-group-item-action active"
-                                                    aria-current="true">Μαιζώνος 100</button>
-                                                <button type="button"
-                                                    class="list-group-item list-group-item-action">Μαιζώνος 101</button>
-                                                <button type="button"
-                                                    class="list-group-item list-group-item-action">Μαιζώνος 102</button>
+                                            <div class="list-group" id="cartAddressList">
+                                                <!-- Addresses injected by JS -->
                                             </div>
-                                            <button class="btn btn-outline-secondary btn-sm fw-bold w-100 py-2 mt-3"
+                                            <button type="button" id="cartToggleAddForm"
+                                                class="btn btn-outline-secondary btn-sm fw-bold w-100 py-2 mt-3"
                                                 style="border-style: dashed;">
                                                 + Προσθήκη νέας διεύθυνσης
                                             </button>
+                                            <div id="cartInlineAddressForm" class="d-none mt-2 px-2 pb-2">
+                                                <div class="row g-2 align-items-end">
+                                                    <div class="col-6">
+                                                        <input type="text" id="cartNewStreet"
+                                                            class="form-control form-control-sm"
+                                                            placeholder="π.χ. Ερμού">
+                                                    </div>
+                                                    <div class="col-3">
+                                                        <input type="text" id="cartNewNumber"
+                                                            class="form-control form-control-sm" placeholder="Αρ.">
+                                                    </div>
+                                                    <div class="col-3">
+                                                        <button id="cartSaveAddress"
+                                                            class="btn btn-menu btn-sm w-100 fw-bold">✓</button>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -172,38 +188,8 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const addressButtons = document.querySelectorAll('#addressAccordion .list-group-item');
-            const accordionButton = document.querySelector('#addressHeading .accordion-button');
-
-            function setActive(button) {
-                addressButtons.forEach(btn => {
-                    btn.classList.remove('active');
-                    btn.removeAttribute('aria-current');
-                });
-                button.classList.add('active');
-                button.setAttribute('aria-current', 'true');
-                accordionButton.textContent = button.textContent;
-            }
-
-            const addressCollapse = document.getElementById('addressCollapse');
-            const bootstrapCollapse = new bootstrap.Collapse(addressCollapse, { toggle: false });
-
-            addressButtons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    setActive(btn);
-                    bootstrapCollapse.hide();
-                });
-            });
-
-            const initial = document.querySelector('#addressAccordion .list-group-item.active');
-            if (initial) {
-                setActive(initial);
-            }
-        });
-    </script>
-    <script src="../js/script.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/cart.js"></script>
 </body>
 
 </html>
