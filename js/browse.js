@@ -15,8 +15,10 @@ function renderBrowsePage() {
 
     const userStr = localStorage.getItem('user');
     const user = userStr ? JSON.parse(userStr) : null;
+    const guestAddress = localStorage.getItem('guestAddress')?.trim();
     let addresses = user ? (user.addresses || []) : [];
     if (addresses.length === 0 && user && user.address) addresses.push(user.address);
+    if (addresses.length === 0 && guestAddress) addresses.push(guestAddress);
 
     function showAccordion() {
         if (noAddressSection) noAddressSection.classList.add('d-none');
@@ -30,6 +32,8 @@ function renderBrowsePage() {
         const freshUser = JSON.parse(localStorage.getItem('user') || '{}');
         const freshAddresses = freshUser.addresses || [];
         if (freshAddresses.length === 0 && freshUser.address) freshAddresses.push(freshUser.address);
+        const freshGuestAddress = localStorage.getItem('guestAddress')?.trim();
+        if (freshAddresses.length === 0 && freshGuestAddress) freshAddresses.push(freshGuestAddress);
 
         browseAddressList.innerHTML = freshAddresses.map((addr, i) => `
             <button type="button" class="list-group-item list-group-item-action${i === 0 ? ' active' : ''}"
