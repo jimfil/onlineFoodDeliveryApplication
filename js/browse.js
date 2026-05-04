@@ -16,9 +16,27 @@ function renderBrowsePage() {
     const userStr = localStorage.getItem('user');
     const user = userStr ? JSON.parse(userStr) : null;
     const guestAddress = localStorage.getItem('guestAddress')?.trim();
-    let addresses = user ? (user.addresses || []) : [];
-    if (addresses.length === 0 && user && user.address) addresses.push(user.address);
-    if (addresses.length === 0 && guestAddress) addresses.push(guestAddress);
+
+    // Load addresses from backend if user is logged in
+    if (user) {
+        getUserAddresses().then(addressesData => {
+            const addresses = addressesData.map(addr => `${addr.street} ${addr.street_number}`);
+            renderBrowsePageWithAddresses(addresses, user, guestAddress);
+        }).catch(error => {
+            console.error('Failed to load addresses:', error);
+            // Fallback to localStorage
+            let addresses = user.addresses || [];
+            if (addresses.length === 0 && user.address) addresses.push(user.address);
+            renderBrowsePageWithAddresses(addresses, user, guestAddress);
+        });
+    } else {
+        let addresses = [];
+        if (guestAddress) addresses.push(guestAddress);
+        renderBrowsePageWithAddresses(addresses, user, guestAddress);
+    }
+}
+
+function renderBrowsePageWithAddresses(addresses, user, guestAddress) {
 
     function showAccordion() {
         if (noAddressSection) noAddressSection.classList.add('d-none');
@@ -28,20 +46,14 @@ function renderBrowsePage() {
         const addressCollapse = document.getElementById('browseAddressCollapse');
         const bsCollapse = new bootstrap.Collapse(addressCollapse, { toggle: false });
 
-        // Re-read latest addresses from storage
-        const freshUser = JSON.parse(localStorage.getItem('user') || '{}');
-        const freshAddresses = freshUser.addresses || [];
-        if (freshAddresses.length === 0 && freshUser.address) freshAddresses.push(freshUser.address);
-        const freshGuestAddress = localStorage.getItem('guestAddress')?.trim();
-        if (freshAddresses.length === 0 && freshGuestAddress) freshAddresses.push(freshGuestAddress);
-
-        browseAddressList.innerHTML = freshAddresses.map((addr, i) => `
+        // Use the addresses passed to this function
+        browseAddressList.innerHTML = addresses.map((addr, i) => `
             <button type="button" class="list-group-item list-group-item-action${i === 0 ? ' active' : ''}"
                 ${i === 0 ? 'aria-current="true"' : ''}>${addr}</button>
         `).join('');
 
-        if (accordionButton && freshAddresses.length > 0) accordionButton.textContent = freshAddresses[0];
-        if (restaurantSection && freshAddresses.length > 0) restaurantSection.classList.remove('d-none');
+        if (accordionButton && addresses.length > 0) accordionButton.textContent = addresses[0];
+        if (restaurantSection && addresses.length > 0) restaurantSection.classList.remove('d-none');
 
         const addressButtons = browseAddressList.querySelectorAll('.list-group-item');
         function setActive(btn) {
@@ -61,17 +73,21 @@ function renderBrowsePage() {
         if (toggleBtn && inlineForm && !toggleBtn.dataset.wired) {
             toggleBtn.dataset.wired = '1';
             toggleBtn.addEventListener('click', () => inlineForm.classList.toggle('d-none'));
-            saveBtn.addEventListener('click', () => {
+            saveBtn.addEventListener('click', async () => {
                 const street = document.getElementById('browseNewStreet').value.trim();
                 const number = document.getElementById('browseNewNumber').value.trim();
                 const zip = document.getElementById('browseNewZipCode')?.value.trim() ?? '';
                 if (!street || !number) return;
-                addAddressToUser(street, number, zip);
-                document.getElementById('browseNewStreet').value = '';
-                document.getElementById('browseNewNumber').value = '';
-                if (document.getElementById('browseNewZipCode')) document.getElementById('browseNewZipCode').value = '';
-                inlineForm.classList.add('d-none');
-                showAccordion();
+                try {
+                    await addUserAddress(street, number);
+                    document.getElementById('browseNewStreet').value = '';
+                    document.getElementById('browseNewNumber').value = '';
+                    if (document.getElementById('browseNewZipCode')) document.getElementById('browseNewZipCode').value = '';
+                    inlineForm.classList.add('d-none');
+                    showAccordion();
+                } catch (error) {
+                    alert('Failed to add address: ' + error.message);
+                }
             });
         }
     }
@@ -84,13 +100,17 @@ function renderBrowsePage() {
         const firstSaveBtn = document.getElementById('browseFirstSaveAddress');
         if (firstSaveBtn && !firstSaveBtn.dataset.wired) {
             firstSaveBtn.dataset.wired = '1';
-            firstSaveBtn.addEventListener('click', () => {
+            firstSaveBtn.addEventListener('click', async () => {
                 const street = document.getElementById('browseFirstStreet').value.trim();
                 const number = document.getElementById('browseFirstNumber').value.trim();
                 const zip = document.getElementById('browseFirstZipCode')?.value.trim() ?? '';
                 if (!street || !number) return;
-                addAddressToUser(street, number, zip);
-                showAccordion();
+                try {
+                    await addUserAddress(street, number);
+                    renderBrowsePage(); // Re-render to show addresses
+                } catch (error) {
+                    alert('Failed to add address: ' + error.message);
+                }
             });
         }
         return;

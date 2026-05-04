@@ -1,97 +1,85 @@
-CREATE TABLE `Account` (
-  `id` int PRIMARY KEY,
-  `email` varchar(255),
-  `password_hashed` varchar(255),
-  `account_type` varchar(255) COMMENT '"CUSTOMER" or "RESTAURANT"'
+CREATE TABLE Account (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT UNIQUE NOT NULL,
+  password_hashed TEXT NOT NULL,
+  account_type TEXT NOT NULL CHECK (account_type IN ('CUSTOMER', 'RESTAURANT'))
 );
 
-CREATE TABLE `Category` (
-  `id` int PRIMARY KEY,
-  `name` varchar(255)
+CREATE TABLE Category (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL
 );
 
-CREATE TABLE `Restaurant_Category` (
-  `restaurant_id` int,
-  `category_id` int,
-  PRIMARY KEY (`restaurant_id`, `category_id`)
+CREATE TABLE Restaurant_Category (
+  restaurant_id INTEGER,
+  category_id INTEGER,
+  PRIMARY KEY (restaurant_id, category_id),
+  FOREIGN KEY (restaurant_id) REFERENCES Restaurant(id),
+  FOREIGN KEY (category_id) REFERENCES Category(id)
 );
 
-CREATE TABLE `Restaurant` (
-  `id` int PRIMARY KEY COMMENT 'Inherited from Account',
-  `name` varchar(255),
-  `rating` float COMMENT 'Calculated from each order',
-  `contact_phone` varchar(255),
-  `operating_hours` varchar(255),
-  `estimated_preparation_time` varchar(255),
-  `owner_first_name` varchar(255),
-  `owner_last_name` varchar(255),
-  `vat_number` varchar(255),
-  `address_id` int
+CREATE TABLE Address (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  street TEXT NOT NULL,
+  street_number TEXT NOT NULL,
+  latitude REAL,
+  longitude REAL,
+  customer_id INTEGER,
+  FOREIGN KEY (customer_id) REFERENCES Customer(id)
 );
 
-CREATE TABLE `Customer` (
-  `id` int PRIMARY KEY COMMENT 'Inherited from Account',
-  `first_name` varchar(255),
-  `last_name` varchar(255),
-  `contact_phone` varchar(255)
+CREATE TABLE Restaurant (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  rating REAL DEFAULT 0,
+  contact_phone TEXT,
+  operating_hours TEXT,
+  estimated_preparation_time TEXT,
+  owner_first_name TEXT,
+  owner_last_name TEXT,
+  vat_number TEXT,
+  address_id INTEGER,
+  FOREIGN KEY (id) REFERENCES Account(id),
+  FOREIGN KEY (address_id) REFERENCES Address(id)
 );
 
-CREATE TABLE `Address` (
-  `id` int PRIMARY KEY,
-  `street` varchar(255),
-  `street_number` varchar(255),
-  `latitude` float COMMENT 'Crucial for travel time routing API',
-  `longitude` float COMMENT 'Crucial for travel time routing API',
-  `customer_id` int COMMENT 'Null if this address belongs to a Restaurant'
+CREATE TABLE Customer (
+  id INTEGER PRIMARY KEY,
+  first_name TEXT NOT NULL,
+  last_name TEXT NOT NULL,
+  contact_phone TEXT,
+  FOREIGN KEY (id) REFERENCES Account(id)
 );
 
-CREATE TABLE `Order` (
-  `id` int PRIMARY KEY,
-  `created_at` datetime,
-  `completed_at` datetime,
-  `rating` float,
-  `delivery_address_id` int,
-  `customer_id` int,
-  `restaurant_id` int,
-  `status` varchar(50) DEFAULT 'PENDING'
+CREATE TABLE Product (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  price REAL NOT NULL,
+  description TEXT,
+  ingredients TEXT,
+  restaurant_id INTEGER NOT NULL,
+  FOREIGN KEY (restaurant_id) REFERENCES Restaurant(id)
 );
 
-CREATE TABLE `Product` (
-  `id` int PRIMARY KEY,
-  `name` varchar(255),
-  `price` decimal(10,2),
-  `description` varchar(255) COMMENT 'Optional (O)',
-  `ingredients` varchar(255) COMMENT 'Multivalued attribute',
-  `restaurant_id` int
+CREATE TABLE Order_table (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  completed_at DATETIME,
+  rating REAL,
+  delivery_address_id INTEGER NOT NULL,
+  customer_id INTEGER NOT NULL,
+  restaurant_id INTEGER NOT NULL,
+  status TEXT DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'PREPARING', 'READY', 'DELIVERING', 'COMPLETED', 'CANCELLED')),
+  FOREIGN KEY (delivery_address_id) REFERENCES Address(id),
+  FOREIGN KEY (customer_id) REFERENCES Customer(id),
+  FOREIGN KEY (restaurant_id) REFERENCES Restaurant(id)
 );
 
-CREATE TABLE `Order_Item` (
-  `order_id` int,
-  `product_id` int,
-  `quantity` int COMMENT 'How many of this specific item were ordered?',
-  PRIMARY KEY (`order_id`, `product_id`)
+CREATE TABLE Order_Item (
+  order_id INTEGER,
+  product_id INTEGER,
+  quantity INTEGER NOT NULL DEFAULT 1,
+  PRIMARY KEY (order_id, product_id),
+  FOREIGN KEY (order_id) REFERENCES Order_table(id),
+  FOREIGN KEY (product_id) REFERENCES Product(id)
 );
-
-ALTER TABLE `Restaurant` ADD FOREIGN KEY (`id`) REFERENCES `Account` (`id`);
-
-ALTER TABLE `Customer` ADD FOREIGN KEY (`id`) REFERENCES `Account` (`id`);
-
-ALTER TABLE `Address` ADD FOREIGN KEY (`customer_id`) REFERENCES `Customer` (`id`);
-
-ALTER TABLE `Restaurant` ADD FOREIGN KEY (`address_id`) REFERENCES `Address` (`id`);
-
-ALTER TABLE `Order` ADD FOREIGN KEY (`delivery_address_id`) REFERENCES `Address` (`id`);
-
-ALTER TABLE `Restaurant_Category` ADD FOREIGN KEY (`restaurant_id`) REFERENCES `Restaurant` (`id`);
-
-ALTER TABLE `Restaurant_Category` ADD FOREIGN KEY (`category_id`) REFERENCES `Category` (`id`);
-
-ALTER TABLE `Product` ADD FOREIGN KEY (`restaurant_id`) REFERENCES `Restaurant` (`id`);
-
-ALTER TABLE `Order_Item` ADD FOREIGN KEY (`order_id`) REFERENCES `Order` (`id`);
-
-ALTER TABLE `Order_Item` ADD FOREIGN KEY (`product_id`) REFERENCES `Product` (`id`);
-
-ALTER TABLE `Order` ADD FOREIGN KEY (`customer_id`) REFERENCES `Customer` (`id`);
-
-ALTER TABLE `Order` ADD FOREIGN KEY (`restaurant_id`) REFERENCES `Restaurant` (`id`);

@@ -21,33 +21,50 @@ document.addEventListener('DOMContentLoaded', () => {
     // Setup Login Form
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
-            const user = { email: email, name: email.split('@')[0] };
-            localStorage.setItem('user', JSON.stringify(user));
-            // Redirect to previous page or browse
-            let redirect = localStorage.getItem('redirectAfterLogin') || 'browse.html';
-            localStorage.removeItem('redirectAfterLogin');
-            window.location.href = redirect;
+            const password = document.getElementById('password').value;
+
+            try {
+                const user = await loginUser(email, password);
+                let redirect = localStorage.getItem('redirectAfterLogin') || 'browse.html';
+                localStorage.removeItem('redirectAfterLogin');
+                window.location.href = redirect;
+            } catch (error) {
+                alert('Login failed: ' + error.message);
+            }
         });
     }
 
     // Setup Register Form
     const registerForm = document.getElementById('registerForm');
     if (registerForm) {
-        registerForm.addEventListener('submit', (e) => {
+        registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
             const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const contactPhone = document.getElementById('phone')?.value;
             const street = document.getElementById('street').value;
             const streetNumber = document.getElementById('streetNumber').value;
-            const user = { email: email, name: firstName, address: `${street} ${streetNumber}` };
-            localStorage.setItem('user', JSON.stringify(user));
-            // Redirect to previous page or browse
-            let redirect = localStorage.getItem('redirectAfterLogin') || 'browse.html';
-            localStorage.removeItem('redirectAfterLogin');
-            window.location.href = redirect;
+
+            // Check if passwords match
+            if (password !== confirmPassword) {
+                alert('Οι κωδικοί δεν ταιριάζουν!');
+                return;
+            }
+
+            try {
+                const user = await registerUser(email, password, firstName, lastName, contactPhone, street, streetNumber);
+                let redirect = localStorage.getItem('redirectAfterLogin') || 'browse.html';
+                localStorage.removeItem('redirectAfterLogin');
+                window.location.href = redirect;
+            } catch (error) {
+                alert('Registration failed: ' + error.message);
+            }
         });
     }
 

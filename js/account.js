@@ -2,7 +2,8 @@
 // Handles account management page: update name, manage addresses, change password
 
 document.addEventListener('DOMContentLoaded', () => {
-    renderAccountPage();
+    updateAuthNav(); // Update auth nav first with current data
+    renderAccountPage(); // Then render the page, which will update with fresh data
 });
 
 function renderAccountPage() {
@@ -19,17 +20,56 @@ function renderAccountPage() {
         return;
     }
 
-    const user = JSON.parse(userStr);
-    accountNameInput.value = user.name || '';
-    renderAddresses(user);
+    // Load user profile and addresses from backend
+    loadUserData();
 
-    updateNameForm.addEventListener('submit', (e) => {
+    async function loadUserData() {
+        try {
+            const profile = await getUserProfile();
+            const addresses = await getUserAddresses();
+
+            // Update localStorage with fresh data
+            const user = JSON.parse(userStr);
+            user.firstName = profile.firstName;
+            user.lastName = profile.lastName;
+            user.contactPhone = profile.contactPhone;
+            user.addresses = addresses.map(addr => `${addr.street} ${addr.street_number}`);
+            user.rawAddresses = addresses; // Store raw addresses with IDs
+            localStorage.setItem('user', JSON.stringify(user));
+
+            // Update UI
+            accountNameInput.value = `${profile.firstName} ${profile.lastName}`;
+            renderAddresses(user, addresses);
+
+            // Update the auth nav with the correct name
+            updateAuthNav();
+
+        } catch (error) {
+            console.error('Failed to load user data:', error);
+            // Fallback to localStorage data
+            const user = JSON.parse(userStr);
+            accountNameInput.value = user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || '';
+            renderAddresses(user);
+        }
+    }
+
+    // Make loadUserData available globally for the remove button
+    window.loadUserData = loadUserData;
+
+    updateNameForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        user.name = accountNameInput.value;
-        localStorage.setItem('user', JSON.stringify(user));
-        document.getElementById('nameSuccessMsg').classList.remove('d-none');
-        updateAuthNav();
-        setTimeout(() => document.getElementById('nameSuccessMsg').classList.add('d-none'), 3000);
+        const fullName = accountNameInput.value.trim();
+        const [firstName, ...lastNameParts] = fullName.split(' ');
+        const lastName = lastNameParts.join(' ');
+
+        try {
+            await updateUserProfile({ firstName, lastName });
+            document.getElementById('nameSuccessMsg').classList.remove('d-none');
+            updateAuthNav();
+            setTimeout(() => document.getElementById('nameSuccessMsg').classList.add('d-none'), 3000);
+        } catch (error) {
+            alert('Failed to update name: ' + error.message);
+        }
     });
 
     updatePasswordForm.addEventListener('submit', (e) => {
@@ -39,27 +79,23 @@ function renderAccountPage() {
         setTimeout(() => document.getElementById('passwordSuccessMsg').classList.add('d-none'), 3000);
     });
 
-    addAddressForm.addEventListener('submit', (e) => {
+    addAddressForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const street = document.getElementById('newStreet').value;
-        const number = document.getElementById('newStreetNumber').value;
-        const newAddress = `${street} ${number}`;
+        const street = document.getElementById('newStreet').value.trim();
+        const number = document.getElementById('newStreetNumber').value.trim();
 
-        if (!user.addresses) {
-            user.addresses = [];
-            if (user.address) user.addresses.push(user.address);
+        try {
+            await addUserAddress(street, number);
+            addAddressForm.reset();
+            // Reload user data to show new address
+            await loadUserData();
+        } catch (error) {
+            alert('Failed to add address: ' + error.message);
         }
-        if (!user.addresses.includes(newAddress)) {
-            user.addresses.push(newAddress);
-            user.address = newAddress;
-            localStorage.setItem('user', JSON.stringify(user));
-            renderAddresses(user);
-        }
-        addAddressForm.reset();
     });
 }
 
-function renderAddresses(user) {
+function renderAddresses(user, rawAddresses = null) {
     const addressList = document.getElementById('addressList');
     if (!addressList) return;
 
@@ -105,16 +141,35 @@ function renderAddresses(user) {
 
     const removeBtns = addressList.querySelectorAll('.remove-address-btn');
     removeBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        btn.addEventListener('click', async (e) => {
             e.stopPropagation();
             const index = parseInt(btn.getAttribute('data-index'));
-            addresses.splice(index, 1);
-            user.addresses = addresses;
-            if (user.address && !addresses.includes(user.address)) {
-                user.address = addresses.length > 0 ? addresses[0] : '';
+
+            try {
+                // Use raw addresses data if available, otherwise fetch again
+                let addressesData = rawAddresses;
+                if (!addressesData) {
+                    addressesData = await getUserAddresses();
+                }
+                const addressId = addressesData[index].id;
+                await deleteUserAddress(addressId);
+
+                // Reload user data
+                await window.loadUserData();
+            } catch (error) {
+                if (error.message.includes('Address not found')) {
+                    // This is an old localStorage address that doesn't exist in backend
+                    // Remove it from localStorage only
+                    const user = JSON.parse(localStorage.getItem('user') || '{}');
+                    if (user.addresses && user.addresses[index]) {
+                        user.addresses.splice(index, 1);
+                        localStorage.setItem('user', JSON.stringify(user));
+                        renderAddresses(user);
+                    }
+                } else {
+                    alert('Failed to delete address: ' + error.message);
+                }
             }
-            localStorage.setItem('user', JSON.stringify(user));
-            renderAddresses(user);
         });
     });
 }

@@ -1,75 +1,147 @@
 // ─── utils.js ────────────────────────────────────────────────────
 // Shared utilities used across all pages
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Redirect landing page if already logged in
-    if (document.getElementById('landingForm') && localStorage.getItem('user')) {
-        window.location.href = 'pages/browse.html';
-        return;
+const API_BASE_URL = 'http://localhost:3001/api';
+
+// Store token in localStorage
+function setToken(token) {
+    localStorage.setItem('token', token);
+}
+
+function getToken() {
+    return localStorage.getItem('token');
+}
+
+function removeToken() {
+    localStorage.removeItem('token');
+}
+
+// API helper functions
+async function apiRequest(endpoint, options = {}) {
+    const url = `${API_BASE_URL}${endpoint}`;
+    const token = getToken();
+
+    const defaultOptions = {
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token && { 'Authorization': `Bearer ${token}` })
+        }
+    };
+
+    const response = await fetch(url, { ...defaultOptions, ...options });
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.error || 'API request failed');
     }
 
-    // Redirect login/register page if already logged in
-    if ((document.getElementById('loginForm') || document.getElementById('registerForm')) && localStorage.getItem('user')) {
-        const isRoot = window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || !window.location.pathname.includes('/pages/');
-        window.location.href = isRoot ? 'pages/browse.html' : 'browse.html';
-        return;
-    }
+    return data;
+}
 
-    updateAuthNav();
-    updateCartBadge();
-
-    // Setup Login Form
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const user = { email: email, name: email.split('@')[0] };
-            localStorage.setItem('user', JSON.stringify(user));
-            let redirect = localStorage.getItem('redirectAfterLogin') || 'browse.html';
-            localStorage.removeItem('redirectAfterLogin');
-            window.location.href = redirect;
+// Authentication functions
+async function loginUser(email, password) {
+    try {
+        const data = await apiRequest('/auth/login', {
+            method: 'POST',
+            body: JSON.stringify({ email, password })
         });
-    }
 
-    // Setup Register Form
-    const registerForm = document.getElementById('registerForm');
-    if (registerForm) {
-        registerForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const firstName = document.getElementById('firstName').value;
-            const street = document.getElementById('street').value;
-            const streetNumber = document.getElementById('streetNumber').value;
-            const user = { email: email, name: firstName, address: `${street} ${streetNumber}` };
-            localStorage.setItem('user', JSON.stringify(user));
-            let redirect = localStorage.getItem('redirectAfterLogin') || 'browse.html';
-            localStorage.removeItem('redirectAfterLogin');
-            window.location.href = redirect;
-        });
+        setToken(data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        return data.user;
+    } catch (error) {
+        throw new Error(error.message);
     }
+}
 
-    // Setup Landing Form
-    const landingForm = document.getElementById('landingForm');
-    if (landingForm) {
-        landingForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const address = document.getElementById('landingAddress').value;
-            localStorage.setItem('guestAddress', address);
-            window.location.href = 'pages/browse.html';
+async function registerUser(email, password, firstName, lastName, contactPhone, street, streetNumber) {
+    try {
+        const data = await apiRequest('/auth/register', {
+            method: 'POST',
+            body: JSON.stringify({ email, password, firstName, lastName, contactPhone, street, streetNumber })
         });
+
+        setToken(data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        return data.user;
+    } catch (error) {
+        throw new Error(error.message);
     }
+}
 
-    // Setup Add to Cart Buttons
-    const addToCartBtns = document.querySelectorAll('.add-to-cart-btn');
-    addToCartBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const name = btn.getAttribute('data-name');
-            const price = parseFloat(btn.getAttribute('data-price'));
-            addToCart({ name, price });
+async function logoutUser() {
+    removeToken();
+    localStorage.removeItem('user');
+    localStorage.removeItem('cart');
+    window.location.reload();
+}
+
+// User profile functions
+async function getUserProfile() {
+    try {
+        const data = await apiRequest('/users/profile');
+        return data;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+}
+
+async function updateUserProfile(updates) {
+    try {
+        const data = await apiRequest('/users/profile', {
+            method: 'PUT',
+            body: JSON.stringify(updates)
         });
-    });
-});
+        return data;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+}
+
+// Address functions
+async function getUserAddresses() {
+    try {
+        const data = await apiRequest('/users/addresses');
+        return data;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+}
+
+async function addUserAddress(street, streetNumber, latitude, longitude) {
+    try {
+        const data = await apiRequest('/users/addresses', {
+            method: 'POST',
+            body: JSON.stringify({ street, streetNumber, latitude, longitude })
+        });
+        return data;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+}
+
+async function updateUserAddress(addressId, updates) {
+    try {
+        const data = await apiRequest(`/users/addresses/${addressId}`, {
+            method: 'PUT',
+            body: JSON.stringify(updates)
+        });
+        return data;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+}
+
+async function deleteUserAddress(addressId) {
+    try {
+        const data = await apiRequest(`/users/addresses/${addressId}`, {
+            method: 'DELETE'
+        });
+        return data;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+}
 
 function updateAuthNav() {
     const authNav = document.getElementById('authNav');
@@ -84,8 +156,11 @@ function updateAuthNav() {
     const userStr = localStorage.getItem('user');
     if (userStr) {
         const user = JSON.parse(userStr);
+        const firstName = (user.firstName && user.firstName !== 'undefined') ? user.firstName : '';
+        const lastName = (user.lastName && user.lastName !== 'undefined') ? user.lastName : '';
+        const displayName = (firstName && lastName) ? `${firstName} ${lastName}`.trim() : (user.name || user.email || 'Λογαριασμός');
         authNav.innerHTML = `
-            <a href="${isRoot ? 'pages/account.html' : 'account.html'}" class="btn btn-sm ${btnOutline} fw-bold me-2">${user.name}</a>
+            <a href="${isRoot ? 'pages/account.html' : 'account.html'}" class="btn btn-sm ${btnOutline} fw-bold me-2">${displayName}</a>
             <button onclick="logout()" class="btn btn-sm btn-danger fw-bold">Αποσύνδεση</button>
         `;
     } else {
@@ -98,9 +173,7 @@ function updateAuthNav() {
 
 function logout() {
     if (!confirm('Είστε σίγουρος ότι θέλετε να αποσυνδεθείτε;')) return;
-    localStorage.removeItem('user');
-    localStorage.removeItem('cart');
-    window.location.reload();
+    logoutUser();
 }
 
 function getCart() {
@@ -135,19 +208,12 @@ function updateCartBadge() {
     cartBadge.textContent = getCart().length;
 }
 
-function addAddressToUser(street, number, zip = '') {
-    const userStr = localStorage.getItem('user');
-    if (!userStr) return false;
-    const user = JSON.parse(userStr);
-    const newAddress = [street, number, zip].filter(Boolean).join(', ');
-    if (!user.addresses) {
-        user.addresses = [];
-        if (user.address) user.addresses.push(user.address);
+async function addAddressToUser(street, number, zip = '') {
+    try {
+        await addUserAddress(street, number);
+        return true;
+    } catch (error) {
+        console.error('Failed to add address:', error);
+        return false;
     }
-    if (!user.addresses.includes(newAddress)) {
-        user.addresses.push(newAddress);
-        user.address = newAddress;
-        localStorage.setItem('user', JSON.stringify(user));
-    }
-    return true;
 }
