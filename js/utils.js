@@ -97,6 +97,7 @@ function updateAuthNav() {
 }
 
 function logout() {
+    if (!confirm('Είστε σίγουρος ότι θέλετε να αποσυνδεθείτε;')) return;
     localStorage.removeItem('user');
     localStorage.removeItem('cart');
     window.location.reload();
