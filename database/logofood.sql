@@ -10,24 +10,6 @@ CREATE TABLE Category (
   name TEXT NOT NULL
 );
 
-CREATE TABLE Restaurant_Category (
-  restaurant_id INTEGER,
-  category_id INTEGER,
-  PRIMARY KEY (restaurant_id, category_id),
-  FOREIGN KEY (restaurant_id) REFERENCES Restaurant(id),
-  FOREIGN KEY (category_id) REFERENCES Category(id)
-);
-
-CREATE TABLE Address (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  street TEXT NOT NULL,
-  street_number TEXT NOT NULL,
-  latitude REAL,
-  longitude REAL,
-  customer_id INTEGER,
-  FOREIGN KEY (customer_id) REFERENCES Customer(id)
-);
-
 CREATE TABLE Restaurant (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
@@ -42,6 +24,33 @@ CREATE TABLE Restaurant (
   FOREIGN KEY (id) REFERENCES Account(id),
   FOREIGN KEY (address_id) REFERENCES Address(id)
 );
+
+CREATE TABLE Restaurant_Category (
+  restaurant_id INTEGER,
+  category_id INTEGER,
+  PRIMARY KEY (restaurant_id, category_id),
+  FOREIGN KEY (restaurant_id) REFERENCES Restaurant(id),
+  FOREIGN KEY (category_id) REFERENCES Category(id)
+);
+
+CREATE TABLE Address (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  street TEXT NOT NULL,
+  street_number TEXT NOT NULL,
+  zip_code TEXT NOT NULL,
+  latitude REAL,
+  longitude REAL
+);
+
+CREATE TABLE Customer_Address (
+  customer_id INTEGER,
+  address_id INTEGER,
+  PRIMARY KEY (customer_id, address_id),
+  FOREIGN KEY (customer_id) REFERENCES Customer(id),
+  FOREIGN KEY (address_id) REFERENCES Address(id)
+);
+
+
 
 CREATE TABLE Customer (
   id INTEGER PRIMARY KEY,

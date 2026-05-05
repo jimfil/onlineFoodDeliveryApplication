@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const contactPhone = document.getElementById('phone')?.value;
             const street = document.getElementById('street').value;
             const streetNumber = document.getElementById('streetNumber').value;
+            const zipCode = document.getElementById('zipCode').value;
 
             // Check if passwords match
             if (password !== confirmPassword) {
@@ -58,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                const user = await registerUser(email, password, firstName, lastName, contactPhone, street, streetNumber);
+                const user = await registerUser(email, password, firstName, lastName, contactPhone, street, streetNumber, zipCode);
                 let redirect = localStorage.getItem('redirectAfterLogin') || 'browse.html';
                 localStorage.removeItem('redirectAfterLogin');
                 window.location.href = redirect;
@@ -73,9 +74,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (landingForm) {
         landingForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const address = document.getElementById('landingAddress').value;
+            const street = document.getElementById('landingStreet').value;
+            const number = document.getElementById('landingNumber').value;
+            const zip = document.getElementById('landingZip').value;
+
+            const fullAddress = `${street} ${number}, ${zip}`;
             // Store a temporary guest session
-            localStorage.setItem('guestAddress', address);
+            localStorage.setItem('guestAddress', fullAddress);
             // Redirect to browse
             window.location.href = 'pages/browse.html';
         });
@@ -92,41 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-function updateAuthNav() {
-    const authNav = document.getElementById('authNav');
-    if (!authNav) return;
 
-    const isRoot = window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || !window.location.pathname.includes('/pages/');
-    const textColor = isRoot ? 'text-dark' : 'text-white';
-    const btnOutline = isRoot ? 'btn-outline-primary' : 'btn-outline-light';
-
-    let currentFile = window.location.pathname.split('/').pop() || 'browse.html';
-    if (isRoot) currentFile = 'browse.html'; // Always go to browse from landing
-
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-        const user = JSON.parse(userStr);
-        // User is logged in
-        authNav.innerHTML = `
-            <a href="${isRoot ? 'pages/account.html' : 'account.html'}" class="btn btn-sm ${btnOutline} fw-bold me-2">${user.name}</a>
-            <button onclick="logout()" class="btn btn-sm btn-danger fw-bold">Αποσύνδεση</button>
-        `;
-    } else {
-        // Not logged in
-        const loginPath = isRoot ? 'pages/login.html' : 'login.html';
-
-        authNav.innerHTML = `
-            <a href="${loginPath}" onclick="localStorage.setItem('redirectAfterLogin', '${currentFile}')" class="btn btn-sm fw-bold text-auth">Σύνδεση/Εγγραφή</a>
-        `;
-    }
-}
-
-function logout() {
-    if (!confirm('Είστε σίγουρος ότι θέλετε να αποσυνδεθείτε;')) return;
-    localStorage.removeItem('user');
-    localStorage.removeItem('cart'); // Clear cart on logout
-    window.location.reload();
-}
 
 function getCart() {
     const cartStr = localStorage.getItem('cart');

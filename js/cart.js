@@ -2,6 +2,8 @@
 // Handles cart page: address selection, inline add-address, cart item rendering
 
 document.addEventListener('DOMContentLoaded', () => {
+    if (typeof updateAuthNav === 'function') updateAuthNav();
+    if (typeof updateCartBadge === 'function') updateCartBadge();
     renderCartPage();
 });
 

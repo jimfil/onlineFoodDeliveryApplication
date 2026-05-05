@@ -44,9 +44,13 @@ router.post('/register', async (req, res) => {
 
       // Insert address if provided
       if (street && streetNumber) {
+        const addrResult = await dbAsync.run(
+          'INSERT INTO Address (street, street_number, zip_code) VALUES (?, ?, ?)',
+          [street, streetNumber, req.body.zipCode || '']
+        );
         await dbAsync.run(
-          'INSERT INTO Address (street, street_number, customer_id) VALUES (?, ?, ?)',
-          [street, streetNumber, accountId]
+          'INSERT INTO Customer_Address (customer_id, address_id) VALUES (?, ?)',
+          [accountId, addrResult.lastID]
         );
       }
 

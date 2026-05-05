@@ -28,10 +28,19 @@
 
         <div class="address-box">
             <form id="landingForm">
-                <div class="mb-4">
-                    <label for="landingAddress" class="form-label fw-bold text-secondary">Διεύθυνση Παράδοσης</label>
-                    <input type="text" id="landingAddress" class="form-control form-control-lg"
-                        placeholder="π.χ. Ερμού 12, Αθήνα" required>
+                <div class="row g-2 mb-4">
+                    <div class="col-12 col-md-6">
+                        <label for="landingStreet" class="form-label fw-bold text-secondary">Οδός</label>
+                        <input type="text" id="landingStreet" class="form-control form-control-lg" placeholder="π.χ. Ερμού" required>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label for="landingNumber" class="form-label fw-bold text-secondary">Αριθμός</label>
+                        <input type="text" id="landingNumber" class="form-control form-control-lg" placeholder="12" required>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label for="landingZip" class="form-label fw-bold text-secondary">Τ.Κ.</label>
+                        <input type="text" id="landingZip" class="form-control form-control-lg" placeholder="10563" required>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-custom btn-lg w-100 fw-bold">Βρες Εστιατόρια</button>
             </form>

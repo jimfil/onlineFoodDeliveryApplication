@@ -2,6 +2,8 @@
 // Renders quantity controls for each menu item on the restaurant page
 
 document.addEventListener('DOMContentLoaded', () => {
+    if (typeof updateAuthNav === 'function') updateAuthNav();
+    if (typeof updateCartBadge === 'function') updateCartBadge();
     renderMenuControls();
 });
 

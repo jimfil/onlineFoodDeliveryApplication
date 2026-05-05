@@ -41,12 +41,20 @@
                     <h4 class="fw-bold mb-3">Προφίλ</h4>
                     <form id="updateNameForm">
                         <div class="row g-3">
-                            <div class="col-md-8">
-                                <label for="accountName" class="form-label text-muted small fw-bold">Όνομα / Επωνυμία</label>
-                                <input type="text" id="accountName" class="form-control" placeholder="Το όνομά σας" required>
+                            <div class="col-md-4">
+                                <label for="accountFirstName" class="form-label text-muted small fw-bold">Όνομα</label>
+                                <input type="text" id="accountFirstName" class="form-control" required>
                             </div>
-                            <div class="col-md-4 d-flex align-items-end">
-                                <button type="submit" class="btn btn-menu w-100 fw-bold">Αποθήκευση</button>
+                            <div class="col-md-4">
+                                <label for="accountLastName" class="form-label text-muted small fw-bold">Επώνυμο</label>
+                                <input type="text" id="accountLastName" class="form-control" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="accountPhone" class="form-label text-muted small fw-bold">Τηλέφωνο</label>
+                                <input type="tel" id="accountPhone" class="form-control" required>
+                            </div>
+                            <div class="col-12 mt-3 text-end">
+                                <button type="submit" class="btn btn-menu fw-bold px-4">Αποθήκευση</button>
                             </div>
                         </div>
                         <div id="nameSuccessMsg" class="text-success small mt-2 d-none">Το όνομα ενημερώθηκε επιτυχώς!</div>
@@ -80,13 +88,17 @@
                     <h5 class="fw-bold mb-3 h6">Προσθήκη Νέας Διεύθυνσης</h5>
                     <form id="addAddressForm">
                         <div class="row g-3">
-                            <div class="col-md-6">
+                            <div class="col-md-5">
                                 <label for="newStreet" class="form-label text-muted small fw-bold">Οδός</label>
                                 <input type="text" id="newStreet" class="form-control" placeholder="π.χ. Ερμού" required>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <label for="newStreetNumber" class="form-label text-muted small fw-bold">Αριθμός</label>
                                 <input type="text" id="newStreetNumber" class="form-control" placeholder="π.χ. 12" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="newZipCode" class="form-label text-muted small fw-bold">Τ.Κ.</label>
+                                <input type="text" id="newZipCode" class="form-control" placeholder="10563" required>
                             </div>
                             <div class="col-md-3 d-flex align-items-end">
                                 <button type="submit" class="btn btn-menu w-100 fw-bold">Προσθήκη</button>

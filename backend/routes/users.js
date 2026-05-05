@@ -45,7 +45,7 @@ router.get('/addresses', authenticateToken, async (req, res) => {
     const userId = req.user.id;
 
     const addresses = await dbAsync.all(
-      'SELECT id, street, street_number, latitude, longitude FROM Address WHERE customer_id = ?',
+      'SELECT a.id, a.street, a.street_number, a.zip_code, a.latitude, a.longitude FROM Address a JOIN Customer_Address ca ON a.id = ca.address_id WHERE ca.customer_id = ?',
       [userId]
     );
 
@@ -67,8 +67,13 @@ router.post('/addresses', authenticateToken, async (req, res) => {
     }
 
     const result = await dbAsync.run(
-      'INSERT INTO Address (street, street_number, latitude, longitude, customer_id) VALUES (?, ?, ?, ?, ?)',
-      [street, streetNumber, latitude || null, longitude || null, userId]
+      'INSERT INTO Address (street, street_number, zip_code, latitude, longitude) VALUES (?, ?, ?, ?, ?)',
+      [street, streetNumber, req.body.zipCode || '', latitude || null, longitude || null]
+    );
+
+    await dbAsync.run(
+      'INSERT INTO Customer_Address (customer_id, address_id) VALUES (?, ?)',
+      [userId, result.lastID]
     );
 
     res.status(201).json({
@@ -90,7 +95,7 @@ router.put('/addresses/:id', authenticateToken, async (req, res) => {
 
     // Check if address belongs to user
     const address = await dbAsync.get(
-      'SELECT id FROM Address WHERE id = ? AND customer_id = ?',
+      'SELECT a.id FROM Address a JOIN Customer_Address ca ON a.id = ca.address_id WHERE a.id = ? AND ca.customer_id = ?',
       [addressId, userId]
     );
 
@@ -99,8 +104,8 @@ router.put('/addresses/:id', authenticateToken, async (req, res) => {
     }
 
     await dbAsync.run(
-      'UPDATE Address SET street = ?, street_number = ?, latitude = ?, longitude = ? WHERE id = ?',
-      [street, streetNumber, latitude, longitude, addressId]
+      'UPDATE Address SET street = ?, street_number = ?, zip_code = ?, latitude = ?, longitude = ? WHERE id = ?',
+      [street, streetNumber, req.body.zipCode || '', latitude, longitude, addressId]
     );
 
     res.json({ message: 'Address updated successfully' });
@@ -118,7 +123,7 @@ router.delete('/addresses/:id', authenticateToken, async (req, res) => {
 
     // Check if address belongs to user
     const address = await dbAsync.get(
-      'SELECT id FROM Address WHERE id = ? AND customer_id = ?',
+      'SELECT a.id FROM Address a JOIN Customer_Address ca ON a.id = ca.address_id WHERE a.id = ? AND ca.customer_id = ?',
       [addressId, userId]
     );
 
@@ -126,6 +131,7 @@ router.delete('/addresses/:id', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Address not found' });
     }
 
+    await dbAsync.run('DELETE FROM Customer_Address WHERE address_id = ? AND customer_id = ?', [addressId, userId]);
     await dbAsync.run('DELETE FROM Address WHERE id = ?', [addressId]);
 
     res.json({ message: 'Address deleted successfully' });

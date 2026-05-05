@@ -1,7 +1,7 @@
 // ─── utils.js ────────────────────────────────────────────────────
 // Shared utilities used across all pages
 
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = 'http://localhost:4005/api';
 
 // Store token in localStorage
 function setToken(token) {
@@ -54,11 +54,11 @@ async function loginUser(email, password) {
     }
 }
 
-async function registerUser(email, password, firstName, lastName, contactPhone, street, streetNumber) {
+async function registerUser(email, password, firstName, lastName, contactPhone, street, streetNumber, zipCode) {
     try {
         const data = await apiRequest('/auth/register', {
             method: 'POST',
-            body: JSON.stringify({ email, password, firstName, lastName, contactPhone, street, streetNumber })
+            body: JSON.stringify({ email, password, firstName, lastName, contactPhone, street, streetNumber, zipCode })
         });
 
         setToken(data.token);
@@ -108,11 +108,11 @@ async function getUserAddresses() {
     }
 }
 
-async function addUserAddress(street, streetNumber, latitude, longitude) {
+async function addUserAddress(street, streetNumber, zipCode, latitude, longitude) {
     try {
         const data = await apiRequest('/users/addresses', {
             method: 'POST',
-            body: JSON.stringify({ street, streetNumber, latitude, longitude })
+            body: JSON.stringify({ street, streetNumber, zipCode, latitude, longitude })
         });
         return data;
     } catch (error) {
@@ -210,7 +210,7 @@ function updateCartBadge() {
 
 async function addAddressToUser(street, number, zip = '') {
     try {
-        await addUserAddress(street, number);
+        await addUserAddress(street, number, zip);
         return true;
     } catch (error) {
         console.error('Failed to add address:', error);

@@ -10,7 +10,9 @@ function renderAccountPage() {
     const updateNameForm = document.getElementById('updateNameForm');
     const updatePasswordForm = document.getElementById('updatePasswordForm');
     const addAddressForm = document.getElementById('addAddressForm');
-    const accountNameInput = document.getElementById('accountName');
+    const accountFirstName = document.getElementById('accountFirstName');
+    const accountLastName = document.getElementById('accountLastName');
+    const accountPhone = document.getElementById('accountPhone');
 
     if (!updateNameForm) return;
 
@@ -38,7 +40,9 @@ function renderAccountPage() {
             localStorage.setItem('user', JSON.stringify(user));
 
             // Update UI
-            accountNameInput.value = `${profile.firstName} ${profile.lastName}`;
+            if (accountFirstName) accountFirstName.value = profile.firstName || '';
+            if (accountLastName) accountLastName.value = profile.lastName || '';
+            if (accountPhone) accountPhone.value = profile.contactPhone || '';
             renderAddresses(user, addresses);
 
             // Update the auth nav with the correct name
@@ -48,7 +52,9 @@ function renderAccountPage() {
             console.error('Failed to load user data:', error);
             // Fallback to localStorage data
             const user = JSON.parse(userStr);
-            accountNameInput.value = user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || '';
+            if (accountFirstName) accountFirstName.value = user.firstName || '';
+            if (accountLastName) accountLastName.value = user.lastName || '';
+            if (accountPhone) accountPhone.value = user.contactPhone || '';
             renderAddresses(user);
         }
     }
@@ -58,12 +64,22 @@ function renderAccountPage() {
 
     updateNameForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const fullName = accountNameInput.value.trim();
-        const [firstName, ...lastNameParts] = fullName.split(' ');
-        const lastName = lastNameParts.join(' ');
+        const firstName = accountFirstName.value.trim();
+        const lastName = accountLastName.value.trim();
+        const contactPhone = accountPhone.value.trim();
 
         try {
-            await updateUserProfile({ firstName, lastName });
+            await updateUserProfile({ firstName, lastName, contactPhone });
+
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                user.firstName = firstName;
+                user.lastName = lastName;
+                user.contactPhone = contactPhone;
+                localStorage.setItem('user', JSON.stringify(user));
+            }
+
             document.getElementById('nameSuccessMsg').classList.remove('d-none');
             updateAuthNav();
             setTimeout(() => document.getElementById('nameSuccessMsg').classList.add('d-none'), 3000);
@@ -83,9 +99,10 @@ function renderAccountPage() {
         e.preventDefault();
         const street = document.getElementById('newStreet').value.trim();
         const number = document.getElementById('newStreetNumber').value.trim();
+        const zipCode = document.getElementById('newZipCode').value.trim();
 
         try {
-            await addUserAddress(street, number);
+            await addUserAddress(street, number, zipCode);
             addAddressForm.reset();
             // Reload user data to show new address
             await loadUserData();
