@@ -38,6 +38,9 @@ function renderBrowsePage() {
 
 function renderBrowsePageWithAddresses(addresses, user, guestAddress) {
 
+    let browseLat = null;
+    let browseLon = null;
+
     function showAccordion() {
         if (noAddressSection) noAddressSection.classList.add('d-none');
         browseAddressAccordion.classList.remove('d-none');
@@ -70,25 +73,88 @@ function renderBrowsePageWithAddresses(addresses, user, guestAddress) {
         const toggleBtn = document.getElementById('browseToggleAddForm');
         const inlineForm = document.getElementById('browseInlineAddressForm');
         const saveBtn = document.getElementById('browseSaveAddress');
-        if (toggleBtn && inlineForm && !toggleBtn.dataset.wired) {
-            toggleBtn.dataset.wired = '1';
-            toggleBtn.addEventListener('click', () => inlineForm.classList.toggle('d-none'));
-            saveBtn.addEventListener('click', async () => {
-                const street = document.getElementById('browseNewStreet').value.trim();
-                const number = document.getElementById('browseNewNumber').value.trim();
-                const zip = document.getElementById('browseNewZipCode')?.value.trim() ?? '';
-                if (!street || !number) return;
-                try {
-                    await addUserAddress(street, number);
-                    document.getElementById('browseNewStreet').value = '';
-                    document.getElementById('browseNewNumber').value = '';
-                    if (document.getElementById('browseNewZipCode')) document.getElementById('browseNewZipCode').value = '';
-                    inlineForm.classList.add('d-none');
-                    showAccordion();
-                } catch (error) {
-                    alert('Failed to add address: ' + error.message);
+        let inlineMapObj = null;
+
+        if (user) {
+            // Logged in user: Can add new addresses
+            if (toggleBtn && inlineForm && !toggleBtn.dataset.wired) {
+                toggleBtn.dataset.wired = '1';
+                toggleBtn.addEventListener('click', () => {
+                    inlineForm.classList.toggle('d-none');
+                    if (!inlineForm.classList.contains('d-none') && !inlineMapObj) {
+                        inlineMapObj = initLeafletMap('browseInlineMap', async (lat, lon) => {
+                            browseLat = lat;
+                            browseLon = lon;
+                            const addr = await reverseGeocode(lat, lon);
+                            if (addr) {
+                                if (addr.road) document.getElementById('browseNewStreet').value = addr.road;
+                                if (addr.house_number) document.getElementById('browseNewNumber').value = addr.house_number;
+                                if (addr.postcode) document.getElementById('browseNewZipCode').value = addr.postcode;
+                            }
+                        });
+                    } else if (inlineMapObj) {
+                        setTimeout(() => inlineMapObj.map.invalidateSize(), 100);
+                    }
+                });
+
+                saveBtn.addEventListener('click', async () => {
+                    const street = document.getElementById('browseNewStreet').value.trim();
+                    const number = document.getElementById('browseNewNumber').value.trim();
+                    const zip = document.getElementById('browseNewZipCode')?.value.trim() ?? '';
+                    if (!street || !number) return;
+                    try {
+                        await addAddressToUser(street, number, zip, browseLat, browseLon);
+                        document.getElementById('browseNewStreet').value = '';
+                        document.getElementById('browseNewNumber').value = '';
+                        if (document.getElementById('browseNewZipCode')) document.getElementById('browseNewZipCode').value = '';
+                        inlineForm.classList.add('d-none');
+                        renderBrowsePage(); // Refresh
+                    } catch (error) {
+                        alert('Failed to add address: ' + error.message);
+                    }
+                });
+            }
+        } else {
+            // Guest: Only "Edit/Change" the single guest address
+            if (toggleBtn) {
+                toggleBtn.textContent = '✎ Αλλαγή διεύθυνσης';
+                if (!toggleBtn.dataset.wired) {
+                    toggleBtn.dataset.wired = '1';
+                    toggleBtn.addEventListener('click', () => {
+                        inlineForm.classList.toggle('d-none');
+                        if (!inlineForm.classList.contains('d-none') && !inlineMapObj) {
+                            inlineMapObj = initLeafletMap('browseInlineMap', async (lat, lon) => {
+                                browseLat = lat;
+                                browseLon = lon;
+                                const addr = await reverseGeocode(lat, lon);
+                                if (addr) {
+                                    if (addr.road) document.getElementById('browseNewStreet').value = addr.road;
+                                    if (addr.house_number) document.getElementById('browseNewNumber').value = addr.house_number;
+                                    if (addr.postcode) document.getElementById('browseNewZipCode').value = addr.postcode;
+                                }
+                            });
+                        } else if (inlineMapObj) {
+                            setTimeout(() => inlineMapObj.map.invalidateSize(), 100);
+                        }
+                    });
+
+                    saveBtn.textContent = 'Ενημέρωση διεύθυνσης';
+                    saveBtn.addEventListener('click', () => {
+                        const street = document.getElementById('browseNewStreet').value.trim();
+                        const number = document.getElementById('browseNewNumber').value.trim();
+                        const zip = document.getElementById('browseNewZipCode')?.value.trim() ?? '';
+                        if (!street || !number) return;
+
+                        const full = `${street} ${number}, ${zip}`;
+                        localStorage.setItem('guestAddress', full);
+                        if (browseLat) localStorage.setItem('guestLat', browseLat);
+                        if (browseLon) localStorage.setItem('guestLon', browseLon);
+                        
+                        inlineForm.classList.add('d-none');
+                        renderBrowsePage(); // Refresh
+                    });
                 }
-            });
+            }
         }
     }
 
@@ -97,19 +163,46 @@ function renderBrowsePageWithAddresses(addresses, user, guestAddress) {
         browseAddressAccordion.classList.add('d-none');
         if (restaurantSection) restaurantSection.classList.add('d-none');
 
+        let firstMapObj = null;
         const firstSaveBtn = document.getElementById('browseFirstSaveAddress');
         if (firstSaveBtn && !firstSaveBtn.dataset.wired) {
             firstSaveBtn.dataset.wired = '1';
+            
+            // Init map for first address
+            setTimeout(() => {
+                if (!firstMapObj) {
+                    firstMapObj = initLeafletMap('browseFirstMap', async (lat, lon) => {
+                        browseLat = lat;
+                        browseLon = lon;
+                        const addr = await reverseGeocode(lat, lon);
+                        if (addr) {
+                            if (addr.road) document.getElementById('browseFirstStreet').value = addr.road;
+                            if (addr.house_number) document.getElementById('browseFirstNumber').value = addr.house_number;
+                            if (addr.postcode) document.getElementById('browseFirstZipCode').value = addr.postcode;
+                        }
+                    });
+                }
+            }, 100);
+
             firstSaveBtn.addEventListener('click', async () => {
                 const street = document.getElementById('browseFirstStreet').value.trim();
                 const number = document.getElementById('browseFirstNumber').value.trim();
                 const zip = document.getElementById('browseFirstZipCode')?.value.trim() ?? '';
                 if (!street || !number) return;
-                try {
-                    await addUserAddress(street, number);
-                    renderBrowsePage(); // Re-render to show addresses
-                } catch (error) {
-                    alert('Failed to add address: ' + error.message);
+
+                if (user) {
+                    try {
+                        await addAddressToUser(street, number, zip, browseLat, browseLon);
+                        renderBrowsePage();
+                    } catch (error) {
+                        alert('Failed to add address: ' + error.message);
+                    }
+                } else {
+                    const full = `${street} ${number}, ${zip}`;
+                    localStorage.setItem('guestAddress', full);
+                    if (browseLat) localStorage.setItem('guestLat', browseLat);
+                    if (browseLon) localStorage.setItem('guestLon', browseLon);
+                    renderBrowsePage();
                 }
             });
         }

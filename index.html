@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <link rel="stylesheet" href="css/style.css">
 </head>
 
@@ -42,12 +43,23 @@
                         <input type="text" id="landingZip" class="form-control form-control-lg" placeholder="10563" required>
                     </div>
                 </div>
+
+                <div class="mb-4">
+                    <button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold" id="toggleLandingMap">
+                        📍 Επιλογή στο χάρτη
+                    </button>
+                    <div id="landingMapContainer" class="d-none shadow-sm rounded overflow-hidden mb-3" style="height: 250px; border: 1px solid #dee2e6;">
+                        <div id="landingMap" style="height: 100%;"></div>
+                    </div>
+                </div>
+
                 <button type="submit" class="btn btn-custom btn-lg w-100 fw-bold">Βρες Εστιατόρια</button>
             </form>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="js/utils.js"></script>
     <script src="js/script.js"></script>
 </body>

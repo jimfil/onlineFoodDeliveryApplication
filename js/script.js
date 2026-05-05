@@ -69,6 +69,35 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Setup Landing Form Map
+    const toggleLandingMap = document.getElementById('toggleLandingMap');
+    const landingMapContainer = document.getElementById('landingMapContainer');
+    let landingMapObj = null;
+
+    if (toggleLandingMap && landingMapContainer) {
+        toggleLandingMap.addEventListener('click', () => {
+            const isHidden = landingMapContainer.classList.contains('d-none');
+            landingMapContainer.classList.toggle('d-none');
+            
+            if (isHidden && !landingMapObj) {
+                landingMapObj = initLeafletMap('landingMap', async (lat, lon) => {
+                    localStorage.setItem('guestLat', lat);
+                    localStorage.setItem('guestLon', lon);
+                    
+                    const address = await reverseGeocode(lat, lon);
+                    if (address) {
+                        if (address.road) document.getElementById('landingStreet').value = address.road;
+                        if (address.house_number) document.getElementById('landingNumber').value = address.house_number;
+                        if (address.postcode) document.getElementById('landingZip').value = address.postcode;
+                    }
+                });
+            } else if (landingMapObj) {
+                // Ensure map is correctly sized when reshown
+                setTimeout(() => landingMapObj.map.invalidateSize(), 100);
+            }
+        });
+    }
+
     // Setup Landing Form
     const landingForm = document.getElementById('landingForm');
     if (landingForm) {
@@ -77,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const street = document.getElementById('landingStreet').value;
             const number = document.getElementById('landingNumber').value;
             const zip = document.getElementById('landingZip').value;
-
+            
             const fullAddress = `${street} ${number}, ${zip}`;
             // Store a temporary guest session
             localStorage.setItem('guestAddress', fullAddress);

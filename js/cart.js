@@ -14,6 +14,9 @@ function renderCartPage() {
     const guestSection = document.getElementById('guestAddressSection');
     const loggedSection = document.getElementById('loggedAddressSection');
 
+    let cartLat = null;
+    let cartLon = null;
+
     if (userStr) {
         if (guestSection) guestSection.classList.add('d-none');
         if (loggedSection) {
@@ -54,22 +57,42 @@ function renderCartPage() {
             const toggleBtn = document.getElementById('cartToggleAddForm');
             const inlineForm = document.getElementById('cartInlineAddressForm');
             const saveBtn = document.getElementById('cartSaveAddress');
-            if (toggleBtn && inlineForm) {
-                toggleBtn.addEventListener('click', () => inlineForm.classList.toggle('d-none'));
-            }
-            if (saveBtn) {
-                saveBtn.addEventListener('click', () => {
-                    const street = document.getElementById('cartNewStreet').value.trim();
-                    const number = document.getElementById('cartNewNumber').value.trim();
-                    if (!street || !number) return;
-                    if (addAddressToUser(street, number)) {
-                        document.getElementById('cartNewStreet').value = '';
-                        document.getElementById('cartNewNumber').value = '';
-                        if (inlineForm) inlineForm.classList.add('d-none');
-                        renderCartPage();
-                        return;
+            let cartInlineMapObj = null;
+
+            if (toggleBtn && inlineForm && !toggleBtn.dataset.wired) {
+                toggleBtn.dataset.wired = '1';
+                toggleBtn.addEventListener('click', () => {
+                    inlineForm.classList.toggle('d-none');
+                    if (!inlineForm.classList.contains('d-none') && !cartInlineMapObj) {
+                        cartInlineMapObj = initLeafletMap('cartInlineMap', async (lat, lon) => {
+                            cartLat = lat;
+                            cartLon = lon;
+                            const addr = await reverseGeocode(lat, lon);
+                            if (addr) {
+                                if (addr.road) document.getElementById('cartNewStreet').value = addr.road;
+                                if (addr.house_number) document.getElementById('cartNewNumber').value = addr.house_number;
+                                if (addr.postcode) document.getElementById('cartNewZipCode').value = addr.postcode;
+                            }
+                        });
+                    } else if (cartInlineMapObj) {
+                        setTimeout(() => cartInlineMapObj.map.invalidateSize(), 100);
                     }
                 });
+
+                if (saveBtn) {
+                    saveBtn.addEventListener('click', async () => {
+                        const street = document.getElementById('cartNewStreet').value.trim();
+                        const number = document.getElementById('cartNewNumber').value.trim();
+                        const zip = document.getElementById('cartNewZipCode')?.value.trim() ?? '';
+                        if (!street || !number) return;
+                        try {
+                            await addAddressToUser(street, number, zip, cartLat, cartLon);
+                            renderCartPage();
+                        } catch (error) {
+                            console.error(error);
+                        }
+                    });
+                }
             }
         }
     } else {
@@ -77,7 +100,38 @@ function renderCartPage() {
         if (guestSection) {
             guestSection.classList.remove('d-none');
             const guestAddress = localStorage.getItem('guestAddress');
-            if (guestAddress) document.getElementById('guestStreet').value = guestAddress;
+            if (guestAddress) {
+                const streetInput = document.getElementById('guestStreet');
+                if (streetInput) streetInput.value = guestAddress;
+            }
+
+            if (!guestSection.dataset.wired) {
+                guestSection.dataset.wired = '1';
+                setTimeout(() => {
+                    const guestMap = initLeafletMap('guestCartMap', async (lat, lon) => {
+                        cartLat = lat;
+                        cartLon = lon;
+                        localStorage.setItem('guestLat', lat);
+                        localStorage.setItem('guestLon', lon);
+                        const addr = await reverseGeocode(lat, lon);
+                        if (addr) {
+                            const street = (addr.road || '') + ' ' + (addr.house_number || '');
+                            const zip = addr.postcode || '';
+                            document.getElementById('guestStreet').value = street;
+                            const zipInput = document.getElementById('guestZip');
+                            if (zipInput) zipInput.value = zip;
+                            
+                            localStorage.setItem('guestAddress', `${street}, ${zip}`);
+                        }
+                    });
+                    const glat = localStorage.getItem('guestLat');
+                    const glon = localStorage.getItem('guestLon');
+                    if (glat && glon) {
+                        guestMap.map.setView([glat, glon], 16);
+                        guestMap.marker.setLatLng([glat, glon]);
+                    }
+                }, 100);
+            }
         }
     }
 

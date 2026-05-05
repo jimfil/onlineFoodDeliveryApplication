@@ -95,17 +95,66 @@ function renderAccountPage() {
         setTimeout(() => document.getElementById('passwordSuccessMsg').classList.add('d-none'), 3000);
     });
 
+    // Map setup for adding address
+    const toggleAccountMap = document.getElementById('toggleAccountMap');
+    const accountMapContainer = document.getElementById('accountMapContainer');
+    let accountMapObj = null;
+    let selectedLat = null;
+    let selectedLon = null;
+
+    if (toggleAccountMap && accountMapContainer) {
+        toggleAccountMap.addEventListener('click', () => {
+            const isHidden = accountMapContainer.classList.contains('d-none');
+            accountMapContainer.classList.toggle('d-none');
+            if (isHidden && !accountMapObj) {
+                accountMapObj = initLeafletMap('accountMap', async (lat, lon) => {
+                    selectedLat = lat;
+                    selectedLon = lon;
+                    const addr = await reverseGeocode(lat, lon);
+                    if (addr) {
+                        if (addr.road) document.getElementById('newStreet').value = addr.road;
+                        if (addr.house_number) document.getElementById('newNumber').value = addr.house_number;
+                        if (addr.postcode) document.getElementById('newZipCode').value = addr.postcode;
+                    }
+                });
+            } else if (accountMapObj) {
+                setTimeout(() => accountMapObj.map.invalidateSize(), 100);
+            }
+        });
+    }
+
     addAddressForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const street = document.getElementById('newStreet').value.trim();
         const number = document.getElementById('newStreetNumber').value.trim();
         const zipCode = document.getElementById('newZipCode').value.trim();
 
+        if (!street || !number || !zipCode) {
+            alert('Παρακαλώ συμπληρώστε όλα τα πεδία της διεύθυνσης.');
+            return;
+        }
+
         try {
-            await addUserAddress(street, number, zipCode);
+            await addAddressToUser(street, number, zipCode, selectedLat, selectedLon);
             addAddressForm.reset();
-            // Reload user data to show new address
-            await loadUserData();
+            if (accountMapContainer) accountMapContainer.classList.add('d-none');
+            selectedLat = null;
+            selectedLon = null;
+            
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                renderAddresses(user);
+            }
+            // Success feedback
+            const btn = addAddressForm.querySelector('button[type="submit"]');
+            const originalText = btn.textContent;
+            btn.textContent = '✓ Προστέθηκε!';
+            btn.classList.replace('btn-menu', 'btn-success');
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.classList.replace('btn-success', 'btn-menu');
+            }, 2000);
         } catch (error) {
             alert('Failed to add address: ' + error.message);
         }

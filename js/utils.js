@@ -54,11 +54,11 @@ async function loginUser(email, password) {
     }
 }
 
-async function registerUser(email, password, firstName, lastName, contactPhone, street, streetNumber, zipCode) {
+async function registerUser(email, password, firstName, lastName, contactPhone, street, streetNumber, zipCode, latitude, longitude) {
     try {
         const data = await apiRequest('/auth/register', {
             method: 'POST',
-            body: JSON.stringify({ email, password, firstName, lastName, contactPhone, street, streetNumber, zipCode })
+            body: JSON.stringify({ email, password, firstName, lastName, contactPhone, street, streetNumber, zipCode, latitude, longitude })
         });
 
         setToken(data.token);
@@ -208,12 +208,71 @@ function updateCartBadge() {
     cartBadge.textContent = getCart().length;
 }
 
-async function addAddressToUser(street, number, zip = '') {
+async function addAddressToUser(street, number, zip = '', lat = null, lon = null) {
     try {
-        await addUserAddress(street, number, zip);
+        await addUserAddress(street, number, zip, lat, lon);
         return true;
     } catch (error) {
         console.error('Failed to add address:', error);
         return false;
+    }
+}
+
+/**
+ * Shared map initialization logic
+ */
+function initLeafletMap(containerId, onLocationSelected) {
+    // Default: Athens Center (Syntagma)
+    const defaultLocation = [37.9755, 23.7348];
+    const map = L.map(containerId).setView(defaultLocation, 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let marker = L.marker(defaultLocation, { draggable: true }).addTo(map);
+
+    // Try to get user GPS
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                const newPos = [latitude, longitude];
+                map.setView(newPos, 16);
+                marker.setLatLng(newPos);
+                if (onLocationSelected) onLocationSelected(latitude, longitude);
+            },
+            () => { console.warn('Geolocation denied or failed. Using default.'); }
+        );
+    }
+
+    marker.on('dragend', function(event) {
+        const position = marker.getLatLng();
+        if (onLocationSelected) onLocationSelected(position.lat, position.lng);
+    });
+
+    map.on('click', function(event) {
+        const { lat, lng } = event.latlng;
+        marker.setLatLng([lat, lng]);
+        if (onLocationSelected) onLocationSelected(lat, lng);
+    });
+
+    // Fix for map not rendering correctly inside modals/tabs
+    setTimeout(() => map.invalidateSize(), 200);
+
+    return { map, marker };
+}
+
+/**
+ * Reverse Geocoding using Nominatim
+ */
+async function reverseGeocode(lat, lon) {
+    try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`);
+        const data = await response.json();
+        return data.address;
+    } catch (error) {
+        console.error('Reverse Geocoding failed:', error);
+        return null;
     }
 }
