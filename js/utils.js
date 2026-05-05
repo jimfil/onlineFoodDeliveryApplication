@@ -246,12 +246,12 @@ function initLeafletMap(containerId, onLocationSelected) {
         );
     }
 
-    marker.on('dragend', function(event) {
+    marker.on('dragend', function (event) {
         const position = marker.getLatLng();
         if (onLocationSelected) onLocationSelected(position.lat, position.lng);
     });
 
-    map.on('click', function(event) {
+    map.on('click', function (event) {
         const { lat, lng } = event.latlng;
         marker.setLatLng([lat, lng]);
         if (onLocationSelected) onLocationSelected(lat, lng);

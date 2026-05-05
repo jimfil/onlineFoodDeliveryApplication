@@ -37,6 +37,35 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Setup Register Form Map
+    const toggleRegisterMap = document.getElementById('toggleRegisterMap');
+    const registerMapContainer = document.getElementById('registerMapContainer');
+    let registerMapObj = null;
+    let registerLat = null;
+    let registerLon = null;
+
+    if (toggleRegisterMap && registerMapContainer) {
+        toggleRegisterMap.addEventListener('click', () => {
+            const isHidden = registerMapContainer.classList.contains('d-none');
+            registerMapContainer.classList.toggle('d-none');
+            
+            if (isHidden && !registerMapObj) {
+                registerMapObj = initLeafletMap('registerMap', async (lat, lon) => {
+                    registerLat = lat;
+                    registerLon = lon;
+                    const address = await reverseGeocode(lat, lon);
+                    if (address) {
+                        if (address.road) document.getElementById('street').value = address.road;
+                        if (address.house_number) document.getElementById('streetNumber').value = address.house_number;
+                        if (address.postcode) document.getElementById('zipCode').value = address.postcode;
+                    }
+                });
+            } else if (registerMapObj) {
+                setTimeout(() => registerMapObj.map.invalidateSize(), 100);
+            }
+        });
+    }
+
     // Setup Register Form
     const registerForm = document.getElementById('registerForm');
     if (registerForm) {
@@ -59,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                const user = await registerUser(email, password, firstName, lastName, contactPhone, street, streetNumber, zipCode);
+                const user = await registerUser(email, password, firstName, lastName, contactPhone, street, streetNumber, zipCode, registerLat, registerLon);
                 let redirect = localStorage.getItem('redirectAfterLogin') || 'browse.html';
                 localStorage.removeItem('redirectAfterLogin');
                 window.location.href = redirect;

@@ -7,6 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCartPage();
 });
 
+let cartLat = null;
+let cartLon = null;
+
 function renderCartPage() {
     if (!document.getElementById('cartItemsContainer')) return;
 
@@ -14,86 +17,21 @@ function renderCartPage() {
     const guestSection = document.getElementById('guestAddressSection');
     const loggedSection = document.getElementById('loggedAddressSection');
 
-    let cartLat = null;
-    let cartLon = null;
-
     if (userStr) {
         if (guestSection) guestSection.classList.add('d-none');
         if (loggedSection) {
             loggedSection.classList.remove('d-none');
             const user = JSON.parse(userStr);
-            let addresses = user.addresses || [];
-            if (addresses.length === 0 && user.address) addresses.push(user.address);
 
-            const cartAddressList = document.getElementById('cartAddressList');
-            const accordionBtn = document.querySelector('#addressHeading .accordion-button');
-            const addressCollapse = document.getElementById('addressCollapse');
-            const bsCollapse = addressCollapse
-                ? new bootstrap.Collapse(addressCollapse, { toggle: false })
-                : null;
-
-            if (cartAddressList) {
-                cartAddressList.innerHTML = addresses.map((addr, i) => `
-                    <button type="button" class="list-group-item list-group-item-action${i === 0 ? ' active' : ''}"
-                        ${i === 0 ? 'aria-current="true"' : ''}>${addr}</button>
-                `).join('');
-
-                const allBtns = cartAddressList.querySelectorAll('button');
-                function setCartActive(btn) {
-                    allBtns.forEach(b => { b.classList.remove('active'); b.removeAttribute('aria-current'); });
-                    btn.classList.add('active');
-                    btn.setAttribute('aria-current', 'true');
-                    if (accordionBtn) accordionBtn.textContent = btn.textContent.trim();
-                    if (bsCollapse) bsCollapse.hide();
-                }
-                allBtns.forEach(btn => btn.addEventListener('click', () => setCartActive(btn)));
-
-                if (allBtns.length > 0 && accordionBtn) {
-                    accordionBtn.textContent = allBtns[0].textContent.trim();
-                }
-            }
-
-            // Inline add-address form
-            const toggleBtn = document.getElementById('cartToggleAddForm');
-            const inlineForm = document.getElementById('cartInlineAddressForm');
-            const saveBtn = document.getElementById('cartSaveAddress');
-            let cartInlineMapObj = null;
-
-            if (toggleBtn && inlineForm && !toggleBtn.dataset.wired) {
-                toggleBtn.dataset.wired = '1';
-                toggleBtn.addEventListener('click', () => {
-                    inlineForm.classList.toggle('d-none');
-                    if (!inlineForm.classList.contains('d-none') && !cartInlineMapObj) {
-                        cartInlineMapObj = initLeafletMap('cartInlineMap', async (lat, lon) => {
-                            cartLat = lat;
-                            cartLon = lon;
-                            const addr = await reverseGeocode(lat, lon);
-                            if (addr) {
-                                if (addr.road) document.getElementById('cartNewStreet').value = addr.road;
-                                if (addr.house_number) document.getElementById('cartNewNumber').value = addr.house_number;
-                                if (addr.postcode) document.getElementById('cartNewZipCode').value = addr.postcode;
-                            }
-                        });
-                    } else if (cartInlineMapObj) {
-                        setTimeout(() => cartInlineMapObj.map.invalidateSize(), 100);
-                    }
-                });
-
-                if (saveBtn) {
-                    saveBtn.addEventListener('click', async () => {
-                        const street = document.getElementById('cartNewStreet').value.trim();
-                        const number = document.getElementById('cartNewNumber').value.trim();
-                        const zip = document.getElementById('cartNewZipCode')?.value.trim() ?? '';
-                        if (!street || !number) return;
-                        try {
-                            await addAddressToUser(street, number, zip, cartLat, cartLon);
-                            renderCartPage();
-                        } catch (error) {
-                            console.error(error);
-                        }
-                    });
-                }
-            }
+            getUserAddresses().then(addressesData => {
+                const addresses = addressesData.map(addr => `${addr.street} ${addr.street_number}`);
+                renderCartPageWithAddresses(addresses, user, cartLat, cartLon);
+            }).catch(error => {
+                console.error('Failed to load addresses:', error);
+                let addresses = user.addresses || [];
+                if (addresses.length === 0 && user.address) addresses.push(user.address);
+                renderCartPageWithAddresses(addresses, user, cartLat, cartLon);
+            });
         }
     } else {
         if (loggedSection) loggedSection.classList.add('d-none');
@@ -133,8 +71,83 @@ function renderCartPage() {
                 }, 100);
             }
         }
+        renderCartItems();
+    }
+}
+
+function renderCartPageWithAddresses(addresses, user, cartLat, cartLon) {
+    const cartAddressList = document.getElementById('cartAddressList');
+    const accordionBtn = document.querySelector('#addressHeading .accordion-button');
+    const addressCollapse = document.getElementById('addressCollapse');
+    const bsCollapse = addressCollapse
+        ? new bootstrap.Collapse(addressCollapse, { toggle: false })
+        : null;
+
+    if (cartAddressList) {
+        cartAddressList.innerHTML = addresses.map((addr, i) => `
+            <button type="button" class="list-group-item list-group-item-action${i === 0 ? ' active' : ''}"
+                ${i === 0 ? 'aria-current="true"' : ''}>${addr}</button>
+        `).join('');
+
+        const allBtns = cartAddressList.querySelectorAll('button');
+        function setCartActive(btn) {
+            allBtns.forEach(b => { b.classList.remove('active'); b.removeAttribute('aria-current'); });
+            btn.classList.add('active');
+            btn.setAttribute('aria-current', 'true');
+            if (accordionBtn) accordionBtn.textContent = btn.textContent.trim();
+            if (bsCollapse) bsCollapse.hide();
+        }
+        allBtns.forEach(btn => btn.addEventListener('click', () => setCartActive(btn)));
+
+        if (allBtns.length > 0 && accordionBtn) {
+            accordionBtn.textContent = allBtns[0].textContent.trim();
+        }
     }
 
+    // Inline add-address form
+    const toggleBtn = document.getElementById('cartToggleAddForm');
+    const inlineForm = document.getElementById('cartInlineAddressForm');
+    const saveBtn = document.getElementById('cartSaveAddress');
+    let cartInlineMapObj = null;
+
+    if (toggleBtn && inlineForm && !toggleBtn.dataset.wired) {
+        toggleBtn.dataset.wired = '1';
+        toggleBtn.addEventListener('click', () => {
+            inlineForm.classList.toggle('d-none');
+            if (!inlineForm.classList.contains('d-none') && !cartInlineMapObj) {
+                cartInlineMapObj = initLeafletMap('cartInlineMap', async (lat, lon) => {
+                    cartLat = lat;
+                    cartLon = lon;
+                    const addr = await reverseGeocode(lat, lon);
+                    if (addr) {
+                        if (addr.road) document.getElementById('cartNewStreet').value = addr.road;
+                        if (addr.house_number) document.getElementById('cartNewNumber').value = addr.house_number;
+                        if (addr.postcode) document.getElementById('cartNewZipCode').value = addr.postcode;
+                    }
+                });
+            } else if (cartInlineMapObj) {
+                setTimeout(() => cartInlineMapObj.map.invalidateSize(), 100);
+            }
+        });
+
+        if (saveBtn) {
+            saveBtn.addEventListener('click', async () => {
+                const street = document.getElementById('cartNewStreet').value.trim();
+                const number = document.getElementById('cartNewNumber').value.trim();
+                const zip = document.getElementById('cartNewZipCode')?.value.trim() ?? '';
+                if (!street || !number) return;
+                
+                const success = await addAddressToUser(street, number, zip, cartLat, cartLon);
+                if (success) {
+                    cartLat = null;
+                    cartLon = null;
+                    renderCartPage();
+                } else {
+                    alert('Σφάλμα κατά την αποθήκευση της διεύθυνσης.');
+                }
+            });
+        }
+    }
     renderCartItems();
 }
 

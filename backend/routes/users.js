@@ -45,7 +45,7 @@ router.get('/addresses', authenticateToken, async (req, res) => {
     const userId = req.user.id;
 
     const addresses = await dbAsync.all(
-      'SELECT a.id, a.street, a.street_number, a.zip_code, a.latitude, a.longitude FROM Address a JOIN Customer_Address ca ON a.id = ca.address_id WHERE ca.customer_id = ?',
+      'SELECT a.id, a.street, a.street_number, a.zip_code, a.latitude, a.longitude FROM Address a JOIN Customer_Address ca ON a.id = ca.address_id WHERE ca.customer_id = ? ORDER BY a.id DESC',
       [userId]
     );
 
@@ -59,7 +59,7 @@ router.get('/addresses', authenticateToken, async (req, res) => {
 // Add new address
 router.post('/addresses', authenticateToken, async (req, res) => {
   try {
-    const { street, streetNumber, latitude, longitude } = req.body;
+    const { street, streetNumber, zipCode, latitude, longitude } = req.body;
     const userId = req.user.id;
 
     if (!street || !streetNumber) {
@@ -68,7 +68,7 @@ router.post('/addresses', authenticateToken, async (req, res) => {
 
     const result = await dbAsync.run(
       'INSERT INTO Address (street, street_number, zip_code, latitude, longitude) VALUES (?, ?, ?, ?, ?)',
-      [street, streetNumber, req.body.zipCode || '', latitude || null, longitude || null]
+      [street, streetNumber, zipCode || '', latitude || null, longitude || null]
     );
 
     await dbAsync.run(

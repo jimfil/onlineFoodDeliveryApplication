@@ -1,87 +1,153 @@
 // ─── browse.js ───────────────────────────────────────────────────
 // Handles browse page: address picker accordion, inline add-address forms
 
-document.addEventListener('DOMContentLoaded', () => {
-    renderBrowsePage();
+document.addEventListener('DOMContentLoaded', async () => {
+    await renderBrowsePage();
 });
 
-function renderBrowsePage() {
-    const noAddressSection = document.getElementById('noAddressSection');
-    const browseAddressAccordion = document.getElementById('browseAddressAccordion');
-    const restaurantSection = document.getElementById('restaurantSection');
-    const browseAddressList = document.getElementById('browseAddressList');
+let browseLat = null;
+let browseLon = null;
 
+async function renderBrowsePage() {
+    const browseAddressAccordion = document.getElementById('browseAddressAccordion');
     if (!browseAddressAccordion) return;
 
     const userStr = localStorage.getItem('user');
     const user = userStr ? JSON.parse(userStr) : null;
     const guestAddress = localStorage.getItem('guestAddress')?.trim();
 
-    // Load addresses from backend if user is logged in
     if (user) {
-        getUserAddresses().then(addressesData => {
+        try {
+            const addressesData = await getUserAddresses();
             const addresses = addressesData.map(addr => `${addr.street} ${addr.street_number}`);
             renderBrowsePageWithAddresses(addresses, user, guestAddress);
-        }).catch(error => {
+        } catch (error) {
             console.error('Failed to load addresses:', error);
-            // Fallback to localStorage
-            let addresses = user.addresses || [];
-            if (addresses.length === 0 && user.address) addresses.push(user.address);
-            renderBrowsePageWithAddresses(addresses, user, guestAddress);
-        });
+            renderBrowsePageWithAddresses([], user, guestAddress);
+        }
     } else {
-        let addresses = [];
-        if (guestAddress) addresses.push(guestAddress);
+        const addresses = guestAddress ? [guestAddress] : [];
         renderBrowsePageWithAddresses(addresses, user, guestAddress);
     }
 }
 
 function renderBrowsePageWithAddresses(addresses, user, guestAddress) {
+    const noAddressSection = document.getElementById('noAddressSection');
+    const browseAddressAccordion = document.getElementById('browseAddressAccordion');
+    const restaurantSection = document.getElementById('restaurantSection');
+    const browseAddressList = document.getElementById('browseAddressList');
 
-    let browseLat = null;
-    let browseLon = null;
+    if (addresses.length === 0) {
+        if (noAddressSection) noAddressSection.classList.remove('d-none');
+        browseAddressAccordion.classList.add('d-none');
+        if (restaurantSection) restaurantSection.classList.add('d-none');
 
-    function showAccordion() {
-        if (noAddressSection) noAddressSection.classList.add('d-none');
-        browseAddressAccordion.classList.remove('d-none');
+        const firstSaveBtn = document.getElementById('browseFirstSaveAddress');
+        const toggleMapBtn = document.getElementById('browseToggleFirstMap');
+        
+        if (firstSaveBtn && !firstSaveBtn.dataset.wired) {
+            firstSaveBtn.dataset.wired = '1';
+            let firstMapObj = null;
 
-        const accordionButton = document.querySelector('#browseAddressHeading .accordion-button');
-        const addressCollapse = document.getElementById('browseAddressCollapse');
-        const bsCollapse = new bootstrap.Collapse(addressCollapse, { toggle: false });
+            if (toggleMapBtn) {
+                toggleMapBtn.addEventListener('click', () => {
+                    const mapDiv = document.getElementById('browseFirstMapContainer');
+                    if (mapDiv) {
+                        mapDiv.classList.toggle('d-none');
+                        if (!mapDiv.classList.contains('d-none')) {
+                            if (!firstMapObj) {
+                                firstMapObj = initLeafletMap('browseFirstMap', async (lat, lon) => {
+                                    browseLat = lat;
+                                    browseLon = lon;
+                                    const addr = await reverseGeocode(lat, lon);
+                                    if (addr) {
+                                        if (addr.road) document.getElementById('browseFirstStreet').value = addr.road;
+                                        if (addr.house_number) document.getElementById('browseFirstNumber').value = addr.house_number;
+                                        if (addr.postcode) document.getElementById('browseFirstZipCode').value = addr.postcode;
+                                    }
+                                });
+                            } else {
+                                setTimeout(() => firstMapObj.map.invalidateSize(), 100);
+                            }
+                        }
+                    }
+                });
+            }
 
-        // Use the addresses passed to this function
-        browseAddressList.innerHTML = addresses.map((addr, i) => `
+            firstSaveBtn.addEventListener('click', async () => {
+                const street = document.getElementById('browseFirstStreet').value.trim();
+                const number = document.getElementById('browseFirstNumber').value.trim();
+                const zip = document.getElementById('browseFirstZipCode')?.value.trim() ?? '';
+                if (!street || !number) {
+                    alert('Παρακαλώ συμπληρώστε οδό και αριθμό.');
+                    return;
+                }
+
+                if (user) {
+                    try {
+                        const success = await addAddressToUser(street, number, zip, browseLat, browseLon);
+                        if (success) {
+                            location.reload();
+                        } else {
+                            alert('Σφάλμα κατά την αποθήκευση.');
+                        }
+                    } catch (error) {
+                        alert('Σφάλμα: ' + error.message);
+                    }
+                } else {
+                    localStorage.setItem('guestAddress', `${street} ${number}, ${zip}`.trim().replace(/,$/, ''));
+                    if (browseLat) localStorage.setItem('guestLat', browseLat);
+                    if (browseLon) localStorage.setItem('guestLon', browseLon);
+                    location.reload();
+                }
+            });
+        }
+        return;
+    }
+
+    // Has addresses
+    if (noAddressSection) noAddressSection.classList.add('d-none');
+    browseAddressAccordion.classList.remove('d-none');
+    if (restaurantSection) restaurantSection.classList.remove('d-none');
+
+    const accordionButton = document.querySelector('#browseAddressHeading .accordion-button');
+    const addressCollapse = document.getElementById('browseAddressCollapse');
+    
+    if (browseAddressList) {
+        browseAddressList.innerHTML = addresses.map((addrLabel, i) => `
             <button type="button" class="list-group-item list-group-item-action${i === 0 ? ' active' : ''}"
-                ${i === 0 ? 'aria-current="true"' : ''}>${addr}</button>
+                ${i === 0 ? 'aria-current="true"' : ''}>${addrLabel}</button>
         `).join('');
 
-        if (accordionButton && addresses.length > 0) accordionButton.textContent = addresses[0];
-        if (restaurantSection && addresses.length > 0) restaurantSection.classList.remove('d-none');
-
-        const addressButtons = browseAddressList.querySelectorAll('.list-group-item');
-        function setActive(btn) {
-            addressButtons.forEach(b => { b.classList.remove('active'); b.removeAttribute('aria-current'); });
+        const allBtns = browseAddressList.querySelectorAll('button');
+        allBtns.forEach(btn => btn.addEventListener('click', () => {
+            allBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            btn.setAttribute('aria-current', 'true');
             if (accordionButton) accordionButton.textContent = btn.textContent.trim();
-            if (restaurantSection) restaurantSection.classList.remove('d-none');
-            bsCollapse.hide();
-        }
-        addressButtons.forEach(btn => btn.addEventListener('click', () => setActive(btn)));
+            if (addressCollapse) {
+                const bsCollapse = bootstrap.Collapse.getInstance(addressCollapse) || new bootstrap.Collapse(addressCollapse, { toggle: false });
+                bsCollapse.hide();
+            }
+        }));
 
-        // Inline add form inside accordion
-        const toggleBtn = document.getElementById('browseToggleAddForm');
-        const inlineForm = document.getElementById('browseInlineAddressForm');
-        const saveBtn = document.getElementById('browseSaveAddress');
-        let inlineMapObj = null;
+        if (accordionButton && addresses.length > 0) {
+            accordionButton.textContent = addresses[0];
+        }
+    }
+
+    const toggleBtn = document.getElementById('browseToggleAddForm');
+    const inlineForm = document.getElementById('browseInlineAddressForm');
+    const saveBtn = document.getElementById('browseSaveAddress');
+    let inlineMapObj = null;
+
+    if (toggleBtn && inlineForm && !toggleBtn.dataset.wired) {
+        toggleBtn.dataset.wired = '1';
 
         if (user) {
-            // Logged in user: Can add new addresses
-            if (toggleBtn && inlineForm && !toggleBtn.dataset.wired) {
-                toggleBtn.dataset.wired = '1';
-                toggleBtn.addEventListener('click', () => {
-                    inlineForm.classList.toggle('d-none');
-                    if (!inlineForm.classList.contains('d-none') && !inlineMapObj) {
+            toggleBtn.addEventListener('click', () => {
+                inlineForm.classList.toggle('d-none');
+                if (!inlineForm.classList.contains('d-none')) {
+                    if (!inlineMapObj) {
                         inlineMapObj = initLeafletMap('browseInlineMap', async (lat, lon) => {
                             browseLat = lat;
                             browseLon = lon;
@@ -92,122 +158,62 @@ function renderBrowsePageWithAddresses(addresses, user, guestAddress) {
                                 if (addr.postcode) document.getElementById('browseNewZipCode').value = addr.postcode;
                             }
                         });
-                    } else if (inlineMapObj) {
+                    } else {
                         setTimeout(() => inlineMapObj.map.invalidateSize(), 100);
                     }
-                });
+                }
+            });
 
+            if (saveBtn) {
                 saveBtn.addEventListener('click', async () => {
                     const street = document.getElementById('browseNewStreet').value.trim();
                     const number = document.getElementById('browseNewNumber').value.trim();
                     const zip = document.getElementById('browseNewZipCode')?.value.trim() ?? '';
-                    if (!street || !number) return;
+                    if (!street || !number) {
+                        alert('Παρακαλώ συμπληρώστε οδό και αριθμό.');
+                        return;
+                    }
                     try {
-                        await addAddressToUser(street, number, zip, browseLat, browseLon);
-                        document.getElementById('browseNewStreet').value = '';
-                        document.getElementById('browseNewNumber').value = '';
-                        if (document.getElementById('browseNewZipCode')) document.getElementById('browseNewZipCode').value = '';
-                        inlineForm.classList.add('d-none');
-                        renderBrowsePage(); // Refresh
+                        const success = await addAddressToUser(street, number, zip, browseLat, browseLon);
+                        if (success) {
+                            location.reload();
+                        } else {
+                            alert('Σφάλμα κατά την αποθήκευση.');
+                        }
                     } catch (error) {
-                        alert('Failed to add address: ' + error.message);
+                        alert('Σφάλμα: ' + error.message);
                     }
                 });
             }
         } else {
-            // Guest: Only "Edit/Change" the single guest address
-            if (toggleBtn) {
-                toggleBtn.textContent = '✎ Αλλαγή διεύθυνσης';
-                if (!toggleBtn.dataset.wired) {
-                    toggleBtn.dataset.wired = '1';
-                    toggleBtn.addEventListener('click', () => {
-                        inlineForm.classList.toggle('d-none');
-                        if (!inlineForm.classList.contains('d-none') && !inlineMapObj) {
-                            inlineMapObj = initLeafletMap('browseInlineMap', async (lat, lon) => {
-                                browseLat = lat;
-                                browseLon = lon;
-                                const addr = await reverseGeocode(lat, lon);
-                                if (addr) {
-                                    if (addr.road) document.getElementById('browseNewStreet').value = addr.road;
-                                    if (addr.house_number) document.getElementById('browseNewNumber').value = addr.house_number;
-                                    if (addr.postcode) document.getElementById('browseNewZipCode').value = addr.postcode;
-                                }
-                            });
-                        } else if (inlineMapObj) {
-                            setTimeout(() => inlineMapObj.map.invalidateSize(), 100);
+            toggleBtn.addEventListener('click', () => {
+                inlineForm.classList.toggle('d-none');
+                if (!inlineForm.classList.contains('d-none') && !inlineMapObj) {
+                    inlineMapObj = initLeafletMap('browseInlineMap', async (lat, lon) => {
+                        browseLat = lat; browseLon = lon;
+                        const addr = await reverseGeocode(lat, lon);
+                        if (addr) {
+                            if (addr.road) document.getElementById('browseNewStreet').value = addr.road;
+                            if (addr.house_number) document.getElementById('browseNewNumber').value = addr.house_number;
+                            if (addr.postcode) document.getElementById('browseNewZipCode').value = addr.postcode;
                         }
                     });
-
-                    saveBtn.textContent = 'Ενημέρωση διεύθυνσης';
-                    saveBtn.addEventListener('click', () => {
-                        const street = document.getElementById('browseNewStreet').value.trim();
-                        const number = document.getElementById('browseNewNumber').value.trim();
-                        const zip = document.getElementById('browseNewZipCode')?.value.trim() ?? '';
-                        if (!street || !number) return;
-
-                        const full = `${street} ${number}, ${zip}`;
-                        localStorage.setItem('guestAddress', full);
-                        if (browseLat) localStorage.setItem('guestLat', browseLat);
-                        if (browseLon) localStorage.setItem('guestLon', browseLon);
-                        
-                        inlineForm.classList.add('d-none');
-                        renderBrowsePage(); // Refresh
-                    });
+                } else if (inlineMapObj) {
+                    setTimeout(() => inlineMapObj.map.invalidateSize(), 100);
                 }
+            });
+            if (saveBtn) {
+                saveBtn.addEventListener('click', () => {
+                    const street = document.getElementById('browseNewStreet').value.trim();
+                    const number = document.getElementById('browseNewNumber').value.trim();
+                    const zip = document.getElementById('browseNewZipCode')?.value.trim() ?? '';
+                    if (!street || !number) return;
+                    localStorage.setItem('guestAddress', `${street} ${number}, ${zip}`.trim().replace(/,$/, ''));
+                    if (browseLat) localStorage.setItem('guestLat', browseLat);
+                    if (browseLon) localStorage.setItem('guestLon', browseLon);
+                    location.reload();
+                });
             }
         }
     }
-
-    if (addresses.length === 0) {
-        if (noAddressSection) noAddressSection.classList.remove('d-none');
-        browseAddressAccordion.classList.add('d-none');
-        if (restaurantSection) restaurantSection.classList.add('d-none');
-
-        let firstMapObj = null;
-        const firstSaveBtn = document.getElementById('browseFirstSaveAddress');
-        if (firstSaveBtn && !firstSaveBtn.dataset.wired) {
-            firstSaveBtn.dataset.wired = '1';
-            
-            // Init map for first address
-            setTimeout(() => {
-                if (!firstMapObj) {
-                    firstMapObj = initLeafletMap('browseFirstMap', async (lat, lon) => {
-                        browseLat = lat;
-                        browseLon = lon;
-                        const addr = await reverseGeocode(lat, lon);
-                        if (addr) {
-                            if (addr.road) document.getElementById('browseFirstStreet').value = addr.road;
-                            if (addr.house_number) document.getElementById('browseFirstNumber').value = addr.house_number;
-                            if (addr.postcode) document.getElementById('browseFirstZipCode').value = addr.postcode;
-                        }
-                    });
-                }
-            }, 100);
-
-            firstSaveBtn.addEventListener('click', async () => {
-                const street = document.getElementById('browseFirstStreet').value.trim();
-                const number = document.getElementById('browseFirstNumber').value.trim();
-                const zip = document.getElementById('browseFirstZipCode')?.value.trim() ?? '';
-                if (!street || !number) return;
-
-                if (user) {
-                    try {
-                        await addAddressToUser(street, number, zip, browseLat, browseLon);
-                        renderBrowsePage();
-                    } catch (error) {
-                        alert('Failed to add address: ' + error.message);
-                    }
-                } else {
-                    const full = `${street} ${number}, ${zip}`;
-                    localStorage.setItem('guestAddress', full);
-                    if (browseLat) localStorage.setItem('guestLat', browseLat);
-                    if (browseLon) localStorage.setItem('guestLon', browseLon);
-                    renderBrowsePage();
-                }
-            });
-        }
-        return;
-    }
-
-    showAccordion();
 }

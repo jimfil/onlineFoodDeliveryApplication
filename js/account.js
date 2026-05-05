@@ -113,7 +113,7 @@ function renderAccountPage() {
                     const addr = await reverseGeocode(lat, lon);
                     if (addr) {
                         if (addr.road) document.getElementById('newStreet').value = addr.road;
-                        if (addr.house_number) document.getElementById('newNumber').value = addr.house_number;
+                        if (addr.house_number) document.getElementById('newStreetNumber').value = addr.house_number;
                         if (addr.postcode) document.getElementById('newZipCode').value = addr.postcode;
                     }
                 });
@@ -141,11 +141,9 @@ function renderAccountPage() {
             selectedLat = null;
             selectedLon = null;
             
-            const userStr = localStorage.getItem('user');
-            if (userStr) {
-                const user = JSON.parse(userStr);
-                renderAddresses(user);
-            }
+            // Reload user data to show the new address immediately
+            await loadUserData();
+
             // Success feedback
             const btn = addAddressForm.querySelector('button[type="submit"]');
             const originalText = btn.textContent;

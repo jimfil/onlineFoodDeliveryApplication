@@ -43,21 +43,26 @@
                         !! Δεν έχεις αποθηκευμένη διεύθυνση. Πρόσθεσε μία για να δεις τα εστιατόρια.
                     </div>
                     <div class="row g-2 mb-2">
-                        <div class="col-6">
-                            <input type="text" id="browseFirstStreet" class="form-control" placeholder="π.χ. Ερμού">
+                        <div class="col-md-5">
+                            <input type="text" id="browseFirstStreet" class="form-control" placeholder="Οδός (π.χ. Ερμού)">
                         </div>
-                        <div class="col-2">
+                        <div class="col-md-2">
                             <input type="text" id="browseFirstNumber" class="form-control" placeholder="Αρ.">
                         </div>
-                        <div class="col-2">
+                        <div class="col-md-2">
                             <input type="text" id="browseFirstZipCode" class="form-control" placeholder="Τ.Κ.">
                         </div>
-                        <div class="col-2">
-                            <button id="browseFirstSaveAddress" class="btn btn-menu w-100 fw-bold">✓</button>
+                        <div class="col-md-3">
+                            <button id="browseFirstSaveAddress" class="btn btn-menu w-100 fw-bold">Αποθήκευση</button>
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <div id="browseFirstMap" style="height: 200px; border: 1px solid #dee2e6; border-radius: 8px;"></div>
+                    <div class="col-12">
+                        <button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold" id="browseToggleFirstMap">
+                            📍 Επιλογή στο χάρτη
+                        </button>
+                        <div id="browseFirstMapContainer" class="d-none shadow-sm rounded overflow-hidden mb-3" style="height: 250px; border: 1px solid #dee2e6;">
+                            <div id="browseFirstMap" style="height: 100%;"></div>
+                        </div>
                     </div>
                 </div>
 
