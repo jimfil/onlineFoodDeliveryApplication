@@ -180,16 +180,14 @@ function renderBrowsePageWithAddresses(addresses, user, guestAddress) {
     if (toggleBtn && inlineForm && !browseAddressAccordion.dataset.wireMapped) {
         browseAddressAccordion.dataset.wireMapped = '1';
 
-        if (user) {
-            toggleBtn.addEventListener('click', () => {
-            console.log('Toggle button clicked! Current state - form hidden:', inlineForm.classList.contains('d-none'));
+        toggleBtn.addEventListener('click', () => {
             inlineForm.classList.toggle('d-none');
-            });
+        });
 
-            const toggleBrowseMap = document.getElementById('toggleBrowseMap');
-            const browseMapContainer = document.getElementById('browseMapContainer');
+        const toggleBrowseMap = document.getElementById('toggleBrowseMap');
+        const browseMapContainer = document.getElementById('browseMapContainer');
 
-            if (toggleBrowseMap && browseMapContainer && !toggleBrowseMap.dataset.wired) {
+        if (toggleBrowseMap && browseMapContainer && !toggleBrowseMap.dataset.wired) {
             toggleBrowseMap.dataset.wired = '1';
 
             toggleBrowseMap.addEventListener('click', () => {
@@ -197,112 +195,81 @@ function renderBrowsePageWithAddresses(addresses, user, guestAddress) {
                 browseMapContainer.classList.toggle('d-none');
 
                 if (isHidden) {
-                setTimeout(() => {
-                    document.getElementById('browseAddressSearch')?.focus();
-                }, 150);
+                    setTimeout(() => {
+                        document.getElementById('browseAddressSearch')?.focus();
+                    }, 150);
                 }
 
                 if (isHidden && !inlineMapObj) {
-                inlineMapObj = initLeafletMap(
-                    'browseMap',
-                    async (lat, lon) => {
-                    browseLat = lat;
-                    browseLon = lon;
+                    inlineMapObj = initLeafletMap(
+                        'browseMap',
+                        async (lat, lon) => {
+                            browseLat = lat;
+                            browseLon = lon;
 
-                    const addr = await reverseGeocode(lat, lon);
-                    fillAddressFields(addr, {
-                        streetId: 'browseNewStreet',
-                        numberId: 'browseNewNumber',
-                        zipId: 'browseNewZipCode'
-                    });
-                    },
-                    {
-                    searchInputId: 'browseAddressSearch',
-                    resultsContainerId: 'browseAddressResults',
-                    onAddressPicked: (selected) => {
-                        browseLat = selected.lat;
-                        browseLon = selected.lon;
+                            const addr = await reverseGeocode(lat, lon);
+                            fillAddressFields(addr, {
+                                streetId: 'browseNewStreet',
+                                numberId: 'browseNewNumber',
+                                zipId: 'browseNewZipCode'
+                            });
+                        },
+                        {
+                            searchInputId: 'browseAddressSearch',
+                            resultsContainerId: 'browseAddressResults',
+                            onAddressPicked: (selected) => {
+                                browseLat = selected.lat;
+                                browseLon = selected.lon;
 
-                        fillAddressFields(selected.address, {
-                        streetId: 'browseNewStreet',
-                        numberId: 'browseNewNumber',
-                        zipId: 'browseNewZipCode'
-                        });
-                    }
-                    }
-                );
+                                fillAddressFields(selected.address, {
+                                    streetId: 'browseNewStreet',
+                                    numberId: 'browseNewNumber',
+                                    zipId: 'browseNewZipCode'
+                                });
+                            }
+                        }
+                    );
                 } else if (inlineMapObj) {
-                setTimeout(() => inlineMapObj.map.invalidateSize(), 100);
+                    setTimeout(() => inlineMapObj.map.invalidateSize(), 100);
                 }
             });
-            }
+        }
 
-            if (saveBtn) {
-                saveBtn.addEventListener('click', async () => {
-                    const street = document.getElementById('browseNewStreet').value.trim();
-                    const number = document.getElementById('browseNewNumber').value.trim();
-                    const zip = document.getElementById('browseNewZipCode')?.value.trim() ?? '';
-                    console.log('Save button clicked. Street:', street, 'Number:', number, 'Zip:', zip);
-                    if (!street || !number) {
-                        alert('Παρακαλώ συμπληρώστε οδό και αριθμό.');
-                        return;
-                    }
+        if (saveBtn) {
+            saveBtn.addEventListener('click', async () => {
+                const street = document.getElementById('browseNewStreet').value.trim();
+                const number = document.getElementById('browseNewNumber').value.trim();
+                const zip = document.getElementById('browseNewZipCode')?.value.trim() ?? '';
+                
+                if (!street || !number) {
+                    alert('Παρακαλώ συμπληρώστε οδό και αριθμό.');
+                    return;
+                }
+
+                if (user) {
                     try {
-                        console.log('Calling addAddressToUser with:', street, number, zip, browseLat, browseLon);
                         const success = await addAddressToUser(street, number, zip, browseLat, browseLon);
-                        console.log('addAddressToUser returned:', success);
                         if (success) {
-                            console.log('Success! Clearing inline form and reloading...');
-                            // Clear the form
                             document.getElementById('browseNewStreet').value = '';
                             document.getElementById('browseNewNumber').value = '';
                             document.getElementById('browseNewZipCode').value = '';
-
-                            // Wait a moment to ensure DB is updated, then reload
                             setTimeout(() => {
-                                console.log('Reloading page to refresh addresses...');
                                 location.reload();
                             }, 300);
                         } else {
                             alert('Σφάλμα κατά την αποθήκευση.');
                         }
                     } catch (error) {
-                        console.error('Error in saveBtn click:', error);
+                        console.error('Error adding address:', error);
                         alert('Σφάλμα: ' + error.message);
                     }
-                });
-            } else {
-                console.log('saveBtn does NOT exist!');
-            }
-        } else {
-            toggleBtn.addEventListener('click', () => {
-                inlineForm.classList.toggle('d-none');
-                if (!inlineForm.classList.contains('d-none') && !inlineMapObj) {
-                    inlineMapObj = initLeafletMap('browseInlineMap', async (lat, lon) => {
-                        browseLat = lat; browseLon = lon;
-                        const addr = await reverseGeocode(lat, lon);
-                        if (addr) {
-                            if (addr.road) document.getElementById('browseNewStreet').value = addr.road;
-                            if (addr.house_number) document.getElementById('browseNewNumber').value = addr.house_number;
-                            if (addr.postcode) document.getElementById('browseNewZipCode').value = addr.postcode;
-                        }
-                    });
-                } else if (inlineMapObj) {
-                    setTimeout(() => inlineMapObj.map.invalidateSize(), 100);
-                }
-            });
-            if (saveBtn) {
-                saveBtn.addEventListener('click', () => {
-                    const street = document.getElementById('browseNewStreet').value.trim();
-                    const number = document.getElementById('browseNewNumber').value.trim();
-                    const zip = document.getElementById('browseNewZipCode')?.value.trim() ?? '';
-                    if (!street || !number) return;
+                } else {
                     localStorage.setItem('guestAddress', `${street} ${number}, ${zip}`.trim().replace(/,$/, ''));
                     if (browseLat) localStorage.setItem('guestLat', browseLat);
                     if (browseLon) localStorage.setItem('guestLon', browseLon);
                     location.reload();
-                });
-            }
+                }
+            });
         }
     }
 }

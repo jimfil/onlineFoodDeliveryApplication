@@ -63,9 +63,14 @@
                             id="browseToggleFirstMap">
                             📍 Επιλογή στο χάρτη
                         </button>
-                        <div id="browseFirstMapContainer" class="d-none shadow-sm rounded overflow-hidden mb-3"
-                            style="height: 250px; border: 1px solid #dee2e6;">
-                            <div id="browseFirstMap" style="height: 100%;"></div>
+                        <div id="browseFirstMapContainer" class="d-none mt-3">
+                            <div class="mb-3 position-relative">
+                                <label for="browseFirstAddressSearch" class="form-label">Αναζήτηση διεύθυνσης</label>
+                                <input type="text" id="browseFirstAddressSearch" class="form-control"
+                                    placeholder="π.χ. Ερμού 12" autocomplete="off">
+                                <div id="browseFirstAddressResults" class="list-group mt-2 d-none"></div>
+                            </div>
+                            <div id="browseFirstMap" style="height: 300px; border-radius: 16px;"></div>
                         </div>
                     </div>
                 </div>

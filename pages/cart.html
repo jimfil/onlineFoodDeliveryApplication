@@ -43,12 +43,19 @@
                             <span class="badge custom-number me-2">1</span>Στοιχεία Παράδοσης
                         </h5>
                         <div class="row g-3">
-                            <div class="col-md-8">
-                                <label for="guestStreet" class="form-label text-muted small fw-bold">Οδός &
-                                    Αριθμός</label>
-                                <input type="text" id="guestStreet" class="form-control" placeholder="π.χ. Ερμού 12">
+                            <div class="col-md-5">
+                                <label for="guestStreet" class="form-label text-muted small fw-bold">Οδός</label>
+                                <input type="text" id="guestStreet" class="form-control" placeholder="π.χ. Ερμού">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="guestNumber" class="form-label text-muted small fw-bold">Αριθμός</label>
+                                <input type="text" id="guestNumber" class="form-control" placeholder="Αρ.">
                             </div>
                             <div class="col-md-4">
+                                <label for="guestZip" class="form-label text-muted small fw-bold">Τ.Κ.</label>
+                                <input type="text" id="guestZip" class="form-control" placeholder="Τ.Κ.">
+                            </div>
+                            <div class="col-md-12">
                                 <label for="guestFloor"
                                     class="form-label text-muted small fw-bold">Όροφος/Κουδούνι</label>
                                 <input type="text" id="guestFloor" class="form-control"
@@ -62,7 +69,19 @@
                             </div>
                         </div>
                         <div class="mb-2 mt-3">
-                            <div id="guestCartMap" style="height: 200px; border: 1px solid #dee2e6; border-radius: 8px;"></div>
+                            <button type="button" id="toggleGuestMap" class="btn btn-outline-secondary w-100 mb-2 fw-bold border rounded">
+                            📍 Επιλογή στο χάρτη
+                            </button>
+
+                            <div id="guestMapContainer" class="d-none mt-3">
+                                <div class="mb-3 position-relative">
+                                    <label for="guestAddressSearch" class="form-label">Αναζήτηση διεύθυνσης</label>
+                                    <input type="text" id="guestAddressSearch" class="form-control"
+                                        placeholder="π.χ. Ερμού 12" autocomplete="off">
+                                    <div id="guestAddressResults" class="list-group mt-2 d-none"></div>
+                                </div>
+                                <div id="guestCartMap" style="height: 300px; border-radius: 16px;"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
