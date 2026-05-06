@@ -1,12 +1,13 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const { dbAsync } = require('../database');
+const pool = require('../database');
 const { generateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Register new customer
 router.post('/register', async (req, res) => {
+  let connection;
   try {
     const { email, password, firstName, lastName, contactPhone, street, streetNumber } = req.body;
 
@@ -16,45 +17,46 @@ router.post('/register', async (req, res) => {
     }
 
     // Check if user already exists
-    const existingUser = await dbAsync.get('SELECT id FROM Account WHERE email = ?', [email]);
-    if (existingUser) {
+    const [existingUsers] = await pool.execute('SELECT id FROM Account WHERE email = ?', [email]);
+    if (existingUsers.length > 0) {
       return res.status(409).json({ error: 'Email already registered' });
     }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Begin transaction
-    const result = await dbAsync.run('BEGIN TRANSACTION');
+    // Get a dedicated connection for the transaction
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
 
     try {
       // Insert account
-      const accountResult = await dbAsync.run(
+      const [accountResult] = await connection.execute(
         'INSERT INTO Account (email, password_hashed, account_type) VALUES (?, ?, ?)',
         [email, hashedPassword, 'CUSTOMER']
       );
 
-      const accountId = accountResult.lastID;
+      const accountId = accountResult.insertId;
 
       // Insert customer
-      await dbAsync.run(
+      await connection.execute(
         'INSERT INTO Customer (id, first_name, last_name, contact_phone) VALUES (?, ?, ?, ?)',
         [accountId, firstName, lastName, contactPhone || null]
       );
 
       // Insert address if provided
       if (street && streetNumber) {
-        const addrResult = await dbAsync.run(
+        const [addrResult] = await connection.execute(
           'INSERT INTO Address (street, street_number, zip_code, latitude, longitude) VALUES (?, ?, ?, ?, ?)',
           [street, streetNumber, req.body.zipCode || '', req.body.latitude || null, req.body.longitude || null]
         );
-        await dbAsync.run(
+        await connection.execute(
           'INSERT INTO Customer_Address (customer_id, address_id) VALUES (?, ?)',
-          [accountId, addrResult.lastID]
+          [accountId, addrResult.insertId]
         );
       }
 
-      await dbAsync.run('COMMIT');
+      await connection.commit();
 
       // Generate token
       const token = generateToken(accountId);
@@ -72,15 +74,18 @@ router.post('/register', async (req, res) => {
       });
 
     } catch (error) {
-      await dbAsync.run('ROLLBACK');
+      if (connection) await connection.rollback();
       throw error;
     }
 
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    if (connection) connection.release();
   }
 });
+
 
 // Login
 router.post('/login', async (req, res) => {
@@ -92,10 +97,12 @@ router.post('/login', async (req, res) => {
     }
 
     // Get user with password
-    const user = await dbAsync.get(
+    const [users] = await pool.execute(
       'SELECT a.id, a.email, a.password_hashed, a.account_type, c.first_name, c.last_name, c.contact_phone FROM Account a LEFT JOIN Customer c ON a.id = c.id WHERE a.email = ?',
       [email]
     );
+
+    const user = users[0];
 
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
@@ -128,4 +135,4 @@ router.post('/login', async (req, res) => {
   }
 });
 
-module.exports = router;
+module.exports = router;

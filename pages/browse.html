@@ -10,7 +10,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <link rel="stylesheet" href="../css/style.css">
 
 </head>
@@ -40,11 +41,12 @@
                 <!-- No address: inline add form -->
                 <div id="noAddressSection" class="d-none">
                     <div class="alert alert-warning mb-3" role="alert">
-                        !! Δεν έχεις αποθηκευμένη διεύθυνση. Πρόσθεσε μία για να δεις τα εστιατόρια.
+                        Δεν έχεις αποθηκευμένη διεύθυνση. Πρόσθεσε μία για να δεις τα εστιατόρια.
                     </div>
                     <div class="row g-2 mb-2">
                         <div class="col-md-5">
-                            <input type="text" id="browseFirstStreet" class="form-control" placeholder="Οδός (π.χ. Ερμού)">
+                            <input type="text" id="browseFirstStreet" class="form-control"
+                                placeholder="Οδός (π.χ. Ερμού)">
                         </div>
                         <div class="col-md-2">
                             <input type="text" id="browseFirstNumber" class="form-control" placeholder="Αρ.">
@@ -57,10 +59,12 @@
                         </div>
                     </div>
                     <div class="col-12">
-                        <button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold" id="browseToggleFirstMap">
+                        <button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold"
+                            id="browseToggleFirstMap">
                             📍 Επιλογή στο χάρτη
                         </button>
-                        <div id="browseFirstMapContainer" class="d-none shadow-sm rounded overflow-hidden mb-3" style="height: 250px; border: 1px solid #dee2e6;">
+                        <div id="browseFirstMapContainer" class="d-none shadow-sm rounded overflow-hidden mb-3"
+                            style="height: 250px; border: 1px solid #dee2e6;">
                             <div id="browseFirstMap" style="height: 100%;"></div>
                         </div>
                     </div>
@@ -104,9 +108,12 @@
                                             </div>
                                         </div>
                                         <div class="mb-2">
-                                            <div id="browseInlineMap" style="height: 180px; border: 1px solid #dee2e6; border-radius: 4px;"></div>
+                                            <div id="browseInlineMap"
+                                                style="height: 180px; border: 1px solid #dee2e6; border-radius: 4px;">
+                                            </div>
                                         </div>
-                                        <button id="browseSaveAddress" class="btn btn-menu btn-sm w-100 fw-bold">Προσθήκη Διεύθυνσης</button>
+                                        <button id="browseSaveAddress"
+                                            class="btn btn-menu btn-sm w-100 fw-bold">Προσθήκη Διεύθυνσης</button>
                                     </div>
                                 </div>
                             </div>
@@ -182,7 +189,8 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="../js/utils.js"></script>
     <script src="../js/script.js"></script>
     <script src="../js/browse.js"></script>

@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { dbAsync } = require('../database');
+const pool = require('../database');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
@@ -16,10 +16,12 @@ const authenticateToken = async (req, res, next) => {
     const decoded = jwt.verify(token, JWT_SECRET);
 
     // Get user from database
-    const user = await dbAsync.get(
+    const [users] = await pool.execute(
       'SELECT a.id, a.email, a.account_type, c.first_name, c.last_name, c.contact_phone FROM Account a LEFT JOIN Customer c ON a.id = c.id WHERE a.id = ?',
       [decoded.id]
     );
+
+    const user = users[0];
 
     if (!user) {
       return res.status(401).json({ error: 'User not found' });

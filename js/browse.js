@@ -48,7 +48,7 @@ function renderBrowsePageWithAddresses(addresses, user, guestAddress) {
 
         const firstSaveBtn = document.getElementById('browseFirstSaveAddress');
         const toggleMapBtn = document.getElementById('browseToggleFirstMap');
-        
+
         if (firstSaveBtn && !browseAddressAccordion.dataset.wireFirst) {
             browseAddressAccordion.dataset.wireFirst = '1';
             let firstMapObj = null;
@@ -121,7 +121,7 @@ function renderBrowsePageWithAddresses(addresses, user, guestAddress) {
 
     const accordionButton = document.querySelector('#browseAddressHeading .accordion-button');
     const addressCollapse = document.getElementById('browseAddressCollapse');
-    
+
     if (browseAddressList) {
         browseAddressList.innerHTML = addresses.map((addrLabel, i) => `
             <button type="button" class="list-group-item list-group-item-action${i === 0 ? ' active' : ''}"
@@ -148,6 +148,10 @@ function renderBrowsePageWithAddresses(addresses, user, guestAddress) {
     const inlineForm = document.getElementById('browseInlineAddressForm');
     const saveBtn = document.getElementById('browseSaveAddress');
     let inlineMapObj = null;
+
+    if (!user && toggleBtn) {
+        toggleBtn.textContent = 'Αλλαγή διεύθυνσης';
+    }
 
     if (toggleBtn && inlineForm && !browseAddressAccordion.dataset.wireMapped) {
         browseAddressAccordion.dataset.wireMapped = '1';
@@ -194,7 +198,7 @@ function renderBrowsePageWithAddresses(addresses, user, guestAddress) {
                             document.getElementById('browseNewStreet').value = '';
                             document.getElementById('browseNewNumber').value = '';
                             document.getElementById('browseNewZipCode').value = '';
-                            
+
                             // Wait a moment to ensure DB is updated, then reload
                             setTimeout(() => {
                                 console.log('Reloading page to refresh addresses...');
