@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Update UI with restaurant data
-    document.getElementById('restaurantName').textContent = user.restaurantName || 'Το Κατάστημά μου';
+    document.getElementById('headerRestaurantName').textContent = user.restaurantName || 'Το Κατάστημά μου';
     document.getElementById('settingsName').value = user.restaurantName || '';
     document.getElementById('prepTime').value = user.preparationTime || '';
 
@@ -25,20 +25,42 @@ document.addEventListener('DOMContentLoaded', () => {
         productForm.addEventListener('submit', handleProductSubmission);
     }
 
-    const settingsForm = document.getElementById('settingsForm');
-    if (settingsForm) {
-        settingsForm.addEventListener('submit', handleSettingsSubmission);
+    // Separate settings forms
+    const nameForm = document.getElementById('nameForm');
+    if (nameForm) {
+        nameForm.addEventListener('submit', (e) => handleSettingsUpdate(e, 'name'));
+    }
+
+    const prepTimeForm = document.getElementById('prepTimeForm');
+    if (prepTimeForm) {
+        prepTimeForm.addEventListener('submit', (e) => handleSettingsUpdate(e, 'prepTime'));
+    }
+
+    // Category Toggle Logic
+    const categorySelect = document.getElementById('categorySelect');
+    const newCategoryWrapper = document.getElementById('newCategoryWrapper');
+    if (categorySelect && newCategoryWrapper) {
+        categorySelect.addEventListener('change', () => {
+            if (categorySelect.value === 'NEW') {
+                newCategoryWrapper.classList.remove('d-none');
+                document.getElementById('newCategoryName').setAttribute('required', 'required');
+            } else {
+                newCategoryWrapper.classList.add('d-none');
+                document.getElementById('newCategoryName').removeAttribute('required');
+            }
+        });
     }
 });
 
 /**
- * Handle Restaurant Settings Update
+ * Handle Restaurant Settings Update (Separate for Name and Time)
  */
-async function handleSettingsSubmission(event) {
+async function handleSettingsUpdate(event, type) {
     event.preventDefault();
     const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user'));
     
-    const settingsData = {
+    let settingsData = {
         name: document.getElementById('settingsName').value,
         estimatedPreparationTime: document.getElementById('prepTime').value
     };
@@ -54,15 +76,14 @@ async function handleSettingsSubmission(event) {
         });
 
         if (response.ok) {
-            alert('Οι ρυθμίσεις ενημερώθηκαν!');
+            alert('Η ρύθμιση ενημερώθηκε επιτυχώς!');
             // Update local storage
-            const user = JSON.parse(localStorage.getItem('user'));
             user.restaurantName = settingsData.name;
             user.preparationTime = settingsData.estimatedPreparationTime;
             localStorage.setItem('user', JSON.stringify(user));
             
             // Refresh header
-            document.getElementById('restaurantName').textContent = user.restaurantName;
+            document.getElementById('headerRestaurantName').textContent = user.restaurantName;
         } else {
             alert('Σφάλμα κατά την ενημέρωση.');
         }
@@ -80,14 +101,17 @@ async function initDashboard() {
             fetchCategories(),
             fetchMenuItems()
         ]);
+        renderCategoryOrder();
     } catch (error) {
         console.error('Initialization error:', error);
     }
 }
 
+let allCategories = [];
+let allProducts = [];
+
 /**
  * Fetch existing product categories and populate dropdown
- * API Context: Product_Category (id, name, display_order)
  */
 async function fetchCategories() {
     const categorySelect = document.getElementById('categorySelect');
@@ -96,12 +120,15 @@ async function fetchCategories() {
         const response = await fetch('/api/categories');
         if (!response.ok) throw new Error('Failed to fetch categories');
         
-        const categories = await response.json();
+        allCategories = await response.json();
         
-        // Clear existing options except placeholder
-        categorySelect.innerHTML = '<option value="" disabled selected>Επιλέξτε κατηγορία...</option>';
+        // Preserve placeholder and "NEW" option
+        categorySelect.innerHTML = `
+            <option value="" disabled selected>Επιλέξτε κατηγορία...</option>
+            <option value="NEW">+ Νέα Κατηγορία...</option>
+        `;
         
-        categories.forEach(category => {
+        allCategories.forEach(category => {
             const option = document.createElement('option');
             option.value = category.id;
             option.textContent = category.name;
@@ -109,37 +136,62 @@ async function fetchCategories() {
         });
     } catch (error) {
         console.error('Error loading categories:', error);
-        // Fallback placeholder data for demonstration
-        const demoCategories = [
-            { id: 1, name: 'Κυρίως Πιάτα' },
-            { id: 2, name: 'Επιδόρπια' },
-            { id: 3, name: 'Ποτά & Αναψυκτικά' }
-        ];
-        demoCategories.forEach(cat => {
-            const option = document.createElement('option');
-            option.value = cat.id;
-            option.textContent = cat.name;
-            categorySelect.appendChild(option);
-        });
     }
 }
 
 /**
+ * Render Category Order List with Up/Down buttons
+ */
+function renderCategoryOrder() {
+    const container = document.getElementById('categoryOrderList');
+    if (!container) return;
+
+    container.innerHTML = '';
+    
+    allCategories.forEach((cat, index) => {
+        const div = document.createElement('div');
+        div.className = 'category-order-item d-flex align-items-center gap-2 p-2 border rounded bg-white shadow-sm';
+        div.innerHTML = `
+            <span class="fw-bold small">${cat.name}</span>
+            <div class="btn-group btn-group-sm">
+                <button class="btn btn-outline-secondary py-0" onclick="moveCategory(${index}, -1)" ${index === 0 ? 'disabled' : ''}><i class="bi bi-chevron-left"></i></button>
+                <button class="btn btn-outline-secondary py-0" onclick="moveCategory(${index}, 1)" ${index === allCategories.length - 1 ? 'disabled' : ''}><i class="bi bi-chevron-right"></i></button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+async function moveCategory(index, direction) {
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= allCategories.length) return;
+
+    // Swap
+    const temp = allCategories[index];
+    allCategories[index] = allCategories[newIndex];
+    allCategories[newIndex] = temp;
+
+    // Persist
+    await saveOrder('category', allCategories);
+    initDashboard();
+}
+
+/**
  * Fetch and render existing menu items
- * API Context: Joins Product and Product_Category_Mapping
  */
 async function fetchMenuItems() {
     const tableBody = document.getElementById('menuTableBody');
     
     try {
-        const response = await fetch('/api/restaurant/products');
+        const response = await fetch('/api/products/restaurant/products', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
         if (!response.ok) throw new Error('Failed to fetch products');
         
-        const products = await response.json();
-        renderMenuItems(products);
+        allProducts = await response.json();
+        renderMenuItems(allProducts);
     } catch (error) {
         console.error('Error loading menu:', error);
-        // Boilerplate empty state
         tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted">Δεν βρέθηκαν προϊόντα. Προσθέστε το πρώτο σας προϊόν!</td></tr>`;
     }
 }
@@ -152,26 +204,45 @@ function renderMenuItems(products) {
     tableBody.innerHTML = '';
 
     if (products.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted">Δεν βρέθηκαν προϊόντα. Προσθέστε το πρώτο σας προϊόν!</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted">Δεν βρέθηκαν προϊόντα. Προσθέστε το πρώτο σας προϊόν!</td></tr>`;
         return;
     }
 
-    products.forEach(item => {
+    let currentCategory = null;
+
+    products.forEach((item, index) => {
+        // Add Category Header Row if category changes
+        if (item.categoryName !== currentCategory) {
+            currentCategory = item.categoryName;
+            const headerRow = document.createElement('tr');
+            headerRow.innerHTML = `
+                <td colspan="5" class="bg-light py-3 ps-3">
+                    <h6 class="fw-bold mb-0 text-primary">${currentCategory || 'Χωρίς Κατηγορία'}</h6>
+                </td>
+            `;
+            tableBody.appendChild(headerRow);
+        }
+
         const row = document.createElement('tr');
         row.className = 'menu-item-row';
         row.innerHTML = `
-            <td>
+            <td style="width: 50%;">
                 <div class="d-flex align-items-center">
-                    <img src="${item.imageUrl || '../assets/placeholder-food.jpg'}" class="product-img-preview me-3" alt="${item.name}">
+                    <img src="${item.image_url || '../assets/placeholder-food.jpg'}" class="product-img-preview me-3" alt="${item.name}">
                     <div>
                         <p class="mb-0 fw-bold">${item.name}</p>
                         <p class="mb-0 text-muted extra-small">${item.description || 'Χωρίς περιγραφή'}</p>
                     </div>
                 </div>
             </td>
-            <td><span class="category-badge">${item.categoryName || 'Γενική'}</span></td>
-            <td><span class="price-tag">${parseFloat(item.price).toFixed(2)}€</span></td>
-            <td class="text-end">
+            <td style="width: 15%;"><span class="price-tag">${parseFloat(item.price).toFixed(2)}€</span></td>
+            <td style="width: 15%;">
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-light text-dark btn-sm" onclick="moveProduct(${index}, -1)" ${index === 0 ? 'disabled' : ''}><i class="bi bi-chevron-up"></i></button>
+                    <button class="btn btn-outline-light text-dark btn-sm" onclick="moveProduct(${index}, 1)" ${index === products.length - 1 ? 'disabled' : ''}><i class="bi bi-chevron-down"></i></button>
+                </div>
+            </td>
+            <td class="text-end" style="width: 20%;">
                 <button class="action-btn btn-edit" title="Επεξεργασία"><i class="bi bi-pencil-square"></i></button>
                 <button class="action-btn btn-delete" title="Διαγραφή" onclick="deleteProduct(${item.id})"><i class="bi bi-trash3"></i></button>
             </td>
@@ -180,32 +251,77 @@ function renderMenuItems(products) {
     });
 }
 
+async function moveProduct(index, direction) {
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= allProducts.length) return;
+
+    // Swap
+    const temp = allProducts[index];
+    allProducts[index] = allProducts[newIndex];
+    allProducts[newIndex] = temp;
+
+    // Persist
+    await saveOrder('product', allProducts);
+    fetchMenuItems();
+}
+
+async function saveOrder(type, items) {
+    const token = localStorage.getItem('token');
+    const orderData = {
+        type: type,
+        items: items.map((item, idx) => ({ id: item.id, order: idx }))
+    };
+
+    try {
+        await fetch('/api/products/order', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(orderData)
+        });
+    } catch (error) {
+        console.error('Save order error:', error);
+    }
+}
+
 /**
  * Handle Add Product Form Submission
- * Constructs payload for Product and Category Mapping
  */
 async function handleProductSubmission(event) {
     event.preventDefault();
     
+    const categoryVal = document.getElementById('categorySelect').value;
+    const isNewCategory = categoryVal === 'NEW';
+    
     const formData = {
         name: document.getElementById('name').value,
-        categoryId: parseInt(document.getElementById('categorySelect').value),
         price: parseFloat(document.getElementById('price').value),
         description: document.getElementById('description').value,
-        imageUrl: document.getElementById('imageUrl').value
+        imageUrl: document.getElementById('imageUrl').value,
+        // If NEW, we send the name. Backend should handle creation.
+        categoryId: isNewCategory ? null : parseInt(categoryVal),
+        newCategoryName: isNewCategory ? document.getElementById('newCategoryName').value : null
     };
 
     try {
         const response = await fetch('/api/products', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
             body: JSON.stringify(formData)
         });
 
         if (response.ok) {
             alert('Το προϊόν προστέθηκε επιτυχώς!');
             document.getElementById('productForm').reset();
-            fetchMenuItems(); // Refresh list
+            document.getElementById('newCategoryWrapper').classList.add('d-none');
+            
+            // Refresh categories (in case a new one was added) and menu
+            await initDashboard();
         } else {
             const error = await response.json();
             alert('Σφάλμα: ' + error.message);
@@ -217,13 +333,16 @@ async function handleProductSubmission(event) {
 }
 
 /**
- * Placeholder delete function
+ * Delete product
  */
 async function deleteProduct(id) {
     if (!confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το προϊόν;')) return;
     
     try {
-        const response = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+        const response = await fetch(`/api/products/${id}`, { 
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
         if (response.ok) {
             fetchMenuItems();
         }
@@ -231,4 +350,3 @@ async function deleteProduct(id) {
         console.error('Delete error:', error);
     }
 }
-

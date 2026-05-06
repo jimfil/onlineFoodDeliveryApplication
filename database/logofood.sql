@@ -64,6 +64,8 @@ CREATE TABLE Product (
   price DOUBLE NOT NULL,
   description TEXT,
   ingredients TEXT,
+  image_url VARCHAR(255),
+  display_order INT DEFAULT 0,
   restaurant_id INT NOT NULL,
   FOREIGN KEY (restaurant_id) REFERENCES Restaurant(id)
 );
