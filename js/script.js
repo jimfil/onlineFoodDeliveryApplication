@@ -50,7 +50,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 const user = await loginUser(email, password);
-                let redirect = localStorage.getItem('redirectAfterLogin') || 'browse.html';
+                let redirect = localStorage.getItem('redirectAfterLogin');
+                
+                if (user.accountType === 'RESTAURANT') {
+                    redirect = 'manage-restaurant.html';
+                } else if (!redirect) {
+                    redirect = 'browse.html';
+                }
+                
                 localStorage.removeItem('redirectAfterLogin');
                 window.location.href = redirect;
             } catch (error) {
@@ -130,7 +137,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 const user = await registerUser(email, password, firstName, lastName, contactPhone, street, streetNumber, zipCode, registerLat, registerLon);
-                let redirect = localStorage.getItem('redirectAfterLogin') || 'browse.html';
+                let redirect = localStorage.getItem('redirectAfterLogin');
+
+                if (user.accountType === 'RESTAURANT') {
+                    redirect = 'manage-restaurant.html';
+                } else if (!redirect) {
+                    redirect = 'browse.html';
+                }
+
                 localStorage.removeItem('redirectAfterLogin');
                 window.location.href = redirect;
             } catch (error) {
