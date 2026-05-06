@@ -16,6 +16,10 @@ function renderAccountPage() {
 
     if (!updateNameForm) return;
 
+    // Prevent duplicate event listeners
+    if (updateNameForm.dataset.wired) return;
+    updateNameForm.dataset.wired = '1';
+
     const userStr = localStorage.getItem('user');
     if (!userStr) {
         window.location.href = 'login.html';
@@ -27,8 +31,11 @@ function renderAccountPage() {
 
     async function loadUserData() {
         try {
+            console.log('loadUserData: Fetching profile and addresses from API...');
             const profile = await getUserProfile();
+            console.log('Profile fetched:', profile);
             const addresses = await getUserAddresses();
+            console.log('Addresses fetched from API:', addresses);
 
             // Update localStorage with fresh data
             const user = JSON.parse(userStr);
@@ -36,13 +43,16 @@ function renderAccountPage() {
             user.lastName = profile.lastName;
             user.contactPhone = profile.contactPhone;
             user.addresses = addresses.map(addr => `${addr.street} ${addr.street_number}`);
+            user.address = addresses.length > 0 ? user.addresses[0] : '';
             user.rawAddresses = addresses; // Store raw addresses with IDs
+            console.log('Updated user object:', user);
             localStorage.setItem('user', JSON.stringify(user));
 
             // Update UI
             if (accountFirstName) accountFirstName.value = profile.firstName || '';
             if (accountLastName) accountLastName.value = profile.lastName || '';
             if (accountPhone) accountPhone.value = profile.contactPhone || '';
+            console.log('Calling renderAddresses with:', addresses.length, 'addresses');
             renderAddresses(user, addresses);
 
             // Update the auth nav with the correct name
@@ -165,6 +175,12 @@ function renderAddresses(user, rawAddresses = null) {
 
     let addresses = user.addresses || [];
     if (addresses.length === 0 && user.address) addresses.push(user.address);
+
+    console.log('renderAddresses called with:', { 
+        addressesCount: addresses.length, 
+        addresses, 
+        rawAddresses: rawAddresses ? rawAddresses.length : 'null' 
+    });
 
     const accordionButton = document.querySelector('#accountAddressHeading .accordion-button');
 

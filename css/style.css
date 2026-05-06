@@ -83,6 +83,12 @@ textarea {
     position: sticky;
     top: 0;
     z-index: 1000;
+    transform: translateY(0);
+    transition: transform 0.3s ease-in-out;
+}
+
+.custom-header.header-hidden {
+    transform: translateY(-100%);
 }
 
 .custom-header .container {

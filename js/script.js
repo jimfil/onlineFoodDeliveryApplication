@@ -12,11 +12,33 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    // Header scroll hide/show functionality
+    const header = document.querySelector('.custom-header');
+    let lastScrollTop = 0;
+    let isHeaderHidden = false;
+
+    window.addEventListener('scroll', () => {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        // Only hide header if scrolling down more than 50px
+        if (scrollTop > lastScrollTop && scrollTop > 50) {
+            // Scrolling DOWN
+            if (!isHeaderHidden && header) {
+                header.classList.add('header-hidden');
+                isHeaderHidden = true;
+            }
+        } else {
+            // Scrolling UP
+            if (isHeaderHidden && header) {
+                header.classList.remove('header-hidden');
+                isHeaderHidden = false;
+            }
+        }
+        lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; // For Mobile or negative scrolling
+    });
+
     updateAuthNav();
     updateCartBadge();
-    renderCartPage();
-    renderAccountPage();
-    renderBrowsePage();
 
     // Setup Login Form
     const loginForm = document.getElementById('loginForm');
@@ -238,7 +260,7 @@ function renderCartPage() {
                     const street = document.getElementById('cartNewStreet').value.trim();
                     const number = document.getElementById('cartNewNumber').value.trim();
                     if (!street || !number) return;
-                    if (addAddressToUser(street, number)) {
+                    if (addAddressToLocalUser(street, number)) {
                         document.getElementById('cartNewStreet').value = '';
                         document.getElementById('cartNewNumber').value = '';
                         if (inlineForm) inlineForm.classList.add('d-none');
@@ -444,7 +466,7 @@ function renderAddresses(user) {
     });
 }
 
-function addAddressToUser(street, number, zip = '') {
+function addAddressToLocalUser(street, number, zip = '') {
     const userStr = localStorage.getItem('user');
     if (!userStr) return false;
     const user = JSON.parse(userStr);
@@ -519,7 +541,7 @@ function renderBrowsePage() {
                 const number = document.getElementById('browseNewNumber').value.trim();
                 const zip = document.getElementById('browseNewZipCode').value.trim();
                 if (!street || !number) return;
-                addAddressToUser(street, number, zip);
+                addAddressToLocalUser(street, number, zip);
                 document.getElementById('browseNewStreet').value = '';
                 document.getElementById('browseNewNumber').value = '';
                 document.getElementById('browseNewZipCode').value = '';
@@ -542,7 +564,7 @@ function renderBrowsePage() {
                 const street = document.getElementById('browseFirstStreet').value.trim();
                 const number = document.getElementById('browseFirstNumber').value.trim();
                 if (!street || !number) return;
-                addAddressToUser(street, number);
+                addAddressToLocalUser(street, number);
                 showAccordion();
             });
         }

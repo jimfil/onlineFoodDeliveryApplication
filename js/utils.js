@@ -21,14 +21,21 @@ async function apiRequest(endpoint, options = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
     const token = getToken();
 
-    const defaultOptions = {
+    const defaultHeaders = {
+        'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+
+    // Merge headers properly
+    const mergedOptions = {
+        ...options,
         headers: {
-            'Content-Type': 'application/json',
-            ...(token && { 'Authorization': `Bearer ${token}` })
+            ...defaultHeaders,
+            ...(options.headers || {})
         }
     };
 
-    const response = await fetch(url, { ...defaultOptions, ...options });
+    const response = await fetch(url, mergedOptions);
     const data = await response.json();
 
     if (!response.ok) {
@@ -110,12 +117,17 @@ async function getUserAddresses() {
 
 async function addUserAddress(street, streetNumber, zipCode, latitude, longitude) {
     try {
+        console.log('addUserAddress called with:', { street, streetNumber, zipCode, latitude, longitude });
+        const token = getToken();
+        console.log('Token exists:', !!token);
         const data = await apiRequest('/users/addresses', {
             method: 'POST',
             body: JSON.stringify({ street, streetNumber, zipCode, latitude, longitude })
         });
+        console.log('API response:', data);
         return data;
     } catch (error) {
+        console.error('addUserAddress error:', error);
         throw new Error(error.message);
     }
 }

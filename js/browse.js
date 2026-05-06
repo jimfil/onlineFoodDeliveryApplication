@@ -12,6 +12,10 @@ async function renderBrowsePage() {
     const browseAddressAccordion = document.getElementById('browseAddressAccordion');
     if (!browseAddressAccordion) return;
 
+    // Prevent duplicate event listeners
+    if (browseAddressAccordion.dataset.wired) return;
+    browseAddressAccordion.dataset.wired = '1';
+
     const userStr = localStorage.getItem('user');
     const user = userStr ? JSON.parse(userStr) : null;
     const guestAddress = localStorage.getItem('guestAddress')?.trim();
@@ -45,8 +49,8 @@ function renderBrowsePageWithAddresses(addresses, user, guestAddress) {
         const firstSaveBtn = document.getElementById('browseFirstSaveAddress');
         const toggleMapBtn = document.getElementById('browseToggleFirstMap');
         
-        if (firstSaveBtn && !firstSaveBtn.dataset.wired) {
-            firstSaveBtn.dataset.wired = '1';
+        if (firstSaveBtn && !browseAddressAccordion.dataset.wireFirst) {
+            browseAddressAccordion.dataset.wireFirst = '1';
             let firstMapObj = null;
 
             if (toggleMapBtn) {
@@ -78,23 +82,28 @@ function renderBrowsePageWithAddresses(addresses, user, guestAddress) {
                 const street = document.getElementById('browseFirstStreet').value.trim();
                 const number = document.getElementById('browseFirstNumber').value.trim();
                 const zip = document.getElementById('browseFirstZipCode')?.value.trim() ?? '';
+                console.log('First save button clicked. Street:', street, 'Number:', number, 'Zip:', zip, 'User:', user);
                 if (!street || !number) {
                     alert('Παρακαλώ συμπληρώστε οδό και αριθμό.');
                     return;
                 }
 
                 if (user) {
+                    console.log('Attempting to add address for logged-in user');
                     try {
                         const success = await addAddressToUser(street, number, zip, browseLat, browseLon);
+                        console.log('API response success:', success);
                         if (success) {
                             location.reload();
                         } else {
                             alert('Σφάλμα κατά την αποθήκευση.');
                         }
                     } catch (error) {
+                        console.error('Error adding address:', error);
                         alert('Σφάλμα: ' + error.message);
                     }
                 } else {
+                    console.log('User is not logged in, saving to localStorage');
                     localStorage.setItem('guestAddress', `${street} ${number}, ${zip}`.trim().replace(/,$/, ''));
                     if (browseLat) localStorage.setItem('guestLat', browseLat);
                     if (browseLon) localStorage.setItem('guestLon', browseLon);
@@ -140,11 +149,12 @@ function renderBrowsePageWithAddresses(addresses, user, guestAddress) {
     const saveBtn = document.getElementById('browseSaveAddress');
     let inlineMapObj = null;
 
-    if (toggleBtn && inlineForm && !toggleBtn.dataset.wired) {
-        toggleBtn.dataset.wired = '1';
+    if (toggleBtn && inlineForm && !browseAddressAccordion.dataset.wireMapped) {
+        browseAddressAccordion.dataset.wireMapped = '1';
 
         if (user) {
             toggleBtn.addEventListener('click', () => {
+                console.log('Toggle button clicked! Current state - form hidden:', inlineForm.classList.contains('d-none'));
                 inlineForm.classList.toggle('d-none');
                 if (!inlineForm.classList.contains('d-none')) {
                     if (!inlineMapObj) {
@@ -169,21 +179,37 @@ function renderBrowsePageWithAddresses(addresses, user, guestAddress) {
                     const street = document.getElementById('browseNewStreet').value.trim();
                     const number = document.getElementById('browseNewNumber').value.trim();
                     const zip = document.getElementById('browseNewZipCode')?.value.trim() ?? '';
+                    console.log('Save button clicked. Street:', street, 'Number:', number, 'Zip:', zip);
                     if (!street || !number) {
                         alert('Παρακαλώ συμπληρώστε οδό και αριθμό.');
                         return;
                     }
                     try {
+                        console.log('Calling addAddressToUser with:', street, number, zip, browseLat, browseLon);
                         const success = await addAddressToUser(street, number, zip, browseLat, browseLon);
+                        console.log('addAddressToUser returned:', success);
                         if (success) {
-                            location.reload();
+                            console.log('Success! Clearing inline form and reloading...');
+                            // Clear the form
+                            document.getElementById('browseNewStreet').value = '';
+                            document.getElementById('browseNewNumber').value = '';
+                            document.getElementById('browseNewZipCode').value = '';
+                            
+                            // Wait a moment to ensure DB is updated, then reload
+                            setTimeout(() => {
+                                console.log('Reloading page to refresh addresses...');
+                                location.reload();
+                            }, 300);
                         } else {
                             alert('Σφάλμα κατά την αποθήκευση.');
                         }
                     } catch (error) {
+                        console.error('Error in saveBtn click:', error);
                         alert('Σφάλμα: ' + error.message);
                     }
                 });
+            } else {
+                console.log('saveBtn does NOT exist!');
             }
         } else {
             toggleBtn.addEventListener('click', () => {
