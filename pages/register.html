@@ -2,134 +2,145 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Εγγραφή - LogoFood</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Εγγραφή - LogoFood</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-    <link rel="stylesheet" href="../css/style.css">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+	<link rel="stylesheet" href="../css/style.css">
 </head>
 
 <body class="bg-light">
 
-    <header class="custom-header py-4 shadow-sm">
-        <div class="container d-flex justify-content-between align-items-center">
-            <h1 class="h4 mb-0 custom-header-text fw-bold">
-                <a href="browse.html" class="text-decoration-none text-dark" id="logo">logofood</a>
-            </h1>
-            <div class="d-flex gap-2 align-items-center">
-                <a href="cart.html" class="btn btn-custom btn-sm fw-bold">
-                    Καλάθι <span id="cartBadge" class="badge custom-number ms-1">0</span>
-                </a>
-                <div id="authNav" class="d-flex align-items-center">
-                    <a href="login.html" class="btn btn-sm fw-bold text-auth">Σύνδεση/Εγγραφή</a>
-                </div>
-            </div>
-        </div>
-    </header>
+	<header class="custom-header py-4 shadow-sm">
+		<div class="container d-flex justify-content-between align-items-center">
+			<h1 class="h4 mb-0 custom-header-text fw-bold">
+				<a href="browse.html" class="text-decoration-none text-dark" id="logo">logofood</a>
+			</h1>
+			<div class="d-flex gap-2 align-items-center">
+				<a href="cart.html" class="btn btn-custom btn-sm fw-bold">
+					Καλάθι <span id="cartBadge" class="badge custom-number ms-1">0</span>
+				</a>
+				<div id="authNav" class="d-flex align-items-center">
+					<a href="login.html" class="btn btn-sm fw-bold text-auth">Σύνδεση/Εγγραφή</a>
+				</div>
+			</div>
+		</div>
+	</header>
 
-    <main class="container my-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6">
-                <div class="card border-0 shadow-sm p-4">
-                    <h2 class="fw-bold mb-4 text-center">Δημιουργία Λογαριασμού</h2>
+	<main class="container my-5">
+		<div class="row justify-content-center">
+			<div class="col-md-8 col-lg-6">
+				<div class="card border-0 shadow-sm p-4">
+					<h2 class="fw-bold mb-4 text-center">Δημιουργία Λογαριασμού</h2>
 
-                    <form id="registerForm">
-                        <div class="row g-3">
+					<form id="registerForm">
+						<div class="row g-3">
 
-                            <div class="col-md-6">
-                                <label for="firstName" class="form-label text-muted small fw-bold">Όνομα</label>
-                                <input type="text" id="firstName" class="form-control" placeholder="Γιώργος"
-                                    pattern="[A-Za-zΑ-Ωα-ωΆΈΉΊΌΎΏάέήίόύώ\s\-]+" title="Παρακαλώ εισάγετε μόνο γράμματα"
-                                    required>
-                            </div>
+							<div class="col-md-6">
+								<label for="firstName" class="form-label text-muted small fw-bold">Όνομα</label>
+								<input type="text" id="firstName" class="form-control" placeholder="Γιώργος"
+									pattern="[A-Za-zΑ-Ωα-ωΆΈΉΊΌΎΏάέήίόύώ\s\-]+" title="Παρακαλώ εισάγετε μόνο γράμματα"
+									required>
+							</div>
 
-                            <div class="col-md-6">
-                                <label for="lastName" class="form-label text-muted small fw-bold">Επώνυμο</label>
-                                <input type="text" id="lastName" class="form-control" placeholder="Παπαδόπουλος"
-                                    pattern="[A-Za-zΑ-Ωα-ωΆΈΉΊΌΎΏάέήίόύώ\s\-]+" title="Παρακαλώ εισάγετε μόνο γράμματα"
-                                    required>
-                            </div>
+							<div class="col-md-6">
+								<label for="lastName" class="form-label text-muted small fw-bold">Επώνυμο</label>
+								<input type="text" id="lastName" class="form-control" placeholder="Παπαδόπουλος"
+									pattern="[A-Za-zΑ-Ωα-ωΆΈΉΊΌΎΏάέήίόύώ\s\-]+" title="Παρακαλώ εισάγετε μόνο γράμματα"
+									required>
+							</div>
 
-                            <div class="col-md-6">
-                                <label for="street" class="form-label text-muted small fw-bold">Οδός</label>
-                                <input type="text" id="street" class="form-control" placeholder="π.χ. Ερμού" required>
-                            </div>
+							<div class="col-md-6">
+								<label for="street" class="form-label text-muted small fw-bold">Οδός</label>
+								<input type="text" id="street" class="form-control" placeholder="π.χ. Ερμού" required>
+							</div>
 
-                            <div class="col-md-3">
-                                <label for="streetNumber" class="form-label text-muted small fw-bold">Αριθμός</label>
-                                <input type="text" id="streetNumber" class="form-control" placeholder="π.χ. 12" required>
-                            </div>
+							<div class="col-md-3">
+								<label for="streetNumber" class="form-label text-muted small fw-bold">Αριθμός</label>
+								<input type="text" id="streetNumber" class="form-control" placeholder="π.χ. 12" required>
+							</div>
 
-                            <div class="col-md-3">
-                                <label for="zipCode" class="form-label text-muted small fw-bold">Τ.Κ.</label>
-                                <input type="text" id="zipCode" class="form-control" placeholder="π.χ. 10563" required>
-                            </div>
+							<div class="col-md-3">
+								<label for="zipCode" class="form-label text-muted small fw-bold">Τ.Κ.</label>
+								<input type="text" id="zipCode" class="form-control" placeholder="π.χ. 10563" required>
+							</div>
 
-                            <div class="col-12">
-                                <label for="email" class="form-label text-muted small fw-bold">Email</label>
-                                <input type="email" id="email" class="form-control" placeholder="example@example.com"
-                                    required>
-                            </div>
+							<div class="col-12">
+								<label for="email" class="form-label text-muted small fw-bold">Email</label>
+								<input type="email" id="email" class="form-control" placeholder="example@example.com"
+									required>
+							</div>
 
-                            <div class="col-12">
-                                <label for="password" class="form-label text-muted small fw-bold">Κωδικός
-                                    Πρόσβασης</label>
-                                <input type="password" id="password" class="form-control"
-                                    placeholder="Τουλάχιστον 6 χαρακτήρες" pattern=".{6,}"
-                                    title="Ο κωδικός πρέπει να περιέχει τουλάχιστον 6 χαρακτήρες" required>
-                            </div>
+							<div class="col-12">
+								<label for="password" class="form-label text-muted small fw-bold">Κωδικός
+									Πρόσβασης</label>
+								<input type="password" id="password" class="form-control"
+									placeholder="Τουλάχιστον 6 χαρακτήρες" pattern=".{6,}"
+									title="Ο κωδικός πρέπει να περιέχει τουλάχιστον 6 χαρακτήρες" required>
+							</div>
 
-                            <div class="col-12">
-                                <label for="confirmPassword" class="form-label text-muted small fw-bold">Επιβεβαίωση
-                                    Κωδικού</label>
-                                <input type="password" id="confirmPassword" class="form-control"
-                                    placeholder="Επαναλάβετε τον κωδικό" pattern=".{6,}"
-                                    title="Ο κωδικός πρέπει να περιέχει τουλάχιστον 6 χαρακτήρες" required>
-                            </div>
+							<div class="col-12">
+								<label for="confirmPassword" class="form-label text-muted small fw-bold">Επιβεβαίωση
+									Κωδικού</label>
+								<input type="password" id="confirmPassword" class="form-control"
+									placeholder="Επαναλάβετε τον κωδικό" pattern=".{6,}"
+									title="Ο κωδικός πρέπει να περιέχει τουλάχιστον 6 χαρακτήρες" required>
+							</div>
 
-                            <div class="col-12">
-                                <label for="phone" class="form-label text-muted small fw-bold">Τηλέφωνο</label>
-                                <input type="tel" id="phone" class="form-control" placeholder="69xxxxxxxx"
-                                    pattern="69[0-9]{8}"
-                                    title="Ο αριθμός πρέπει να είναι κινητό τηλέφωνο 10 ψηφίων (ξεκινάει από 69), π.χ. 6912345678"
-                                    required>
-                            </div>
+							<div class="col-12">
+								<label for="phone" class="form-label text-muted small fw-bold">Τηλέφωνο</label>
+								<input type="tel" id="phone" class="form-control" placeholder="69xxxxxxxx"
+									pattern="69[0-9]{8}"
+									title="Ο αριθμός πρέπει να είναι κινητό τηλέφωνο 10 ψηφίων (ξεκινάει από 69), π.χ. 6912345678"
+									required>
+							</div>
 
-                            <div class="col-12">
-                                <button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold" id="toggleRegisterMap">
-                                    📍 Επιλογή διεύθυνσης στο χάρτη
-                                </button>
-                                <div id="registerMapContainer" class="d-none shadow-sm rounded overflow-hidden mb-3" style="height: 250px; border: 1px solid #dee2e6;">
-                                    <div id="registerMap" style="height: 100%;"></div>
-                                </div>
-                            </div>
+							<div class="col-12">
+								<div class="mb-3 position-relative">
+									<label for="registerAddressSearch" class="form-label">Αναζήτηση διεύθυνσης</label>
+									<input
+										type="text"
+										id="registerAddressSearch"
+										class="form-control"
+										placeholder="π.χ. Αγίου Αρτεμίου 12"
+										autocomplete="off"
+									>
+									<div id="registerAddressResults" class="list-group mt-2 d-none"></div>
+									</div>
+								<button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold" id="toggleRegisterMap">
+									📍 Επιλογή διεύθυνσης στο χάρτη
+								</button>
+								<div id="registerMapContainer" class="d-none shadow-sm rounded overflow-hidden mb-3" style="height: 250px; border: 1px solid #dee2e6;">
+									<div id="registerMap" style="height: 100%;"></div>
+								</div>
+							</div>
 
-                            <div class="col-12 mt-4">
-                                <button type="submit" class="btn btn-menu btn-lg w-100 fw-bold">Δημιουργία Λογαριασμού
-                                </button>
-                            </div>
+							<div class="col-12 mt-4">
+								<button type="submit" class="btn btn-menu btn-lg w-100 fw-bold">Δημιουργία Λογαριασμού
+								</button>
+							</div>
 
-                            <div class="col-12 text-center mt-3">
-                                <a href="login.html" class="text-decoration-none text-muted small">Έχετε ήδη λογαριασμό?
-                                    Συνδεθείτε</a>
-                            </div>
+							<div class="col-12 text-center mt-3">
+								<a href="login.html" class="text-decoration-none text-muted small">Έχετε ήδη λογαριασμό?
+									Συνδεθείτε</a>
+							</div>
 
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </main>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="../js/utils.js"></script>
-    <script src="../js/script.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+	<script src="../js/utils.js"></script>
+	<script src="../js/script.js"></script>
 </body>
 
 </html>

@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Setup Register Form Map
+    // Setup Register Form Map
     const toggleRegisterMap = document.getElementById('toggleRegisterMap');
     const registerMapContainer = document.getElementById('registerMapContainer');
     let registerMapObj = null;
@@ -67,25 +68,43 @@ document.addEventListener('DOMContentLoaded', () => {
     let registerLon = null;
 
     if (toggleRegisterMap && registerMapContainer) {
-        toggleRegisterMap.addEventListener('click', () => {
-            const isHidden = registerMapContainer.classList.contains('d-none');
-            registerMapContainer.classList.toggle('d-none');
-            
-            if (isHidden && !registerMapObj) {
-                registerMapObj = initLeafletMap('registerMap', async (lat, lon) => {
-                    registerLat = lat;
-                    registerLon = lon;
-                    const address = await reverseGeocode(lat, lon);
-                    if (address) {
-                        if (address.road) document.getElementById('street').value = address.road;
-                        if (address.house_number) document.getElementById('streetNumber').value = address.house_number;
-                        if (address.postcode) document.getElementById('zipCode').value = address.postcode;
-                    }
+    toggleRegisterMap.addEventListener('click', () => {
+        const isHidden = registerMapContainer.classList.contains('d-none');
+        registerMapContainer.classList.toggle('d-none');
+
+        if (isHidden && !registerMapObj) {
+        registerMapObj = initLeafletMap(
+            'registerMap',
+            async (lat, lon) => {
+            registerLat = lat;
+            registerLon = lon;
+
+            const address = await reverseGeocode(lat, lon);
+            fillAddressFields(address, {
+                streetId: 'street',
+                numberId: 'streetNumber',
+                zipId: 'zipCode'
+            });
+            },
+            {
+            searchInputId: 'registerAddressSearch',
+            resultsContainerId: 'registerAddressResults',
+            onAddressPicked: (selected) => {
+                registerLat = selected.lat;
+                registerLon = selected.lon;
+
+                fillAddressFields(selected.address, {
+                streetId: 'street',
+                numberId: 'streetNumber',
+                zipId: 'zipCode'
                 });
-            } else if (registerMapObj) {
-                setTimeout(() => registerMapObj.map.invalidateSize(), 100);
             }
-        });
+            }
+        );
+        } else if (registerMapObj) {
+        setTimeout(() => registerMapObj.map.invalidateSize(), 100);
+        }
+    });
     }
 
     // Setup Register Form
@@ -126,27 +145,43 @@ document.addEventListener('DOMContentLoaded', () => {
     let landingMapObj = null;
 
     if (toggleLandingMap && landingMapContainer) {
-        toggleLandingMap.addEventListener('click', () => {
-            const isHidden = landingMapContainer.classList.contains('d-none');
-            landingMapContainer.classList.toggle('d-none');
-            
-            if (isHidden && !landingMapObj) {
-                landingMapObj = initLeafletMap('landingMap', async (lat, lon) => {
-                    localStorage.setItem('guestLat', lat);
-                    localStorage.setItem('guestLon', lon);
-                    
-                    const address = await reverseGeocode(lat, lon);
-                    if (address) {
-                        if (address.road) document.getElementById('landingStreet').value = address.road;
-                        if (address.house_number) document.getElementById('landingNumber').value = address.house_number;
-                        if (address.postcode) document.getElementById('landingZip').value = address.postcode;
-                    }
+    toggleLandingMap.addEventListener('click', () => {
+        const isHidden = landingMapContainer.classList.contains('d-none');
+        landingMapContainer.classList.toggle('d-none');
+
+        if (isHidden && !landingMapObj) {
+        landingMapObj = initLeafletMap(
+            'landingMap',
+            async (lat, lon) => {
+            localStorage.setItem('guestLat', lat);
+            localStorage.setItem('guestLon', lon);
+
+            const address = await reverseGeocode(lat, lon);
+            fillAddressFields(address, {
+                streetId: 'landingStreet',
+                numberId: 'landingNumber',
+                zipId: 'landingZip'
+            });
+            },
+            {
+            searchInputId: 'landingAddressSearch',
+            resultsContainerId: 'landingAddressResults',
+            onAddressPicked: (selected) => {
+                localStorage.setItem('guestLat', selected.lat);
+                localStorage.setItem('guestLon', selected.lon);
+
+                fillAddressFields(selected.address, {
+                streetId: 'landingStreet',
+                numberId: 'landingNumber',
+                zipId: 'landingZip'
                 });
-            } else if (landingMapObj) {
-                // Ensure map is correctly sized when reshown
-                setTimeout(() => landingMapObj.map.invalidateSize(), 100);
             }
-        });
+            }
+        );
+        } else if (landingMapObj) {
+        setTimeout(() => landingMapObj.map.invalidateSize(), 100);
+        }
+    });
     }
 
     // Setup Landing Form
