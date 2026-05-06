@@ -10,6 +10,8 @@ dotenv.config();
 // Import routes
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
+const productRoutes = require('./routes/products');
+const categoryRoutes = require('./routes/categories');
 
 const app = express();
 const PORT = process.env.SERVER_PORT || 4005;
@@ -26,6 +28,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/categories', categoryRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

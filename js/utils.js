@@ -168,9 +168,15 @@ function updateAuthNav() {
 	const userStr = localStorage.getItem('user');
 	if (userStr) {
 		const user = JSON.parse(userStr);
-		const firstName = (user.firstName && user.firstName !== 'undefined') ? user.firstName : '';
-		const lastName = (user.lastName && user.lastName !== 'undefined') ? user.lastName : '';
-		const displayName = (firstName && lastName) ? `${firstName} ${lastName}`.trim() : (user.name || user.email || 'Λογαριασμός');
+		let displayName = 'Λογαριασμός';
+		
+		if (user.accountType === 'RESTAURANT') {
+			displayName = user.restaurantName || 'Κατάστημα';
+		} else {
+			const firstName = (user.firstName && user.firstName !== 'undefined') ? user.firstName : '';
+			const lastName = (user.lastName && user.lastName !== 'undefined') ? user.lastName : '';
+			displayName = (firstName && lastName) ? `${firstName} ${lastName}`.trim() : (user.name || user.email || 'Λογαριασμός');
+		}
 		authNav.innerHTML = `
 			<a href="${isRoot ? 'pages/account.html' : 'account.html'}" class="btn btn-sm ${btnOutline} fw-bold me-2">${displayName}</a>
 			<button onclick="logout()" class="btn btn-sm btn-danger fw-bold">Αποσύνδεση</button>
