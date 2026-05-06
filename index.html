@@ -44,25 +44,26 @@
                     </div>
                 </div>
 
-                <div class="mb-3 position-relative">
-                    <label for="landingAddressSearch" class="form-label">Αναζήτηση διεύθυνσης</label>
-                    <input
-                        type="text"
-                        id="landingAddressSearch"
-                        class="form-control"
-                        placeholder="π.χ. Ερμού 12"
-                        autocomplete="off"
-                    >
-                    <div id="landingAddressResults" class="list-group mt-2 d-none"></div>
-                    </div>
-
                 <div class="mb-4">
 
                     <button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold" id="toggleLandingMap">
                         📍 Επιλογή στο χάρτη
                     </button>
-                    <div id="landingMapContainer" class="d-none shadow-sm rounded overflow-hidden mb-3" style="height: 250px; border: 1px solid #dee2e6;">
-                        <div id="landingMap" style="height: 100%;"></div>
+
+                    <div id="landingMapContainer" class="d-none mt-3">
+                        <div class="mb-3 position-relative">
+                            <label for="landingAddressSearch" class="form-label">Αναζήτηση διεύθυνσης</label>
+                            <input
+                            type="text"
+                            id="landingAddressSearch"
+                            class="form-control"
+                            placeholder="π.χ. Ερμού 12"
+                            autocomplete="off"
+                            >
+                            <div id="landingAddressResults" class="list-group mt-2 d-none"></div>
+                        </div>
+
+                        <div id="landingMap" style="height: 300px; border-radius: 16px;"></div>
                     </div>
                 </div>
 

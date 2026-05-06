@@ -56,27 +56,51 @@ function renderBrowsePageWithAddresses(addresses, user, guestAddress) {
             if (toggleMapBtn) {
                 toggleMapBtn.addEventListener('click', () => {
                     const mapDiv = document.getElementById('browseFirstMapContainer');
-                    if (mapDiv) {
-                        mapDiv.classList.toggle('d-none');
-                        if (!mapDiv.classList.contains('d-none')) {
-                            if (!firstMapObj) {
-                                firstMapObj = initLeafletMap('browseFirstMap', async (lat, lon) => {
-                                    browseLat = lat;
-                                    browseLon = lon;
-                                    const addr = await reverseGeocode(lat, lon);
-                                    if (addr) {
-                                        if (addr.road) document.getElementById('browseFirstStreet').value = addr.road;
-                                        if (addr.house_number) document.getElementById('browseFirstNumber').value = addr.house_number;
-                                        if (addr.postcode) document.getElementById('browseFirstZipCode').value = addr.postcode;
-                                    }
-                                });
-                            } else {
-                                setTimeout(() => firstMapObj.map.invalidateSize(), 100);
-                            }
+                    if (!mapDiv) return;
+
+                    const isHidden = mapDiv.classList.contains('d-none');
+                    mapDiv.classList.toggle('d-none');
+
+                    if (isHidden) {
+                    setTimeout(() => {
+                        document.getElementById('browseFirstAddressSearch')?.focus();
+                    }, 150);
+                    }
+
+                    if (isHidden && !firstMapObj) {
+                    firstMapObj = initLeafletMap(
+                        'browseFirstMap',
+                        async (lat, lon) => {
+                        browseLat = lat;
+                        browseLon = lon;
+
+                        const addr = await reverseGeocode(lat, lon);
+                        fillAddressFields(addr, {
+                            streetId: 'browseFirstStreet',
+                            numberId: 'browseFirstNumber',
+                            zipId: 'browseFirstZipCode'
+                        });
+                        },
+                        {
+                        searchInputId: 'browseFirstAddressSearch',
+                        resultsContainerId: 'browseFirstAddressResults',
+                        onAddressPicked: (selected) => {
+                            browseLat = selected.lat;
+                            browseLon = selected.lon;
+
+                            fillAddressFields(selected.address, {
+                            streetId: 'browseFirstStreet',
+                            numberId: 'browseFirstNumber',
+                            zipId: 'browseFirstZipCode'
+                            });
                         }
+                        }
+                    );
+                    } else if (firstMapObj) {
+                    setTimeout(() => firstMapObj.map.invalidateSize(), 100);
                     }
                 });
-            }
+                }
 
             firstSaveBtn.addEventListener('click', async () => {
                 const street = document.getElementById('browseFirstStreet').value.trim();
@@ -158,25 +182,60 @@ function renderBrowsePageWithAddresses(addresses, user, guestAddress) {
 
         if (user) {
             toggleBtn.addEventListener('click', () => {
-                console.log('Toggle button clicked! Current state - form hidden:', inlineForm.classList.contains('d-none'));
-                inlineForm.classList.toggle('d-none');
-                if (!inlineForm.classList.contains('d-none')) {
-                    if (!inlineMapObj) {
-                        inlineMapObj = initLeafletMap('browseInlineMap', async (lat, lon) => {
-                            browseLat = lat;
-                            browseLon = lon;
-                            const addr = await reverseGeocode(lat, lon);
-                            if (addr) {
-                                if (addr.road) document.getElementById('browseNewStreet').value = addr.road;
-                                if (addr.house_number) document.getElementById('browseNewNumber').value = addr.house_number;
-                                if (addr.postcode) document.getElementById('browseNewZipCode').value = addr.postcode;
-                            }
+            console.log('Toggle button clicked! Current state - form hidden:', inlineForm.classList.contains('d-none'));
+            inlineForm.classList.toggle('d-none');
+            });
+
+            const toggleBrowseMap = document.getElementById('toggleBrowseMap');
+            const browseMapContainer = document.getElementById('browseMapContainer');
+
+            if (toggleBrowseMap && browseMapContainer && !toggleBrowseMap.dataset.wired) {
+            toggleBrowseMap.dataset.wired = '1';
+
+            toggleBrowseMap.addEventListener('click', () => {
+                const isHidden = browseMapContainer.classList.contains('d-none');
+                browseMapContainer.classList.toggle('d-none');
+
+                if (isHidden) {
+                setTimeout(() => {
+                    document.getElementById('browseAddressSearch')?.focus();
+                }, 150);
+                }
+
+                if (isHidden && !inlineMapObj) {
+                inlineMapObj = initLeafletMap(
+                    'browseMap',
+                    async (lat, lon) => {
+                    browseLat = lat;
+                    browseLon = lon;
+
+                    const addr = await reverseGeocode(lat, lon);
+                    fillAddressFields(addr, {
+                        streetId: 'browseNewStreet',
+                        numberId: 'browseNewNumber',
+                        zipId: 'browseNewZipCode'
+                    });
+                    },
+                    {
+                    searchInputId: 'browseAddressSearch',
+                    resultsContainerId: 'browseAddressResults',
+                    onAddressPicked: (selected) => {
+                        browseLat = selected.lat;
+                        browseLon = selected.lon;
+
+                        fillAddressFields(selected.address, {
+                        streetId: 'browseNewStreet',
+                        numberId: 'browseNewNumber',
+                        zipId: 'browseNewZipCode'
                         });
-                    } else {
-                        setTimeout(() => inlineMapObj.map.invalidateSize(), 100);
                     }
+                    }
+                );
+                } else if (inlineMapObj) {
+                setTimeout(() => inlineMapObj.map.invalidateSize(), 100);
                 }
             });
+            }
 
             if (saveBtn) {
                 saveBtn.addEventListener('click', async () => {

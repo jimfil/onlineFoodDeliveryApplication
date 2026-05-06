@@ -103,13 +103,25 @@
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold" id="toggleAccountMap">
+                        <div class="mb-3 pd-3">
+                            <button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold mt-4 border rounded" id="toggleAccountMap">
                                 📍 Επιλογή στο χάρτη
                             </button>
-                            <div id="accountMapContainer" class="d-none shadow-sm rounded overflow-hidden mb-3" style="height: 250px; border: 1px solid #dee2e6;">
-                                <div id="accountMap" style="height: 100%;"></div>
-                            </div>
+                        <div id="accountMapContainer" class="d-none mt-3">
+                            <div class="mb-3 position-relative">
+                                <label for="accountAddressSearch" class="form-label">Αναζήτηση διεύθυνσης</label>
+                                <input
+                                type="text"
+                                id="accountAddressSearch"
+                                class="form-control"
+                                placeholder="π.χ. Ερμού 12"
+                                autocomplete="off"
+                                >
+                                <div id="accountAddressResults" class="list-group mt-2 d-none"></div>
+                        </div>
+
+                        <div id="accountMap" style="height: 300px; border-radius: 16px;"></div>
+                        </div>
                         </div>
 
                         <div class="text-end">

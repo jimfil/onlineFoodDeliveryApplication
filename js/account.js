@@ -113,24 +113,49 @@ function renderAccountPage() {
     let selectedLon = null;
 
     if (toggleAccountMap && accountMapContainer) {
-        toggleAccountMap.addEventListener('click', () => {
-            const isHidden = accountMapContainer.classList.contains('d-none');
-            accountMapContainer.classList.toggle('d-none');
-            if (isHidden && !accountMapObj) {
-                accountMapObj = initLeafletMap('accountMap', async (lat, lon) => {
-                    selectedLat = lat;
-                    selectedLon = lon;
-                    const addr = await reverseGeocode(lat, lon);
-                    if (addr) {
-                        if (addr.road) document.getElementById('newStreet').value = addr.road;
-                        if (addr.house_number) document.getElementById('newStreetNumber').value = addr.house_number;
-                        if (addr.postcode) document.getElementById('newZipCode').value = addr.postcode;
-                    }
+    toggleAccountMap.addEventListener('click', () => {
+        const isHidden = accountMapContainer.classList.contains('d-none');
+        accountMapContainer.classList.toggle('d-none');
+
+        if (isHidden) {
+        setTimeout(() => {
+            document.getElementById('accountAddressSearch')?.focus();
+        }, 150);
+        }
+
+        if (isHidden && !accountMapObj) {
+        accountMapObj = initLeafletMap(
+            'accountMap',
+            async (lat, lon) => {
+            selectedLat = lat;
+            selectedLon = lon;
+
+            const addr = await reverseGeocode(lat, lon);
+            fillAddressFields(addr, {
+                streetId: 'newStreet',
+                numberId: 'newStreetNumber',
+                zipId: 'newZipCode'
+            });
+            },
+            {
+            searchInputId: 'accountAddressSearch',
+            resultsContainerId: 'accountAddressResults',
+            onAddressPicked: (selected) => {
+                selectedLat = selected.lat;
+                selectedLon = selected.lon;
+
+                fillAddressFields(selected.address, {
+                streetId: 'newStreet',
+                numberId: 'newStreetNumber',
+                zipId: 'newZipCode'
                 });
-            } else if (accountMapObj) {
-                setTimeout(() => accountMapObj.map.invalidateSize(), 100);
             }
-        });
+            }
+        );
+        } else if (accountMapObj) {
+        setTimeout(() => accountMapObj.map.invalidateSize(), 100);
+        }
+    });
     }
 
     addAddressForm.addEventListener('submit', async (e) => {

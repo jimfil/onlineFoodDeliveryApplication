@@ -108,8 +108,24 @@
                                             </div>
                                         </div>
                                         <div class="mb-2">
-                                            <div id="browseInlineMap"
-                                                style="height: 180px; border: 1px solid #dee2e6; border-radius: 4px;">
+                                            <button type="button" id="toggleBrowseMap" class="btn btn-outline-secondary w-100 mt-2">
+                                            📍 Επιλογή στο χάρτη
+                                            </button>
+
+                                            <div id="browseMapContainer" class="d-none mt-3">
+                                            <div class="mb-3 position-relative">
+                                                <label for="browseAddressSearch" class="form-label">Αναζήτηση διεύθυνσης</label>
+                                                <input
+                                                type="text"
+                                                id="browseAddressSearch"
+                                                class="form-control"
+                                                placeholder="π.χ. Ερμού 12"
+                                                autocomplete="off"
+                                                >
+                                                <div id="browseAddressResults" class="list-group mt-2 d-none"></div>
+                                            </div>
+
+                                            <div id="browseMap" style="height: 300px; border-radius: 16px;"></div>
                                             </div>
                                         </div>
                                         <button id="browseSaveAddress"

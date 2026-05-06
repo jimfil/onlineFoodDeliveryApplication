@@ -149,6 +149,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const isHidden = landingMapContainer.classList.contains('d-none');
         landingMapContainer.classList.toggle('d-none');
 
+        if (isHidden) {
+            setTimeout(() => {
+                document.getElementById('landingAddressSearch')?.focus();
+            }, 150);
+            }
+
         if (isHidden && !landingMapObj) {
         landingMapObj = initLeafletMap(
             'landingMap',

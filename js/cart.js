@@ -108,45 +108,81 @@ function renderCartPageWithAddresses(addresses, user, cartLat, cartLon) {
     const toggleBtn = document.getElementById('cartToggleAddForm');
     const inlineForm = document.getElementById('cartInlineAddressForm');
     const saveBtn = document.getElementById('cartSaveAddress');
+    const toggleCartMap = document.getElementById('toggleCartMap');
+    const cartMapContainer = document.getElementById('cartMapContainer');
     let cartInlineMapObj = null;
 
     if (toggleBtn && inlineForm && !toggleBtn.dataset.wired) {
-        toggleBtn.dataset.wired = '1';
-        toggleBtn.addEventListener('click', () => {
-            inlineForm.classList.toggle('d-none');
-            if (!inlineForm.classList.contains('d-none') && !cartInlineMapObj) {
-                cartInlineMapObj = initLeafletMap('cartInlineMap', async (lat, lon) => {
-                    cartLat = lat;
-                    cartLon = lon;
-                    const addr = await reverseGeocode(lat, lon);
-                    if (addr) {
-                        if (addr.road) document.getElementById('cartNewStreet').value = addr.road;
-                        if (addr.house_number) document.getElementById('cartNewNumber').value = addr.house_number;
-                        if (addr.postcode) document.getElementById('cartNewZipCode').value = addr.postcode;
-                    }
-                });
-            } else if (cartInlineMapObj) {
-                setTimeout(() => cartInlineMapObj.map.invalidateSize(), 100);
-            }
-        });
+    toggleBtn.dataset.wired = '1';
 
-        if (saveBtn) {
-            saveBtn.addEventListener('click', async () => {
-                const street = document.getElementById('cartNewStreet').value.trim();
-                const number = document.getElementById('cartNewNumber').value.trim();
-                const zip = document.getElementById('cartNewZipCode')?.value.trim() ?? '';
-                if (!street || !number) return;
-                
-                const success = await addAddressToUser(street, number, zip, cartLat, cartLon);
-                if (success) {
-                    cartLat = null;
-                    cartLon = null;
-                    renderCartPage();
-                } else {
-                    alert('Σφάλμα κατά την αποθήκευση της διεύθυνσης.');
-                }
-            });
+    toggleBtn.addEventListener('click', () => {
+        inlineForm.classList.toggle('d-none');
+    });
+
+    if (toggleCartMap && cartMapContainer) {
+        toggleCartMap.addEventListener('click', () => {
+        const isHidden = cartMapContainer.classList.contains('d-none');
+        cartMapContainer.classList.toggle('d-none');
+
+        if (isHidden) {
+            setTimeout(() => {
+            document.getElementById('cartAddressSearch')?.focus();
+            }, 150);
         }
+
+        if (isHidden && !cartInlineMapObj) {
+            cartInlineMapObj = initLeafletMap(
+            'cartMap',
+            async (lat, lon) => {
+                cartLat = lat;
+                cartLon = lon;
+
+                const addr = await reverseGeocode(lat, lon);
+                fillAddressFields(addr, {
+                streetId: 'cartNewStreet',
+                numberId: 'cartNewNumber',
+                zipId: 'cartNewZipCode'
+                });
+            },
+            {
+                searchInputId: 'cartAddressSearch',
+                resultsContainerId: 'cartAddressResults',
+                onAddressPicked: (selected) => {
+                cartLat = selected.lat;
+                cartLon = selected.lon;
+
+                fillAddressFields(selected.address, {
+                    streetId: 'cartNewStreet',
+                    numberId: 'cartNewNumber',
+                    zipId: 'cartNewZipCode'
+                });
+                }
+            }
+            );
+        } else if (cartInlineMapObj) {
+            setTimeout(() => cartInlineMapObj.map.invalidateSize(), 100);
+        }
+        });
+    }
+
+    if (saveBtn) {
+        saveBtn.addEventListener('click', async () => {
+        const street = document.getElementById('cartNewStreet').value.trim();
+        const number = document.getElementById('cartNewNumber').value.trim();
+        const zip = document.getElementById('cartNewZipCode')?.value.trim() ?? '';
+
+        if (!street || !number) return;
+
+        const success = await addAddressToUser(street, number, zip, cartLat, cartLon);
+        if (success) {
+            cartLat = null;
+            cartLon = null;
+            renderCartPage();
+        } else {
+            alert('Σφάλμα κατά την αποθήκευση της διεύθυνσης.');
+        }
+        });
+    }
     }
     renderCartItems();
 }

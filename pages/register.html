@@ -71,6 +71,22 @@
 							</div>
 
 							<div class="col-12">
+				
+								<button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold" id="toggleRegisterMap">
+									📍 Επιλογή διεύθυνσης στο χάρτη</button>
+
+								<div id="registerMapContainer" class="d-none mt-3">
+								<div class="mb-3 position-relative">
+									<label for="registerAddressSearch" class="form-label">Αναζήτηση διεύθυνσης</label>
+									<input type="text" id="registerAddressSearch" class="form-control" placeholder="π.χ. Ερμού 12" autocomplete="off">
+									<div id="registerAddressResults" class="list-group mt-2 d-none"></div>
+								</div>
+
+								<div id="registerMap" style="height: 300px; border-radius: 16px;"></div>
+								</div>
+							</div>
+
+							<div class="col-12">
 								<label for="email" class="form-label text-muted small fw-bold">Email</label>
 								<input type="email" id="email" class="form-control" placeholder="example@example.com"
 									required>
@@ -100,24 +116,8 @@
 									required>
 							</div>
 
-							<div class="col-12">
-								<div class="mb-3 position-relative">
-									<label for="registerAddressSearch" class="form-label">Αναζήτηση διεύθυνσης</label>
-									<input
-										type="text"
-										id="registerAddressSearch"
-										class="form-control"
-										placeholder="π.χ. Αγίου Αρτεμίου 12"
-										autocomplete="off"
-									>
-									<div id="registerAddressResults" class="list-group mt-2 d-none"></div>
-									</div>
-								<button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold" id="toggleRegisterMap">
-									📍 Επιλογή διεύθυνσης στο χάρτη
-								</button>
-								<div id="registerMapContainer" class="d-none shadow-sm rounded overflow-hidden mb-3" style="height: 250px; border: 1px solid #dee2e6;">
-									<div id="registerMap" style="height: 100%;"></div>
-								</div>
+							
+                    </div>
 							</div>
 
 							<div class="col-12 mt-4">
