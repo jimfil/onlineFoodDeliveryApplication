@@ -251,10 +251,10 @@ export async function reorderItem(restaurantId, type, id, direction) {
 }
 
 /** Update restaurant details and operating hours. */
-export async function updateRestaurantSettings(userId, { name, estimatedPreparationTime, operatingHours }) {
+export async function updateRestaurantSettings(userId, { name, estimatedPreparationTime, operatingHours, phone }) {
   await pool.execute(
-    'UPDATE Restaurant SET name = ?, estimated_preparation_time = ?, operating_hours = ? WHERE id = ?',
-    [name, estimatedPreparationTime || null, operatingHours || null, userId]
+    'UPDATE Restaurant SET name = ?, estimated_preparation_time = ?, operating_hours = ?, contact_phone = ? WHERE id = ?',
+    [name, estimatedPreparationTime, operatingHours, phone, userId]
   );
 }
 

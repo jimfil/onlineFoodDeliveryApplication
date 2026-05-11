@@ -32,6 +32,7 @@ export async function processLogin(req, res) {
       accountType:  user.account_type,
       firstName:    user.first_name || null,
       lastName:     user.last_name  || null,
+      contactPhone: user.contact_phone || null,
       restaurantName: user.restaurant_name || null,
       preparationTime: user.estimated_preparation_time || null
     };
@@ -75,7 +76,8 @@ export async function processRegister(req, res) {
       email:       newUser.email,
       accountType: 'CUSTOMER',
       firstName:   newUser.firstName,
-      lastName:    newUser.lastName
+      lastName:    newUser.lastName,
+      contactPhone: newUser.contactPhone
     };
     // Clear guest address on register
     delete req.session.deliveryAddress;
@@ -111,7 +113,8 @@ export async function processRegisterRestaurant(req, res) {
       id:            restaurant.id,
       email:         restaurant.email,
       accountType:   'RESTAURANT',
-      restaurantName: restaurant.businessName
+      restaurantName: restaurant.businessName,
+      contactPhone:  phone
     };
     req.flash('success', 'Το εστιατόριό σας καταχωρήθηκε!');
     res.redirect('/manage');

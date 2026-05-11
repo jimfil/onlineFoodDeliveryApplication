@@ -9,7 +9,8 @@ import * as orderModel from '../model/order-model.mjs';
 export async function showAccount(req, res) {
   try {
     const addresses = await userModel.getAddresses(req.session.user.id);
-    res.render('account', { addresses });
+    const customer = await userModel.getCustomerById(req.session.user.id);
+    res.render('account', { addresses, customer });
   } catch (err) {
     console.error('Account error:', err);
     res.render('error', { message: 'Αδυναμία φόρτωσης λογαριασμού.' });
@@ -24,6 +25,7 @@ export async function updateProfile(req, res) {
     // Update session data too
     req.session.user.firstName = firstName;
     req.session.user.lastName  = lastName;
+    req.session.user.contactPhone = contactPhone;
     req.flash('success', 'Τα στοιχεία σας ενημερώθηκαν.');
   } catch (err) {
     console.error('Profile update error:', err);

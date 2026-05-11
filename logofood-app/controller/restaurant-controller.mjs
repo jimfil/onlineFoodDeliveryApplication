@@ -83,22 +83,25 @@ export async function deleteProduct(req, res) {
 }
 
 export async function updateSettings(req, res) {
-  const { name, estimatedPreparationTime, operatingHours } = req.body;
+  const { name, estimatedPreparationTime, operatingHours, phone } = req.body;
   try {
     const restaurant = await restaurantModel.getRestaurantByUserId(req.session.user.id);
     const finalName = name || restaurant.name;
     const finalPrep = estimatedPreparationTime || restaurant.estimated_preparation_time;
     const finalHours = operatingHours || restaurant.operating_hours;
+    const finalPhone = phone || restaurant.contact_phone;
 
     await restaurantModel.updateRestaurantSettings(req.session.user.id, { 
       name: finalName, 
       estimatedPreparationTime: finalPrep,
-      operatingHours: finalHours
+      operatingHours: finalHours,
+      phone: finalPhone
     });
     
     // Update session info if needed
     req.session.user.restaurantName = finalName;
     req.session.user.preparationTime  = finalPrep;
+    req.session.user.contactPhone = finalPhone;
     
     req.flash('success', 'Τα στοιχεία εστιατορίου ενημερώθηκαν.');
   } catch (err) {

@@ -34,7 +34,7 @@
                                                 class="list-group-item d-flex gap-3 py-3 border-0 bg-transparent mb-0">
                                                 <input class="form-check-input flex-shrink-0 address-radio" type="radio"
                                                     name="addressId" value="{{id}}" data-floor="{{floor}}"
-                                                    data-comments="{{comments}}" {{#if @first}}checked{{/if}}>
+                                                    data-comments="{{comments}}" data-phone="{{phone}}" {{#if @first}}checked{{/if}}>
                                                 <span class="pt-1 small">
                                                     <strong>{{street}} {{street_number}}</strong>
                                                     {{#if zip_code}}<br><span
@@ -54,14 +54,21 @@
 
                         <div class="row g-3 mb-4 mt-2">
                             <div class="col-md-6">
-                                <label class="form-label text-muted small fw-bold">Όροφος/Διαμέρισμα
-                                    (Απαραίτητο)</label>
-                                <input type="text" name="floor" id="selectedFloor" class="form-control"
-                                    placeholder="π.χ. 3ος / Παπαδόπουλος" required>
+                                <div class="mb-3">
+                                    <label class="form-label text-muted small fw-bold">Όροφος/Διαμέρισμα (Απαραίτητο)</label>
+                                    <input type="text" name="floor" id="selectedFloor" class="form-control"
+                                        placeholder="π.χ. 3ος / Παπαδόπουλος" required>
+                                </div>
+                                <div>
+                                    <label class="form-label text-muted small fw-bold">Τηλέφωνο (Απαραίτητο)</label>
+                                    <input type="tel" name="phone" id="selectedPhone" class="form-control"
+                                        placeholder="π.χ. 6912345678" value="{{customer.contact_phone}}" required>
+                                </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-6 d-flex flex-column">
                                 <label class="form-label text-muted small fw-bold">Σχόλια Διανομέα (Προαιρετικό)</label>
-                                <textarea name="comments" id="selectedComments" class="form-control" rows="1"
+                                <textarea name="comments" id="selectedComments" class="form-control flex-grow-1"
+                                    style="min-height: 110px;"
                                     placeholder="π.χ. Το κουδούνι δεν λειτουργεί..."></textarea>
                             </div>
                         </div>
@@ -78,7 +85,7 @@
                             <div class="alert alert-info border-0 rounded-4 mb-4">
                                 <p class="mb-1 fw-bold small">Είσαι επισκέπτης</p>
                                 <p class="mb-0 small text-muted">Συνδεθείτε για να χρησιμοποιήσετε τις αποθηκευμένες σας
-                                    διευθύνσεις ή συμπληρώστε τα παρακάτω.</p>
+                                    διευθύνσεις και την δυνατότητα Live Tracking ή συμπληρώστε τα παρακάτω.</p>
                             </div>
                             <div class="row g-3">
                                 <div class="col-md-5">
@@ -113,20 +120,23 @@
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label text-muted small fw-bold">Όροφος/Διαμέρισμα
-                                        (Απαραίτητο)</label>
-                                    <input type="text" name="floor" class="form-control"
-                                        placeholder="π.χ. 3ος / Παπαδόπουλος" required>
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small fw-bold">Όροφος/Διαμέρισμα (Απαραίτητο)</label>
+                                        <input type="text" name="floor" class="form-control"
+                                            placeholder="π.χ. 3ος / Παπαδόπουλος" required>
+                                    </div>
+                                    <div>
+                                        <label class="form-label text-muted small fw-bold">Τηλέφωνο (Απαραίτητο)</label>
+                                        <input type="tel" name="phone" class="form-control"
+                                            placeholder="π.χ. 6912345678" required>
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-6 d-flex flex-column">
                                     <label class="form-label text-muted small fw-bold">Σχόλια για τον διανομέα</label>
-                                    <textarea name="comments" class="form-control" rows="1"
+                                    <textarea name="comments" class="form-control flex-grow-1"
+                                        style="min-height: 110px;"
                                         placeholder="π.χ. Το κουδούνι δεν λειτουργεί..."></textarea>
                                 </div>
-                            </div>
-                            <div class="mt-4">
-                                <a href="/login" class="btn btn-outline-primary btn-sm w-100 fw-bold py-2">Ή Σύνδεση για
-                                    ολοκλήρωση</a>
                             </div>
                         </div>
                     </form>
@@ -149,7 +159,8 @@
                                 <span class="text-muted small">{{formatPrice price}}</span>
                             </div>
                             <div class="d-flex align-items-center gap-3">
-                                <div class="d-flex align-items-center bg-white border border-2 border-secondary rounded-pill px-2 py-2 shadow-sm" style="line-height: 1;">
+                                <div class="d-flex align-items-center bg-white border border-2 border-secondary rounded-pill px-2 py-2 shadow-sm"
+                                    style="line-height: 1;">
                                     <button
                                         class="btn btn-danger btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center"
                                         style="width: 24px; height: 24px;"
@@ -292,8 +303,13 @@
             const updateFields = () => {
                 const selected = document.querySelector('.address-radio:checked');
                 if (selected) {
-                    floorInput.value = selected.dataset.floor || '';
-                    commentsInput.value = selected.dataset.comments || '';
+                    if (floorInput) floorInput.value = selected.dataset.floor || '';
+                    if (commentsInput) commentsInput.value = selected.dataset.comments || '';
+                    const phoneInput = document.getElementById('selectedPhone');
+                    if (phoneInput) {
+                        // Priority: Address-specific phone > Customer profile phone
+                        phoneInput.value = selected.dataset.phone || '{{customer.contact_phone}}' || '';
+                    }
                 }
             };
             radios.forEach(r => r.addEventListener('change', updateFields));
