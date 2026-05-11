@@ -5,112 +5,131 @@
     {{#if cart.length}}
     <div class="row g-4">
         <div class="col-lg-8">
-            
+
             {{!-- Step 1: Delivery --}}
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body p-4">
                     <h5 class="fw-bold mb-4">
                         <span class="badge custom-number me-2">1</span>Στοιχεία Παράδοσης
                     </h5>
-                    
+
                     {{#if user}}
-                        <form id="checkoutForm" method="POST" action="/cart/checkout">
+                    <form id="checkoutForm" method="POST" action="/cart/checkout">
                         {{#if addresses.length}}
-                            <div class="accordion mb-4" id="cartAddressAccordion">
-                                <div class="accordion-item border-0 bg-light rounded-4 overflow-hidden">
-                                    <h2 class="accordion-header">
-                                        <button class="accordion-button fw-bold bg-light" type="button" 
-                                                data-bs-toggle="collapse" data-bs-target="#collapseCartAddresses">
-                                            <i class="bi bi-geo-alt-fill me-2 text-primary"></i>
-                                            Επιλέξτε Διεύθυνση Παράδοσης ({{addresses.length}})
-                                        </button>
-                                    </h2>
-                                    <div id="collapseCartAddresses" class="accordion-collapse collapse show" data-bs-parent="#cartAddressAccordion">
-                                        <div class="accordion-body p-0">
-                                            <div class="list-group list-group-flush">
-                                                {{#each addresses}}
-                                                <label class="list-group-item d-flex gap-3 py-3 border-0 bg-transparent mb-0">
-                                                    <input class="form-check-input flex-shrink-0 address-radio" type="radio" name="addressId" 
-                                                           value="{{id}}" data-floor="{{floor}}" data-comments="{{comments}}" {{#if @first}}checked{{/if}}>
-                                                    <span class="pt-1 small">
-                                                        <strong>{{street}} {{street_number}}</strong>
-                                                        {{#if zip_code}}<br><span class="text-muted">{{zip_code}}</span>{{/if}}
-                                                    </span>
-                                                </label>
-                                                {{/each}}
-                                                <a href="/account" class="list-group-item list-group-item-action py-3 text-primary fw-bold text-center border-dashed border-0">
-                                                    + Προσθήκη/Διαχείριση διευθύνσεων
-                                                </a>
-                                            </div>
+                        <div class="accordion mb-4" id="cartAddressAccordion">
+                            <div class="accordion-item border-0 bg-light rounded-4 overflow-hidden">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button fw-bold bg-light" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#collapseCartAddresses">
+                                        <i class="bi bi-geo-alt-fill me-2 text-primary"></i>
+                                        Επιλέξτε Διεύθυνση Παράδοσης ({{addresses.length}})
+                                    </button>
+                                </h2>
+                                <div id="collapseCartAddresses" class="accordion-collapse collapse show"
+                                    data-bs-parent="#cartAddressAccordion">
+                                    <div class="accordion-body p-0">
+                                        <div class="list-group list-group-flush">
+                                            {{#each addresses}}
+                                            <label
+                                                class="list-group-item d-flex gap-3 py-3 border-0 bg-transparent mb-0">
+                                                <input class="form-check-input flex-shrink-0 address-radio" type="radio"
+                                                    name="addressId" value="{{id}}" data-floor="{{floor}}"
+                                                    data-comments="{{comments}}" {{#if @first}}checked{{/if}}>
+                                                <span class="pt-1 small">
+                                                    <strong>{{street}} {{street_number}}</strong>
+                                                    {{#if zip_code}}<br><span
+                                                        class="text-muted">{{zip_code}}</span>{{/if}}
+                                                </span>
+                                            </label>
+                                            {{/each}}
+                                            <a href="/account"
+                                                class="list-group-item list-group-item-action py-3 text-primary fw-bold text-center border-dashed border-0">
+                                                + Προσθήκη/Διαχείριση διευθύνσεων
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            
-                            <div class="row g-3 mb-4 mt-2">
-                                <div class="col-md-6">
-                                    <label class="form-label text-muted small fw-bold">Όροφος/Διαμέρισμα (Απαραίτητο)</label>
-                                    <input type="text" name="floor" id="selectedFloor" class="form-control" placeholder="π.χ. 3ος / Παπαδόπουλος" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label text-muted small fw-bold">Σχόλια Διανομέα (Προαιρετικό)</label>
-                                    <textarea name="comments" id="selectedComments" class="form-control" rows="1" placeholder="π.χ. Το κουδούνι δεν λειτουργεί..."></textarea>
-                                </div>
+                        </div>
+
+                        <div class="row g-3 mb-4 mt-2">
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small fw-bold">Όροφος/Διαμέρισμα
+                                    (Απαραίτητο)</label>
+                                <input type="text" name="floor" id="selectedFloor" class="form-control"
+                                    placeholder="π.χ. 3ος / Παπαδόπουλος" required>
                             </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small fw-bold">Σχόλια Διανομέα (Προαιρετικό)</label>
+                                <textarea name="comments" id="selectedComments" class="form-control" rows="1"
+                                    placeholder="π.χ. Το κουδούνι δεν λειτουργεί..."></textarea>
+                            </div>
+                        </div>
                         {{else}}
-                            <div class="alert alert-warning border-0 rounded-4">
-                                Δεν έχεις αποθηκευμένη διεύθυνση. <a href="/account" class="fw-bold">Πρόσθεσε μία εδώ.</a>
-                            </div>
+                        <div class="alert alert-warning border-0 rounded-4">
+                            Δεν έχεις αποθηκευμένη διεύθυνση. <a href="/account" class="fw-bold">Πρόσθεσε μία εδώ.</a>
+                        </div>
                         {{/if}}
-                        </form>
+                    </form>
                     {{else}}
-                        {{!-- Guest Address Section (Matching cart.html) --}}
-                        <form id="checkoutForm" method="POST" action="/cart/checkout">
-                            <div id="guestAddressSection">
-                                <div class="alert alert-info border-0 rounded-4 mb-4">
-                                    <p class="mb-1 fw-bold small">Είσαι επισκέπτης</p>
-                                    <p class="mb-0 small text-muted">Συνδεθείτε για να χρησιμοποιήσετε τις αποθηκευμένες σας διευθύνσεις ή συμπληρώστε τα παρακάτω.</p>
+                    {{!-- Guest Address Section (Matching cart.html) --}}
+                    <form id="checkoutForm" method="POST" action="/cart/checkout">
+                        <div id="guestAddressSection">
+                            <div class="alert alert-info border-0 rounded-4 mb-4">
+                                <p class="mb-1 fw-bold small">Είσαι επισκέπτης</p>
+                                <p class="mb-0 small text-muted">Συνδεθείτε για να χρησιμοποιήσετε τις αποθηκευμένες σας
+                                    διευθύνσεις ή συμπληρώστε τα παρακάτω.</p>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-5">
+                                    <label class="form-label text-muted small fw-bold">Οδός</label>
+                                    <input type="text" name="street" id="guestStreet" class="form-control"
+                                        placeholder="π.χ. Ερμού" value="{{deliveryAddress.street}}">
                                 </div>
-                                <div class="row g-3">
-                                    <div class="col-md-5">
-                                        <label class="form-label text-muted small fw-bold">Οδός</label>
-                                        <input type="text" name="street" id="guestStreet" class="form-control" placeholder="π.χ. Ερμού" value="{{deliveryAddress.street}}">
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label text-muted small fw-bold">Αριθμός</label>
-                                        <input type="text" name="streetNumber" id="guestNumber" class="form-control" placeholder="Αρ." value="{{deliveryAddress.streetNumber}}">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label text-muted small fw-bold">Τ.Κ.</label>
-                                        <input type="text" name="zipCode" id="guestZip" class="form-control" placeholder="Τ.Κ." value="{{deliveryAddress.zipCode}}">
-                                    </div>
-                                    <div class="col-12">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold" id="toggleCartMap">
-                                            📍 Επιλογή στο χάρτη
-                                        </button>
-                                        <div id="cartMapContainer" class="d-none mt-3">
-                                            <div class="mb-3 position-relative">
-                                                <label for="cartAddressSearch" class="form-label">Αναζήτηση διεύθυνσης</label>
-                                                <input type="text" id="cartAddressSearch" class="form-control" placeholder="π.χ. Ερμού 12" autocomplete="off">
-                                                <div id="cartAddressResults" class="list-group mt-2 d-none"></div>
-                                            </div>
-                                            <div id="cartMap" style="height: 300px; border-radius: 16px;"></div>
+                                <div class="col-md-3">
+                                    <label class="form-label text-muted small fw-bold">Αριθμός</label>
+                                    <input type="text" name="streetNumber" id="guestNumber" class="form-control"
+                                        placeholder="Αρ." value="{{deliveryAddress.streetNumber}}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label text-muted small fw-bold">Τ.Κ.</label>
+                                    <input type="text" name="zipCode" id="guestZip" class="form-control"
+                                        placeholder="Τ.Κ." value="{{deliveryAddress.zipCode}}">
+                                </div>
+                                <div class="col-12">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold"
+                                        id="toggleCartMap">
+                                        📍 Επιλογή στο χάρτη
+                                    </button>
+                                    <div id="cartMapContainer" class="d-none mt-3">
+                                        <div class="mb-3 position-relative">
+                                            <label for="cartAddressSearch" class="form-label">Αναζήτηση
+                                                διεύθυνσης</label>
+                                            <input type="text" id="cartAddressSearch" class="form-control"
+                                                placeholder="π.χ. Ερμού 12" autocomplete="off">
+                                            <div id="cartAddressResults" class="list-group mt-2 d-none"></div>
                                         </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label text-muted small fw-bold">Όροφος/Διαμέρισμα (Απαραίτητο)</label>
-                                        <input type="text" name="floor" class="form-control" placeholder="π.χ. 3ος / Παπαδόπουλος" required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label text-muted small fw-bold">Σχόλια για τον διανομέα</label>
-                                        <textarea name="comments" class="form-control" rows="1" placeholder="π.χ. Το κουδούνι δεν λειτουργεί..."></textarea>
+                                        <div id="cartMap" style="height: 300px; border-radius: 16px;"></div>
                                     </div>
                                 </div>
-                                <div class="mt-4">
-                                    <a href="/login" class="btn btn-outline-primary btn-sm w-100 fw-bold py-2">Ή Σύνδεση για ολοκλήρωση</a>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small fw-bold">Όροφος/Διαμέρισμα
+                                        (Απαραίτητο)</label>
+                                    <input type="text" name="floor" class="form-control"
+                                        placeholder="π.χ. 3ος / Παπαδόπουλος" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small fw-bold">Σχόλια για τον διανομέα</label>
+                                    <textarea name="comments" class="form-control" rows="1"
+                                        placeholder="π.χ. Το κουδούνι δεν λειτουργεί..."></textarea>
                                 </div>
                             </div>
-                        </form>
+                            <div class="mt-4">
+                                <a href="/login" class="btn btn-outline-primary btn-sm w-100 fw-bold py-2">Ή Σύνδεση για
+                                    ολοκλήρωση</a>
+                            </div>
+                        </div>
+                    </form>
                     {{/if}}
                 </div>
             </div>
@@ -123,19 +142,27 @@
                     </h5>
                     <div id="cartItemsContainer">
                         {{#each cart}}
-                        <div class="d-flex align-items-center justify-content-between py-3 {{#unless @last}}border-bottom{{/unless}}">
+                        <div
+                            class="d-flex align-items-center justify-content-between py-3 {{#unless @last}}border-bottom{{/unless}}">
                             <div>
                                 <h6 class="fw-bold mb-0">{{name}}</h6>
                                 <span class="text-muted small">{{formatPrice price}}</span>
                             </div>
                             <div class="d-flex align-items-center gap-3">
-                                <div class="d-flex align-items-center bg-light rounded-pill px-2">
-                                    <button class="btn btn-link btn-sm text-dark p-1 text-decoration-none" onclick="changeQty({{productId}}, -1)">−</button>
+                                <div class="d-flex align-items-center bg-white border border-2 border-secondary rounded-pill px-2 py-2 shadow-sm" style="line-height: 1;">
+                                    <button
+                                        class="btn btn-danger btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center"
+                                        style="width: 24px; height: 24px;"
+                                        onclick="changeQty({{productId}}, -1)">−</button>
                                     <span class="px-2 small fw-bold">{{quantity}}</span>
-                                    <button class="btn btn-link btn-sm text-dark p-1 text-decoration-none" onclick="changeQty({{productId}}, 1)">+</button>
+                                    <button
+                                        class="btn btn-success btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center"
+                                        style="width: 24px; height: 24px;"
+                                        onclick="changeQty({{productId}}, 1)">+</button>
                                 </div>
                                 <span class="fw-bold">{{formatPrice (totalPrice price quantity)}}</span>
-                                <button class="btn btn-outline-danger btn-sm rounded-circle" onclick="deleteItem({{productId}})">
+                                <button class="btn btn-outline-danger btn-sm rounded-circle"
+                                    onclick="deleteItem({{productId}})">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </div>
@@ -152,10 +179,12 @@
                         <span class="badge custom-number me-2">3</span>Τρόπος Πληρωμής
                     </h5>
                     <div class="form-check border p-3 rounded mb-3">
-                        <input class="form-check-input mt-1 ms-0 me-3" type="radio" name="paymentOption" id="card" checked>
+                        <input class="form-check-input mt-1 ms-0 me-3" type="radio" name="paymentOption" id="card"
+                            checked>
                         <label class="form-check-label fw-bold d-block" for="card">
                             Πιστωτική / Χρεωστική Κάρτα
-                            <div class="text-muted small fw-normal">Θα μεταφερθείτε σε ασφαλές περιβάλλον τράπεζας.</div>
+                            <div class="text-muted small fw-normal">Θα μεταφερθείτε σε ασφαλές περιβάλλον τράπεζας.
+                            </div>
                         </label>
                     </div>
                     <div class="form-check border p-3 rounded">
@@ -183,8 +212,8 @@
                         <span class="h5 fw-bold mb-0">Σύνολο Τιμής</span>
                         <span class="h4 fw-bold mb-0 text-danger">{{formatPrice (add total 1)}}</span>
                     </div>
-                    <button onclick="document.getElementById('checkoutForm').submit()" 
-                            class="btn btn-menu btn-lg w-100 fw-bold py-3 shadow-sm">Παραγγελία Τώρα!</button>
+                    <button onclick="document.getElementById('checkoutForm').submit()"
+                        class="btn btn-menu btn-lg w-100 fw-bold py-3 shadow-sm">Παραγγελία Τώρα!</button>
                 </div>
             </div>
         </div>
@@ -200,75 +229,75 @@
 </main>
 
 <script>
-async function deleteItem(productId) {
-    if (!confirm('Διαγραφή προϊόντος από το καλάθι;')) return;
-    const res = await fetch('/cart/delete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId })
-    });
-    if (res.ok) window.location.reload();
-}
+    async function deleteItem(productId) {
+        if (!confirm('Διαγραφή προϊόντος από το καλάθι;')) return;
+        const res = await fetch('/cart/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId })
+        });
+        if (res.ok) window.location.reload();
+    }
 
-document.getElementById('toggleCartMap')?.addEventListener('click', function() {
-    const container = document.getElementById('cartMapContainer');
-    container.classList.toggle('d-none');
-    if (!container.classList.contains('d-none') && !window._cartMapInit) {
-        window._cartMapInit = true;
-        initLeafletMap('cartMap', async (lat, lon) => {
-            const addr = await reverseGeocode(lat, lon);
-            fillAddressFields(addr, {
-                streetId: 'guestStreet',
-                numberId: 'guestNumber',
-                zipId: 'guestZip'
-            });
-        }, {
-            searchInputId: 'cartAddressSearch',
-            resultsContainerId: 'cartAddressResults',
-            onAddressPicked: (selected) => {
-                fillAddressFields(selected.address, {
+    document.getElementById('toggleCartMap')?.addEventListener('click', function () {
+        const container = document.getElementById('cartMapContainer');
+        container.classList.toggle('d-none');
+        if (!container.classList.contains('d-none') && !window._cartMapInit) {
+            window._cartMapInit = true;
+            initLeafletMap('cartMap', async (lat, lon) => {
+                const addr = await reverseGeocode(lat, lon);
+                fillAddressFields(addr, {
                     streetId: 'guestStreet',
                     numberId: 'guestNumber',
                     zipId: 'guestZip'
                 });
-            }
+            }, {
+                searchInputId: 'cartAddressSearch',
+                resultsContainerId: 'cartAddressResults',
+                onAddressPicked: (selected) => {
+                    fillAddressFields(selected.address, {
+                        streetId: 'guestStreet',
+                        numberId: 'guestNumber',
+                        zipId: 'guestZip'
+                    });
+                }
+            });
+        }
+    });
+    async function changeQty(productId, delta) {
+        const endpoint = delta > 0 ? '/cart/add' : '/cart/remove';
+        await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId })
         });
+        window.location.reload();
     }
-});
-async function changeQty(productId, delta) {
-    const endpoint = delta > 0 ? '/cart/add' : '/cart/remove';
-    await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId })
-    });
-    window.location.reload();
-}
-async function removeItem(productId) {
-    await fetch('/cart/remove', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId })
-    });
-    window.location.reload();
-}
+    async function removeItem(productId) {
+        await fetch('/cart/remove', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId })
+        });
+        window.location.reload();
+    }
 
-// Prefill floor and comments when selecting a saved address
-document.addEventListener('DOMContentLoaded', () => {
-    const radios = document.querySelectorAll('.address-radio');
-    const floorInput = document.getElementById('selectedFloor');
-    const commentsInput = document.getElementById('selectedComments');
-    
-    if (radios.length > 0 && floorInput && commentsInput) {
-        const updateFields = () => {
-            const selected = document.querySelector('.address-radio:checked');
-            if (selected) {
-                floorInput.value = selected.dataset.floor || '';
-                commentsInput.value = selected.dataset.comments || '';
-            }
-        };
-        radios.forEach(r => r.addEventListener('change', updateFields));
-        updateFields(); // initial load
-    }
-});
+    // Prefill floor and comments when selecting a saved address
+    document.addEventListener('DOMContentLoaded', () => {
+        const radios = document.querySelectorAll('.address-radio');
+        const floorInput = document.getElementById('selectedFloor');
+        const commentsInput = document.getElementById('selectedComments');
+
+        if (radios.length > 0 && floorInput && commentsInput) {
+            const updateFields = () => {
+                const selected = document.querySelector('.address-radio:checked');
+                if (selected) {
+                    floorInput.value = selected.dataset.floor || '';
+                    commentsInput.value = selected.dataset.comments || '';
+                }
+            };
+            radios.forEach(r => r.addEventListener('change', updateFields));
+            updateFields(); // initial load
+        }
+    });
 </script>
