@@ -49,13 +49,22 @@
                                     {{#each addresses}}
                                     <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent py-3">
                                         <div>
-                                            <div class="fw-bold">{{street}} {{street_number}}</div>
-                                            <div class="text-muted small">{{zipCode}}</div>
+                                            <div class="fw-bold">{{street}} {{street_number}}{{#if floor}}, 'Οροφος: {{floor}}{{/if}}</div>
+                                            <div class="text-muted small">{{zip_code}}{{#if comments}} | {{comments}}{{/if}}</div>
                                         </div>
-                                        <form method="POST" action="/account/addresses/{{id}}/delete">
-                                            <button type="submit" class="btn btn-link text-danger p-0" 
-                                                    onclick="return confirm('Διαγραφή διεύθυνσης;')">🗑</button>
-                                        </form>
+                                        <div class="d-flex gap-2">
+                                            <button type="button" class="btn btn-link text-primary p-0 edit-address-btn" 
+                                                    data-id="{{id}}" 
+                                                    data-street="{{street}}" 
+                                                    data-number="{{street_number}}" 
+                                                    data-zip="{{zip_code}}" 
+                                                    data-floor="{{floor}}" 
+                                                    data-comments="{{comments}}">✏️</button>
+                                            <form method="POST" action="/account/addresses/{{id}}/delete">
+                                                <button type="submit" class="btn btn-link text-danger p-0" 
+                                                        onclick="return confirm('Διαγραφή διεύθυνσης;')">🗑</button>
+                                            </form>
+                                        </div>
                                     </div>
                                     {{/each}}
                                     {{#unless addresses}}
@@ -95,6 +104,14 @@
                                 <div id="accountMap" style="height: 300px; border-radius: 16px;"></div>
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold">Όροφος/Διαμέρισμα (Απαραίτητο)</label>
+                            <input type="text" name="floor" class="form-control" placeholder="π.χ. 3ος / Παπαδόπουλος" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold">Σχόλια Διανομέα (Προαιρετικό)</label>
+                            <textarea name="comments" class="form-control" rows="1" placeholder="π.χ. Το κουδούνι δεν λειτουργεί..."></textarea>
+                        </div>
                         <div class="col-12 text-end">
                             <button type="submit" class="btn btn-menu fw-bold px-4">Προσθήκη</button>
                         </div>
@@ -112,30 +129,94 @@
     </div>
 </main>
 
+<!-- Edit Address Modal -->
+<div class="modal fade" id="editAddressModal" tabindex="-1" aria-labelledby="editAddressModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="editAddressModalLabel">Επεξεργασία Διεύθυνσης</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editAddressForm" method="POST">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label text-muted small fw-bold">Οδός</label>
+                            <input type="text" id="editStreet" name="street" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small fw-bold">Αριθμός</label>
+                            <input type="text" id="editNumber" name="streetNumber" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold">Τ.Κ.</label>
+                            <input type="text" id="editZip" name="zipCode" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold">Όροφος</label>
+                            <input type="text" id="editFloor" name="floor" class="form-control" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label text-muted small fw-bold">Σχόλια Διανομέα</label>
+                            <textarea id="editComments" name="comments" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Άκυρο</button>
+                    <button type="submit" class="btn btn-menu fw-bold px-4">Ενημέρωση</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
-document.getElementById('toggleAccountMap')?.addEventListener('click', function() {
-    const container = document.getElementById('accountMapContainer');
-    container.classList.toggle('d-none');
-    if (!container.classList.contains('d-none') && !window._accMapInit) {
-        window._accMapInit = true;
-        initLeafletMap('accountMap', async (lat, lon) => {
-            const addr = await reverseGeocode(lat, lon);
-            fillAddressFields(addr, {
-                streetId: 'accountStreet',
-                numberId: 'accountNumber',
-                zipId: 'accountZip'
-            });
-        }, {
-            searchInputId: 'accountAddressSearch',
-            resultsContainerId: 'accountAddressResults',
-            onAddressPicked: (selected) => {
-                fillAddressFields(selected.address, {
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Edit Address Flow
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.edit-address-btn');
+        if (btn) {
+            const id = btn.dataset.id;
+            const form = document.getElementById('editAddressForm');
+            form.action = `/account/addresses/${id}/edit`;
+            
+            document.getElementById('editStreet').value = btn.dataset.street || '';
+            document.getElementById('editNumber').value = btn.dataset.number || '';
+            document.getElementById('editZip').value = btn.dataset.zip || '';
+            document.getElementById('editFloor').value = btn.dataset.floor || '';
+            document.getElementById('editComments').value = btn.dataset.comments || '';
+            
+            const modal = new bootstrap.Modal(document.getElementById('editAddressModal'));
+            modal.show();
+        }
+    });
+
+    // 2. Map Toggle
+    document.getElementById('toggleAccountMap')?.addEventListener('click', function() {
+        const container = document.getElementById('accountMapContainer');
+        container.classList.toggle('d-none');
+        if (!container.classList.contains('d-none') && !window._accMapInit) {
+            window._accMapInit = true;
+            initLeafletMap('accountMap', async (lat, lon) => {
+                const addr = await reverseGeocode(lat, lon);
+                fillAddressFields(addr, {
                     streetId: 'accountStreet',
                     numberId: 'accountNumber',
                     zipId: 'accountZip'
                 });
-            }
-        });
-    }
+            }, {
+                searchInputId: 'accountAddressSearch',
+                resultsContainerId: 'accountAddressResults',
+                onAddressPicked: (selected) => {
+                    fillAddressFields(selected.address, {
+                        streetId: 'accountStreet',
+                        numberId: 'accountNumber',
+                        zipId: 'accountZip'
+                    });
+                }
+            });
+        }
+    });
 });
 </script>

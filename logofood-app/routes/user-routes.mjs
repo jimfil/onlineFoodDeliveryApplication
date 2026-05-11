@@ -8,5 +8,6 @@ router.get ('/account',                    requireLogin, requireCustomer, contro
 router.post('/account/profile',            requireLogin, requireCustomer, controller.updateProfile);
 router.post('/account/addresses',          requireLogin, requireCustomer, controller.addAddress);
 router.post('/account/addresses/:id/delete', requireLogin, requireCustomer, controller.deleteAddress);
+router.post('/account/addresses/:id/edit',   requireLogin, requireCustomer, controller.editAddress);
 
 export default router;

@@ -182,14 +182,23 @@ export async function reorderItem(restaurantId, type, id, direction) {
     conn = await pool.getConnection();
     await conn.beginTransaction();
 
-    // 1. Get all items in current order
     let query, params;
     if (type === 'category') {
       query = `SELECT id, display_order FROM Product_Category WHERE restaurant_id = ? ORDER BY display_order ASC, name ASC`;
       params = [restaurantId];
     } else {
-      query = `SELECT id, display_order FROM Product WHERE restaurant_id = ? ORDER BY display_order ASC, name ASC`;
-      params = [restaurantId];
+      // Find which category this product belongs to
+      const [catMap] = await conn.execute(`SELECT category_id FROM Product_Category_Mapping WHERE product_id = ?`, [id]);
+      if (catMap.length === 0) throw new Error('Product not mapped to category');
+      const categoryId = catMap[0].category_id;
+      
+      query = `
+        SELECT p.id, p.display_order 
+        FROM Product p
+        JOIN Product_Category_Mapping pcm ON p.id = pcm.product_id
+        WHERE p.restaurant_id = ? AND pcm.category_id = ?
+        ORDER BY p.display_order ASC, p.name ASC`;
+      params = [restaurantId, categoryId];
     }
 
     const [items] = await conn.execute(query, params);
@@ -199,12 +208,15 @@ export async function reorderItem(restaurantId, type, id, direction) {
     const newIdx = idx + direction;
     if (newIdx < 0 || newIdx >= items.length) return; // Boundary
 
-    const itemA = items[idx];
-    const itemB = items[newIdx];
+    // Swap items in memory
+    const temp = items[idx];
+    items[idx] = items[newIdx];
+    items[newIdx] = temp;
 
-    // Swap display_order
-    await conn.execute(`UPDATE ${table} SET display_order = ? WHERE id = ?`, [itemB.display_order, itemA.id]);
-    await conn.execute(`UPDATE ${table} SET display_order = ? WHERE id = ?`, [itemA.display_order, itemB.id]);
+    // Persist new sequential order (0, 1, 2...) to all items in this group
+    for (let i = 0; i < items.length; i++) {
+      await conn.execute(`UPDATE ${table} SET display_order = ? WHERE id = ?`, [i, items[i].id]);
+    }
 
     await conn.commit();
   } catch (err) {
@@ -213,4 +225,12 @@ export async function reorderItem(restaurantId, type, id, direction) {
   } finally {
     if (conn) conn.release();
   }
+}
+
+/** Update restaurant details and operating hours. */
+export async function updateRestaurantSettings(userId, { name, estimatedPreparationTime, operatingHours }) {
+  await pool.execute(
+    'UPDATE Restaurant SET name = ?, estimated_preparation_time = ?, operating_hours = ? WHERE id = ?',
+    [name, estimatedPreparationTime || null, operatingHours || null, userId]
+  );
 }

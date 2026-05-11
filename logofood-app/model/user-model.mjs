@@ -8,7 +8,7 @@ import pool from './db.mjs';
 /** Get all saved addresses for a customer. */
 export async function getAddresses(userId) {
   const [rows] = await pool.execute(
-    `SELECT a.id, a.street, a.street_number, a.zip_code, a.latitude, a.longitude
+    `SELECT a.id, a.street, a.street_number, a.zip_code, a.latitude, a.longitude, a.floor, a.comments
      FROM Address a
      JOIN Customer_Address ca ON a.id = ca.address_id
      WHERE ca.customer_id = ?
@@ -19,15 +19,15 @@ export async function getAddresses(userId) {
 }
 
 /** Add a new address and link it to the customer. Returns the new address id. */
-export async function addAddress(userId, { street, streetNumber, zipCode, latitude, longitude }) {
+export async function addAddress(userId, { street, streetNumber, zipCode, latitude, longitude, floor, comments }) {
   let conn;
   try {
     conn = await pool.getConnection();
     await conn.beginTransaction();
 
     const [result] = await conn.execute(
-      'INSERT INTO Address (street, street_number, zip_code, latitude, longitude) VALUES (?, ?, ?, ?, ?)',
-      [street, streetNumber, zipCode || '', latitude || null, longitude || null]
+      'INSERT INTO Address (street, street_number, zip_code, latitude, longitude, floor, comments) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [street, streetNumber, zipCode || '', latitude || null, longitude || null, floor || null, comments || null]
     );
     const addressId = result.insertId;
 
@@ -55,6 +55,18 @@ export async function checkAddressOwnership(addressId, userId) {
     [addressId, userId]
   );
   return rows[0] || null;
+}
+
+/** Update an existing address. */
+export async function updateAddress(addressId, userId, { street, streetNumber, zipCode, floor, comments, latitude, longitude }) {
+  // We first ensure the address belongs to the user
+  const owned = await checkAddressOwnership(addressId, userId);
+  if (!owned) throw new Error("Unauthorized or address not found");
+
+  await pool.execute(
+    'UPDATE Address SET street = ?, street_number = ?, zip_code = ?, floor = ?, comments = ?, latitude = COALESCE(?, latitude), longitude = COALESCE(?, longitude) WHERE id = ?',
+    [street, streetNumber, zipCode || '', floor || null, comments || null, latitude || null, longitude || null, addressId]
+  );
 }
 
 /** Delete an address (and its Customer_Address link). */

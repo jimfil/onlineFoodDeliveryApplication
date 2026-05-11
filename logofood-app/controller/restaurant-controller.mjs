@@ -3,6 +3,7 @@
  * Public restaurant view + restaurant owner admin panel.
  */
 import * as restaurantModel from '../model/restaurant-model.mjs';
+import * as orderModel from '../model/order-model.mjs';
 
 /** GET /restaurant/:id — public menu view */
 export async function showRestaurant(req, res) {
@@ -28,6 +29,7 @@ export async function showManage(req, res) {
     const products = await restaurantModel.getRestaurantProducts(req.session.user.id);
     const allCategories = await restaurantModel.getAllCategories(req.session.user.id);
     const restaurantCategories = await restaurantModel.getCategoriesByRestaurant(req.session.user.id);
+    const orders = await orderModel.getOrdersByRestaurant(req.session.user.id);
 
     // Group products by category for the view
     const productsByCategory = allCategories
@@ -42,7 +44,8 @@ export async function showManage(req, res) {
       products, 
       allCategories,
       restaurantCategories,
-      productsByCategory 
+      productsByCategory,
+      orders
     });
   } catch (err) {
     console.error('Manage error:', err);
@@ -78,16 +81,17 @@ export async function deleteProduct(req, res) {
 }
 
 export async function updateSettings(req, res) {
-  const { name, estimatedPreparationTime } = req.body;
-  const userModel = await import('../model/user-model.mjs');
+  const { name, estimatedPreparationTime, operatingHours } = req.body;
   try {
     const restaurant = await restaurantModel.getRestaurantByUserId(req.session.user.id);
     const finalName = name || restaurant.name;
     const finalPrep = estimatedPreparationTime || restaurant.estimated_preparation_time;
+    const finalHours = operatingHours || restaurant.operating_hours;
 
-    await userModel.updateRestaurantDetails(req.session.user.id, { 
+    await restaurantModel.updateRestaurantSettings(req.session.user.id, { 
       name: finalName, 
-      estimatedPreparationTime: finalPrep 
+      estimatedPreparationTime: finalPrep,
+      operatingHours: finalHours
     });
     
     // Update session info if needed

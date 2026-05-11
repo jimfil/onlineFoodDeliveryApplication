@@ -33,13 +33,26 @@ export async function updateProfile(req, res) {
 
 /** POST /account/addresses */
 export async function addAddress(req, res) {
-  const { street, streetNumber, zipCode, latitude, longitude } = req.body;
+  const { street, streetNumber, zipCode, latitude, longitude, floor, comments } = req.body;
   try {
-    await userModel.addAddress(req.session.user.id, { street, streetNumber, zipCode, latitude, longitude });
+    await userModel.addAddress(req.session.user.id, { street, streetNumber, zipCode, latitude, longitude, floor, comments });
     req.flash('success', 'Η διεύθυνση προστέθηκε.');
   } catch (err) {
     console.error('Add address error:', err);
     req.flash('error', 'Σφάλμα προσθήκης διεύθυνσης.');
+  }
+  res.redirect('/account');
+}
+
+/** POST /account/addresses/:id/edit */
+export async function editAddress(req, res) {
+  const { street, streetNumber, zipCode, floor, comments, latitude, longitude } = req.body;
+  try {
+    await userModel.updateAddress(req.params.id, req.session.user.id, { street, streetNumber, zipCode, floor, comments, latitude, longitude });
+    req.flash('success', 'Η διεύθυνση ενημερώθηκε.');
+  } catch (err) {
+    console.error('Edit address error:', err);
+    req.flash('error', 'Σφάλμα ενημέρωσης διεύθυνσης.');
   }
   res.redirect('/account');
 }

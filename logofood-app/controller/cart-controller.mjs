@@ -95,10 +95,7 @@ export async function cartCount(req, res) {
 
 /** POST /cart/checkout — create the order */
 export async function checkout(req, res) {
-  if (!req.session.user) {
-    req.flash('error', 'Παρακαλώ συνδεθείτε για να ολοκληρώσετε την παραγγελία.');
-    return res.redirect('/login');
-  }
+  // Removed require session user redirect
 
   const cart = req.session.cart || [];
   if (cart.length === 0) {
@@ -106,17 +103,42 @@ export async function checkout(req, res) {
     return res.redirect('/cart');
   }
 
-  const { addressId } = req.body;
-  if (!addressId) {
-    req.flash('error', 'Επιλέξτε διεύθυνση παράδοσης.');
-    return res.redirect('/cart');
-  }
+  let addressId = req.body.addressId;
+  let customerId = req.session.user ? req.session.user.id : null;
+  const { floor, comments } = req.body;
 
   try {
+    const pool = (await import('../model/db.mjs')).default;
+    // If guest, create a temporary address
+    if (!customerId) {
+      const { street, streetNumber, zipCode } = req.body;
+      if (!street || !streetNumber || !floor) {
+        req.flash('error', 'Συμπληρώστε την οδό, τον αριθμό και τον όροφο για την παράδοση.');
+        return res.redirect('/cart');
+      }
+      
+      const [addrRes] = await pool.execute(
+        `INSERT INTO Address (street, street_number, zip_code, floor, comments) VALUES (?, ?, ?, ?, ?)`,
+        [street, streetNumber, zipCode || null, floor, comments || null]
+      );
+      addressId = addrRes.insertId;
+    } else if (!addressId) {
+      req.flash('error', 'Επιλέξτε διεύθυνση παράδοσης.');
+      return res.redirect('/cart');
+    } else {
+      // Update the existing address with the floor and comments provided at checkout
+      if (floor) {
+        await pool.execute(
+          `UPDATE Address SET floor = ?, comments = ? WHERE id = ?`,
+          [floor, comments || null, addressId]
+        );
+      }
+    }
+
     const restaurantId = cart[0].restaurantId;
     const items = cart.map(i => ({ productId: i.productId, quantity: i.quantity }));
 
-    await orderModel.createOrder(req.session.user.id, restaurantId, addressId, items);
+    await orderModel.createOrder(customerId, restaurantId, addressId, items);
 
     // Clear cart after successful order
     req.session.cart = [];

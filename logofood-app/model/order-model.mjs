@@ -56,3 +56,20 @@ export async function getOrdersByCustomer(customerId) {
   );
   return rows;
 }
+
+/** Get all orders for a restaurant (most recent first). */
+export async function getOrdersByRestaurant(restaurantId) {
+  const [rows] = await pool.execute(
+    `SELECT o.id, o.created_at, o.status, 
+            COALESCE(c.first_name, 'Επισκέπτης') AS first_name, 
+            COALESCE(c.last_name, '') AS last_name,
+            a.street, a.street_number
+     FROM Order_table o
+     LEFT JOIN Customer c ON o.customer_id = c.id
+     JOIN Address a ON o.delivery_address_id = a.id
+     WHERE o.restaurant_id = ?
+     ORDER BY o.created_at DESC`,
+    [restaurantId]
+  );
+  return rows;
+}

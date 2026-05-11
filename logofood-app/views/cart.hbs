@@ -30,8 +30,8 @@
                                             <div class="list-group list-group-flush">
                                                 {{#each addresses}}
                                                 <label class="list-group-item d-flex gap-3 py-3 border-0 bg-transparent mb-0">
-                                                    <input class="form-check-input flex-shrink-0" type="radio" name="addressId" 
-                                                           value="{{id}}" {{#if @first}}checked{{/if}}>
+                                                    <input class="form-check-input flex-shrink-0 address-radio" type="radio" name="addressId" 
+                                                           value="{{id}}" data-floor="{{floor}}" data-comments="{{comments}}" {{#if @first}}checked{{/if}}>
                                                     <span class="pt-1 small">
                                                         <strong>{{street}} {{street_number}}</strong>
                                                         {{#if zip_code}}<br><span class="text-muted">{{zip_code}}</span>{{/if}}
@@ -46,6 +46,17 @@
                                     </div>
                                 </div>
                             </div>
+                            
+                            <div class="row g-3 mb-4 mt-2">
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small fw-bold">Όροφος/Διαμέρισμα (Απαραίτητο)</label>
+                                    <input type="text" name="floor" id="selectedFloor" class="form-control" placeholder="π.χ. 3ος / Παπαδόπουλος" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted small fw-bold">Σχόλια Διανομέα (Προαιρετικό)</label>
+                                    <textarea name="comments" id="selectedComments" class="form-control" rows="1" placeholder="π.χ. Το κουδούνι δεν λειτουργεί..."></textarea>
+                                </div>
+                            </div>
                         {{else}}
                             <div class="alert alert-warning border-0 rounded-4">
                                 Δεν έχεις αποθηκευμένη διεύθυνση. <a href="/account" class="fw-bold">Πρόσθεσε μία εδώ.</a>
@@ -54,50 +65,52 @@
                         </form>
                     {{else}}
                         {{!-- Guest Address Section (Matching cart.html) --}}
-                        <div id="guestAddressSection">
-                            <div class="alert alert-info border-0 rounded-4 mb-4">
-                                <p class="mb-1 fw-bold small">Είσαι επισκέπτης</p>
-                                <p class="mb-0 small text-muted">Συνδεθείτε για να χρησιμοποιήσετε τις αποθηκευμένες σας διευθύνσεις ή συμπληρώστε τα παρακάτω.</p>
-                            </div>
-                            <div class="row g-3">
-                                <div class="col-md-5">
-                                    <label class="form-label text-muted small fw-bold">Οδός</label>
-                                    <input type="text" name="street" id="guestStreet" class="form-control" placeholder="π.χ. Ερμού" value="{{deliveryAddress.street}}">
+                        <form id="checkoutForm" method="POST" action="/cart/checkout">
+                            <div id="guestAddressSection">
+                                <div class="alert alert-info border-0 rounded-4 mb-4">
+                                    <p class="mb-1 fw-bold small">Είσαι επισκέπτης</p>
+                                    <p class="mb-0 small text-muted">Συνδεθείτε για να χρησιμοποιήσετε τις αποθηκευμένες σας διευθύνσεις ή συμπληρώστε τα παρακάτω.</p>
                                 </div>
-                                <div class="col-md-3">
-                                    <label class="form-label text-muted small fw-bold">Αριθμός</label>
-                                    <input type="text" name="streetNumber" id="guestNumber" class="form-control" placeholder="Αρ." value="{{deliveryAddress.streetNumber}}">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label text-muted small fw-bold">Τ.Κ.</label>
-                                    <input type="text" name="zipCode" id="guestZip" class="form-control" placeholder="Τ.Κ." value="{{deliveryAddress.zipCode}}">
-                                </div>
-                                <div class="col-12">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold" id="toggleCartMap">
-                                        📍 Επιλογή στο χάρτη
-                                    </button>
-                                    <div id="cartMapContainer" class="d-none mt-3">
-                                        <div class="mb-3 position-relative">
-                                            <label for="cartAddressSearch" class="form-label">Αναζήτηση διεύθυνσης</label>
-                                            <input type="text" id="cartAddressSearch" class="form-control" placeholder="π.χ. Ερμού 12" autocomplete="off">
-                                            <div id="cartAddressResults" class="list-group mt-2 d-none"></div>
+                                <div class="row g-3">
+                                    <div class="col-md-5">
+                                        <label class="form-label text-muted small fw-bold">Οδός</label>
+                                        <input type="text" name="street" id="guestStreet" class="form-control" placeholder="π.χ. Ερμού" value="{{deliveryAddress.street}}">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label text-muted small fw-bold">Αριθμός</label>
+                                        <input type="text" name="streetNumber" id="guestNumber" class="form-control" placeholder="Αρ." value="{{deliveryAddress.streetNumber}}">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label text-muted small fw-bold">Τ.Κ.</label>
+                                        <input type="text" name="zipCode" id="guestZip" class="form-control" placeholder="Τ.Κ." value="{{deliveryAddress.zipCode}}">
+                                    </div>
+                                    <div class="col-12">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold" id="toggleCartMap">
+                                            📍 Επιλογή στο χάρτη
+                                        </button>
+                                        <div id="cartMapContainer" class="d-none mt-3">
+                                            <div class="mb-3 position-relative">
+                                                <label for="cartAddressSearch" class="form-label">Αναζήτηση διεύθυνσης</label>
+                                                <input type="text" id="cartAddressSearch" class="form-control" placeholder="π.χ. Ερμού 12" autocomplete="off">
+                                                <div id="cartAddressResults" class="list-group mt-2 d-none"></div>
+                                            </div>
+                                            <div id="cartMap" style="height: 300px; border-radius: 16px;"></div>
                                         </div>
-                                        <div id="cartMap" style="height: 300px; border-radius: 16px;"></div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-muted small fw-bold">Όροφος/Διαμέρισμα (Απαραίτητο)</label>
+                                        <input type="text" name="floor" class="form-control" placeholder="π.χ. 3ος / Παπαδόπουλος" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-muted small fw-bold">Σχόλια για τον διανομέα</label>
+                                        <textarea name="comments" class="form-control" rows="1" placeholder="π.χ. Το κουδούνι δεν λειτουργεί..."></textarea>
                                     </div>
                                 </div>
-                                <div class="col-md-12">
-                                    <label class="form-label text-muted small fw-bold">Όροφος/Κουδούνι</label>
-                                    <input type="text" class="form-control" placeholder="π.χ. 3ος / Παπαδόπουλος">
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label text-muted small fw-bold">Σχόλια για τον διανομέα</label>
-                                    <textarea class="form-control" rows="2" placeholder="π.χ. Το κουδούνι δεν λειτουργεί..."></textarea>
+                                <div class="mt-4">
+                                    <a href="/login" class="btn btn-outline-primary btn-sm w-100 fw-bold py-2">Ή Σύνδεση για ολοκλήρωση</a>
                                 </div>
                             </div>
-                            <div class="mt-4">
-                                <a href="/login" class="btn btn-outline-primary btn-sm w-100 fw-bold py-2">Ή Σύνδεση για ολοκλήρωση</a>
-                            </div>
-                        </div>
+                        </form>
                     {{/if}}
                 </div>
             </div>
@@ -239,4 +252,23 @@ async function removeItem(productId) {
     });
     window.location.reload();
 }
+
+// Prefill floor and comments when selecting a saved address
+document.addEventListener('DOMContentLoaded', () => {
+    const radios = document.querySelectorAll('.address-radio');
+    const floorInput = document.getElementById('selectedFloor');
+    const commentsInput = document.getElementById('selectedComments');
+    
+    if (radios.length > 0 && floorInput && commentsInput) {
+        const updateFields = () => {
+            const selected = document.querySelector('.address-radio:checked');
+            if (selected) {
+                floorInput.value = selected.dataset.floor || '';
+                commentsInput.value = selected.dataset.comments || '';
+            }
+        };
+        radios.forEach(r => r.addEventListener('change', updateFields));
+        updateFields(); // initial load
+    }
+});
 </script>
