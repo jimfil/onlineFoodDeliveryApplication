@@ -12,6 +12,7 @@ router.get ('/manage',                        requireLogin, requireRestaurant, c
 router.post('/manage/products',               requireLogin, requireRestaurant, controller.addProduct);
 router.post('/manage/products/:id/delete',    requireLogin, requireRestaurant, controller.deleteProduct);
 router.post('/manage/settings',               requireLogin, requireRestaurant, controller.updateSettings);
+router.post('/manage/categories',             requireLogin, requireRestaurant, controller.updateCategories);
 router.post('/manage/reorder',                requireLogin, requireRestaurant, controller.reorder);
 router.get ('/manage/orders',                 requireLogin, requireRestaurant, controller.showManageOrders);
 router.post('/manage/orders/:id/status',     requireLogin, requireRestaurant, controller.updateOrderStatus);

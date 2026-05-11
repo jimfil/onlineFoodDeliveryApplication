@@ -83,6 +83,12 @@ const hbs = exphbs.create({
       const minutes = String(d.getMinutes()).padStart(2, '0');
       return `${month}/${day}/${year} ${hours}:${minutes}`;
     },
+    // {{getAt array index}} — return array element by numeric index
+    getAt: (array, index) => {
+      if (!Array.isArray(array)) return null;
+      const idx = parseInt(index, 10);
+      return Number.isNaN(idx) ? null : array[idx] || null;
+    },
     // {{totalPrice price quantity}}
     totalPrice: (price, qty) => (parseFloat(price) * parseInt(qty)),
     // {{add a b}}
@@ -92,6 +98,10 @@ const hbs = exphbs.create({
       if (!cart || !Array.isArray(cart)) return 0;
       const item = cart.find(i => i.productId == productId);
       return item ? item.quantity : 0;
+    },
+    join: (array, sep) => {
+      if (!Array.isArray(array)) return '';
+      return array.join(sep);
     }
   }
 });

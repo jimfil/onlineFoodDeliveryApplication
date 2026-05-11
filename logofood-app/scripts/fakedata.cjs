@@ -5,8 +5,22 @@ const bcrypt = require('bcrypt');
 // --- FAKE DATA ARRAYS ---
 const restaurantNames = ["The Salty Spitoon", "Krusty Krab", "Luigi's Pizza", "Burger Barn", "Sushi Central", "Taco Fiesta", "The Vegan Joint", "Steakhouse Supreme", "Noodle Ninja", "Breakfast Club"];
 const streets = ["Main St", "Oak Ave", "Pine Ln", "Maple Dr", "Elm St", "Cedar Blvd", "Washington St", "Lakeview Dr"];
-const cuisines = ["Italian", "Fast Food", "Asian", "Mexican", "Healthy", "American", "Seafood"];
+const categories = ["Burger", "Brunch", "Pizza", "Mexican", "Asian", "Σουβλάκια", "Ψητά Σχάρας"];
 const menuSections = ["Starters", "Main Courses", "Desserts", "Drinks"];
+
+// Map restaurant names to categories
+const restaurantCategories = {
+  "Burger Barn": "Burger",
+  "Luigi's Pizza": "Pizza",
+  "Taco Fiesta": "Mexican",
+  "Sushi Central": "Asian",
+  "Noodle Ninja": "Asian",
+  "Breakfast Club": "Brunch",
+  "The Salty Spitoon": "Ψητά Σχάρας",
+  "Krusty Krab": "Ψητά Σχάρας",
+  "Steakhouse Supreme": "Ψητά Σχάρας",
+  "The Vegan Joint": "Brunch"
+};
 
 const foodItems = [
     { name: "Classic Cheeseburger", price: 8.99, desc: "Juicy beef patty with cheddar.", ing: "Beef, Cheese, Bun, Lettuce" },
@@ -38,17 +52,17 @@ async function seedDatabase() {
     console.log("Starting database seeding (Restaurants + Menus)...");
 
     try {
-        // 1. Seed Global Categories (Cuisines)
-        console.log("Creating global cuisine categories...");
-        const categoryIds = [];
-        for (const cuisine of cuisines) {
+        // 1. Seed Global Categories
+        console.log("Creating restaurant categories...");
+        const categoryMap = {};
+        for (const category of categories) {
             // Check if it exists first
-            const [existing] = await pool.query(`SELECT id FROM Category WHERE name = ?`, [cuisine]);
+            const [existing] = await pool.query(`SELECT id FROM Category WHERE name = ?`, [category]);
             if (existing.length > 0) {
-                categoryIds.push(existing[0].id);
+                categoryMap[category] = existing[0].id;
             } else {
-                const [result] = await pool.execute(`INSERT INTO Category (name) VALUES (?)`, [cuisine]);
-                categoryIds.push(result.insertId);
+                const [result] = await pool.execute(`INSERT INTO Category (name) VALUES (?)`, [category]);
+                categoryMap[category] = result.insertId;
             }
         }
 
@@ -57,7 +71,8 @@ async function seedDatabase() {
         const defaultPasswordHash = await bcrypt.hash('password123', 10);
         
         for (let i = 0; i < NUMBER_OF_RESTAURANTS; i++) {
-            const name = randomItem(restaurantNames) + (i > 0 ? ` ${i}` : '');
+            const baseName = randomItem(restaurantNames);
+            const name = baseName + (i > 0 ? ` ${i}` : '');
 
             // --- A. Create Account & Address ---
             const email = `contact${i}@${name.replace(/\s+/g, '').toLowerCase()}.com`;
@@ -80,11 +95,12 @@ async function seedDatabase() {
                 [accountId, name, randomNum(3.5, 5.0).toFixed(1), `555-${Math.floor(randomNum(1000, 9999))}`, "09:00-22:00", "20-30 mins", addressId]
             );
 
-            // --- C. Assign Global Category (Cuisine) ---
-            const randomCategoryId = randomItem(categoryIds);
+            // --- C. Assign Categories based on restaurant name ---
+            const category = restaurantCategories[baseName] || categories[0];
+            const categoryId = categoryMap[category];
             await pool.execute(
                 `INSERT INTO Restaurant_Category (restaurant_id, category_id) VALUES (?, ?)`,
-                [accountId, randomCategoryId] // Note: Restaurant ID is the Account ID
+                [accountId, categoryId]
             );
 
             // --- D. Create Menu Categories for this Restaurant ---

@@ -5,28 +5,43 @@
  */
 import pool from './db.mjs';
 
-/** Get all restaurants with their basic info. */
+/** Get all restaurants with their basic info and categories. */
 export async function getAllRestaurants() {
   const [rows] = await pool.execute(
     `SELECT r.id, r.name, r.rating, r.estimated_preparation_time,
-            r.contact_phone, r.operating_hours
+            r.contact_phone, r.operating_hours,
+            GROUP_CONCAT(c.name SEPARATOR ',') AS categories
      FROM Restaurant r
+     LEFT JOIN Restaurant_Category rc ON r.id = rc.restaurant_id
+     LEFT JOIN Category c ON rc.category_id = c.id
+     GROUP BY r.id
      ORDER BY r.name ASC`
   );
-  return rows;
+  // Parse categories
+  return rows.map(row => ({
+    ...row,
+    categories: row.categories ? row.categories.split(',').filter(Boolean) : []
+  }));
 }
 
-/** Get a single restaurant by id. */
+/** Get a single restaurant by id with categories. */
 export async function getRestaurantById(id) {
   const [rows] = await pool.execute(
     `SELECT r.id, r.name, r.rating, r.estimated_preparation_time,
             r.contact_phone, r.operating_hours,
-            r.owner_first_name, r.owner_last_name
+            r.owner_first_name, r.owner_last_name,
+            GROUP_CONCAT(c.name SEPARATOR ',') AS categories
      FROM Restaurant r
-     WHERE r.id = ?`,
+     LEFT JOIN Restaurant_Category rc ON r.id = rc.restaurant_id
+     LEFT JOIN Category c ON rc.category_id = c.id
+     WHERE r.id = ?
+     GROUP BY r.id`,
     [id]
   );
-  return rows[0] || null;
+  if (!rows[0]) return null;
+  const restaurant = rows[0];
+  restaurant.categories = restaurant.categories ? restaurant.categories.split(',').filter(Boolean) : [];
+  return restaurant;
 }
 
 /**
@@ -159,10 +174,18 @@ export async function deleteProduct(restaurantId, productId) {
 /** Get a restaurant by its owner's account id. */
 export async function getRestaurantByUserId(userId) {
   const [rows] = await pool.execute(
-    `SELECT r.* FROM Restaurant r WHERE r.id = ?`,
+    `SELECT r.*, GROUP_CONCAT(c.name SEPARATOR ',') AS categories
+     FROM Restaurant r
+     LEFT JOIN Restaurant_Category rc ON r.id = rc.restaurant_id
+     LEFT JOIN Category c ON rc.category_id = c.id
+     WHERE r.id = ?
+     GROUP BY r.id`,
     [userId]
   );
-  return rows[0] || null;
+  if (!rows[0]) return null;
+  const restaurant = rows[0];
+  restaurant.categories = restaurant.categories ? restaurant.categories.split(',').filter(Boolean) : [];
+  return restaurant;
 }
 
 /** Get all product categories belonging to a restaurant. */
@@ -233,4 +256,47 @@ export async function updateRestaurantSettings(userId, { name, estimatedPreparat
     'UPDATE Restaurant SET name = ?, estimated_preparation_time = ?, operating_hours = ? WHERE id = ?',
     [name, estimatedPreparationTime || null, operatingHours || null, userId]
   );
+}
+
+/** Update restaurant categories (up to 2). */
+export async function updateRestaurantCategories(restaurantId, categoryIds) {
+  // Limit to 2 categories
+  const ids = (categoryIds || []).slice(0, 2);
+  
+  // Delete existing categories
+  await pool.execute(
+    'DELETE FROM Restaurant_Category WHERE restaurant_id = ?',
+    [restaurantId]
+  );
+  
+  // Insert new categories
+  for (const categoryId of ids) {
+    await pool.execute(
+      'INSERT INTO Restaurant_Category (restaurant_id, category_id) VALUES (?, ?)',
+      [restaurantId, categoryId]
+    );
+  }
+}
+
+/** Get all available restaurant categories (global). */
+export async function getAllRestaurantCategories() {
+  const defaultCategories = [
+    'Burger', 'Brunch', 'Pizza', 'Mexican', 'Asian', 'Σουβλάκια', 'Ψητά Σχάρας', 'Italian'
+  ];
+
+  const [rows] = await pool.execute(
+    'SELECT id, name FROM Category ORDER BY name ASC'
+  );
+
+  const existingNames = rows.map(r => r.name);
+  const missing = defaultCategories.filter(name => !existingNames.includes(name));
+
+  for (const name of missing) {
+    await pool.execute('INSERT INTO Category (name) VALUES (?)', [name]);
+  }
+
+  const [updatedRows] = await pool.execute(
+    'SELECT id, name FROM Category ORDER BY name ASC'
+  );
+  return updatedRows;
 }

@@ -116,15 +116,81 @@
     </div>
 </section>
 
+<style>
+    .category-scroll {
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding: 10px 0;
+    }
+    .category-scroll::-webkit-scrollbar {
+        display: none;
+    }
+    .category-btn {
+        display: inline-block;
+        padding: 1.2rem 1.8rem;
+        margin-right: 1rem;
+        background: white;
+        border: 2px solid transparent;
+        border-radius: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-align: center;
+        min-width: 120px;
+        flex-shrink: 0;
+        text-decoration: none;
+        color: inherit;
+    }
+    .category-btn:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        border-color: #ff9f43;
+    }
+    .category-btn.active {
+        background: linear-gradient(135deg, #ff9f43 0%, #ff6b6b 100%);
+        color: white;
+        border-color: transparent;
+        box-shadow: 0 8px 20px rgba(255, 159, 67, 0.3);
+    }
+    .category-emoji {
+        font-size: 2.2rem;
+        display: block;
+        margin-bottom: 0.6rem;
+    }
+    .category-name {
+        font-weight: 800;
+        font-size: 1rem;
+        letter-spacing: -0.02em;
+    }
+</style>
+
 <section class="container mb-3 text-center">
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
             <div class="d-flex gap-2">
                 <input type="text" id="searchRestaurant" class="form-control form-control-lg rounded-pill shadow-sm px-4"
-                    placeholder="π.χ. Μαγαζί ή είδος φαγητού">
-                <button class="btn btn-menu btn-lg px-4 rounded-pill shadow-sm">Go</button>
+                    placeholder="Αναζήτηση για εστιατόριο ή κουζίνα...">
+                <button class="btn btn-menu btn-lg px-4 rounded-pill shadow-sm" onclick="filterRestaurants()">Go</button>
             </div>
         </div>
+    </div>
+</section>
+
+{{!-- Category Buttons --}}
+<section class="container mb-5 {{#if noAddress}}d-none{{/if}}" id="categorySection">
+    <div class="category-scroll d-flex">
+        <div class="category-btn active" data-category="all" onclick="selectCategory(this)">
+            <span class="category-emoji">🍴</span>
+            <span class="category-name">Όλα</span>
+        </div>
+        {{#each categories}}
+        <div class="category-btn" data-category="{{name}}" onclick="selectCategory(this)">
+            <span class="category-emoji">{{emoji}}</span>
+            <span class="category-name">{{name}}</span>
+        </div>
+        {{/each}}
     </div>
 </section>
 
@@ -132,9 +198,9 @@
 <main class="container mb-5 {{#if noAddress}}d-none{{/if}}" id="restaurantSection">
     <h3 class="h5 mb-4 text-secondary fw-bold">Δημοφιλή Εστιατόρια κοντά σου</h3>
 
-    <div class="row g-4">
+    <div class="row g-4" id="restaurantList">
         {{#each restaurants}}
-        <div class="col-12 col-md-6 col-lg-3">
+        <div class="col-12 col-md-6 col-lg-3 restaurant-card-wrapper" data-categories="{{join categories ','}}">
             <div class="card h-100 border-0 shadow-sm restaurant-card" style="border-radius: 1.2rem; overflow: hidden;">
                 <div class="bg-light d-flex justify-content-center align-items-center" style="height: 160px; background: url('{{image_url}}') center/cover no-repeat;">
                     {{#unless image_url}}
@@ -142,7 +208,14 @@
                     {{/unless}}
                 </div>
                 <div class="card-body p-4">
-                    <h4 class="card-title h5 fw-bold mb-1">{{name}} <span class="badge bg-warning text-dark">{{rating}}</span></h4>
+                    <h4 class="card-title h5 fw-bold mb-0">{{name}} <span class="badge bg-warning text-dark">{{rating}}</span></h4>
+                    {{#if categories}}
+                    <div class="mb-2 mt-2">
+                        {{#each categories}}
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle me-1" style="font-size: 0.75rem;">{{this}}</span>
+                        {{/each}}
+                    </div>
+                    {{/if}}
                     <p class="card-text text-muted small mb-3">Ελ. Παρ.: {{formatPrice 10}}. Χρόνος: {{estimated_preparation_time}}</p>
                     <a href="/restaurant/{{id}}" class="btn btn-menu w-100 fw-bold py-2 rounded-pill">Δες το Μενού</a>
                 </div>
@@ -210,13 +283,58 @@ document.getElementById('toggleUpdateMap')?.addEventListener('click', function()
 });
 
 
+let selectedCategory = 'all';
+
+function selectCategory(el) {
+    // If clicking the already active category, reset to 'all'
+    if (el.classList.contains('active')) {
+        if (selectedCategory !== 'all') {
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector('.category-btn[data-category="all"]').classList.add('active');
+            selectedCategory = 'all';
+        }
+    } else {
+        document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+        el.classList.add('active');
+        selectedCategory = el.getAttribute('data-category');
+    }
+    filterRestaurants();
+}
+
 function filterRestaurants() {
     const query = document.getElementById('searchRestaurant').value.toLowerCase().trim();
-    document.querySelectorAll('.restaurant-card').forEach(card => {
-        const name = card.querySelector('.card-title').textContent.toLowerCase();
-        const wrapper = card.closest('.col-12');
-        if (wrapper) wrapper.style.display = name.includes(query) ? '' : 'none';
+    const wrappers = document.querySelectorAll('.restaurant-card-wrapper');
+    let visibleCount = 0;
+
+    wrappers.forEach(wrapper => {
+        const name = wrapper.querySelector('.card-title').textContent.toLowerCase();
+        const categories = wrapper.getAttribute('data-categories').toLowerCase().split(',');
+        
+        const matchesQuery = name.includes(query) || categories.some(cat => cat.includes(query));
+        const matchesCategory = selectedCategory === 'all' || categories.includes(selectedCategory.toLowerCase());
+        
+        if (matchesQuery && matchesCategory) {
+            wrapper.style.display = '';
+            visibleCount++;
+        } else {
+            wrapper.style.display = 'none';
+        }
     });
+
+    // Handle no results message if needed
+    const noResults = document.getElementById('noResultsMessage');
+    if (visibleCount === 0 && wrappers.length > 0) {
+        if (!noResults) {
+            const msg = document.createElement('div');
+            msg.id = 'noResultsMessage';
+            msg.className = 'col-12 text-center py-5';
+            msg.innerHTML = '<p class="text-muted">Δεν βρέθηκαν εστιατόρια που να ταιριάζουν με τα κριτήρια σας.</p>';
+            document.getElementById('restaurantList').appendChild(msg);
+        }
+    } else if (noResults) {
+        noResults.remove();
+    }
 }
+
 document.getElementById('searchRestaurant')?.addEventListener('input', filterRestaurants);
 </script>

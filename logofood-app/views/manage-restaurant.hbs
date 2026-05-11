@@ -50,11 +50,40 @@
                     </div>
                     <div class="col-md-12">
                         <div class="glass-card h-100 border-start border-4 border-primary">
-                            <h5 class="fw-bold mb-3 text-primary">Ωράριο Λειτουργίας (Operating Hours)</h5>
-                            <form action="/manage/settings" method="POST" class="d-flex gap-2">
-                                <input type="text" name="operatingHours" class="form-control" 
-                                       value="{{restaurant.operating_hours}}" placeholder="π.χ. 09:00 - 22:00" required>
-                                <button type="submit" class="btn btn-dashboard-submit px-4">Αλλαγή</button>
+                            <h5 class="fw-bold mb-3 text-primary">Κατηγορίες Εστιατορίου</h5>
+                            {{#if restaurant.categories.length}}
+                            <div class="mb-3 d-flex flex-wrap gap-2">
+                                {{#each restaurant.categories}}
+                                <span class="badge bg-secondary text-white">{{this}}</span>
+                                {{/each}}
+                            </div>
+                            {{else}}
+                            <div class="mb-3 text-muted small">Δεν υπάρχουν ακόμη κατηγορίες.</div>
+                            {{/if}}
+                            <form action="/manage/categories" method="POST">
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">1η Κατηγορία</label>
+                                        <select name="categories" class="form-select">
+                                            <option value="">-- Επιλέξτε κατηγορία --</option>
+                                            {{#each availableRestaurantCategories}}
+                                            <option value="{{id}}" {{#if (eq id (getAt restaurant.categories 0))}}selected{{/if}}>{{name}}</option>
+                                            {{/each}}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">2η Κατηγορία (Προαιρετικό)</label>
+                                        <select name="categories" class="form-select">
+                                            <option value="">-- Επιλέξτε κατηγορία --</option>
+                                            {{#each availableRestaurantCategories}}
+                                            <option value="{{id}}" {{#if (eq id (getAt restaurant.categories 1))}}selected{{/if}}>{{name}}</option>
+                                            {{/each}}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <button type="submit" class="btn btn-dashboard-submit px-4">Αποθήκευση Κατηγοριών</button>
+                                </div>
                             </form>
                         </div>
                     </div>

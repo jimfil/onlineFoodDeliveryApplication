@@ -3,7 +3,7 @@
  * Landing page + browse restaurants.
  */
 import * as restaurantModel from '../model/restaurant-model.mjs';
-import * as userModel       from '../model/user-model.mjs';
+import * as userModel from '../model/user-model.mjs';
 
 /** GET / — render landing page */
 export async function showLanding(req, res) {
@@ -21,7 +21,7 @@ export async function showBrowse(req, res) {
   }
   try {
     const { street, streetNumber, zipCode } = req.query;
-    
+
     // 1. If address in query, save to session
     if (street && streetNumber) {
       req.session.deliveryAddress = { street, streetNumber, zipCode };
@@ -37,12 +37,43 @@ export async function showBrowse(req, res) {
     }
 
     const restaurants = await restaurantModel.getAllRestaurants();
-    const deliveryAddressStr = req.session.deliveryAddress 
+    const categories = await restaurantModel.getAllRestaurantCategories();
+
+    // Emoji mapping for categories
+    const emojiMap = {
+      'Burger': '🍔',
+      'American': '🌭',
+      'Fast Food': '🍟',
+      'Healthy': '🥬',
+      'Italian': '🍝',
+      'Seafood': '🐟',
+      'Brunch': '☕',
+      'Pizza': '🍕',
+      'Mexican': '🌮',
+      'Asian': '🍜',
+      'Σουβλάκια': '🍢',
+      'Ψητά Σχάρας': '🥩',
+      //gia future use: 
+      'Sushi': '🍣',
+      'Pasta': '🍝',
+      'Salads': '🥗',
+      'Desserts': '🍰',
+      'Coffee': '☕',
+      'Crepes': '🥞'
+    };
+
+    const categoriesWithEmoji = categories.map(cat => ({
+      ...cat,
+      emoji: emojiMap[cat.name] || '🍴'
+    }));
+
+    const deliveryAddressStr = req.session.deliveryAddress
       ? `${req.session.deliveryAddress.street} ${req.session.deliveryAddress.streetNumber}`
       : (addresses.length > 0 ? `${addresses[0].street} ${addresses[0].street_number}` : null);
 
-    res.render('browse', { 
-      restaurants, 
+    res.render('browse', {
+      restaurants,
+      categories: categoriesWithEmoji,
       deliveryAddress: deliveryAddressStr,
       hasAddress,
       addresses,

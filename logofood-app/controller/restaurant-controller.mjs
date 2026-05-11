@@ -29,6 +29,7 @@ export async function showManage(req, res) {
     const products = await restaurantModel.getRestaurantProducts(req.session.user.id);
     const allCategories = await restaurantModel.getAllCategories(req.session.user.id);
     const restaurantCategories = await restaurantModel.getCategoriesByRestaurant(req.session.user.id);
+    const availableRestaurantCategories = await restaurantModel.getAllRestaurantCategories();
     const orders = await orderModel.getOrdersByRestaurant(req.session.user.id);
 
     // Group products by category for the view
@@ -44,6 +45,7 @@ export async function showManage(req, res) {
       products, 
       allCategories,
       restaurantCategories,
+      availableRestaurantCategories,
       productsByCategory,
       orders
     });
@@ -116,6 +118,21 @@ export async function reorder(req, res) {
     console.error('Reorder error:', err);
     res.status(500).json({ error: 'Αποτυχία αναδιάταξης.' });
   }
+}
+
+/** POST /manage/categories — update restaurant categories */
+export async function updateCategories(req, res) {
+  const { categories } = req.body;
+  try {
+    // categories should be an array of category IDs
+    const categoryIds = Array.isArray(categories) ? categories : (categories ? [categories] : []);
+    await restaurantModel.updateRestaurantCategories(req.session.user.id, categoryIds);
+    req.flash('success', 'Οι κατηγορίες του εστιατορίου ενημερώθηκαν.');
+  } catch (err) {
+    console.error('Categories update error:', err);
+    req.flash('error', 'Σφάλμα ενημέρωσης κατηγοριών.');
+  }
+  res.redirect('/manage');
 }
 
 /** GET /manage/orders — restaurant order management page */

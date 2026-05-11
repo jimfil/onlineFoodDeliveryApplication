@@ -10,6 +10,13 @@
         </div>
         <div class="card-body text-center py-4">
             <h2 class="fw-bold mb-2">{{restaurant.name}}</h2>
+            {{#if restaurant.categories}}
+            <div class="mb-3">
+                {{#each restaurant.categories}}
+                <span class="badge bg-primary me-2" style="font-size: 0.85rem; padding: 0.5rem 0.75rem;">{{this}}</span>
+                {{/each}}
+            </div>
+            {{/if}}
             <p class="text-muted mb-3">{{restaurant.description}}</p>
             <div class="d-flex justify-content-center gap-3 flex-wrap">
                 <span class="badge bg-success bg-opacity-10 text-success p-2 px-3 rounded-pill">⭐ {{restaurant.rating}}/5</span>
