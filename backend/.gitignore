@@ -1,5 +1,0 @@
-node_modules/
-*.log
-.env
-database/logofood.db
-.DS_Store
