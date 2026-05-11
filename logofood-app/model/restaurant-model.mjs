@@ -38,8 +38,8 @@ export async function getRestaurantMenu(restaurantId) {
     `SELECT p.id, p.name, p.price, p.description, p.image_url, p.display_order,
             pc.id AS category_id, pc.name AS category_name, pc.display_order AS cat_order
      FROM Product p
-     LEFT JOIN Product_Category_Mapping pcm ON p.id = pcm.product_id
-     LEFT JOIN Product_Category pc ON pcm.category_id = pc.id
+     JOIN Product_Category_Mapping pcm ON p.id = pcm.product_id
+     JOIN Product_Category pc ON pcm.category_id = pc.id
      WHERE p.restaurant_id = ?
      ORDER BY pc.display_order ASC, pc.name ASC, p.display_order ASC, p.name ASC`,
     [restaurantId]
@@ -69,8 +69,8 @@ export async function getRestaurantProducts(restaurantId) {
   const [rows] = await pool.execute(
     `SELECT p.*, pc.id AS category_id, pc.name AS categoryName
      FROM Product p
-     LEFT JOIN Product_Category_Mapping pcm ON p.id = pcm.product_id
-     LEFT JOIN Product_Category pc ON pcm.category_id = pc.id
+     JOIN Product_Category_Mapping pcm ON p.id = pcm.product_id
+     JOIN Product_Category pc ON pcm.category_id = pc.id
      WHERE p.restaurant_id = ?
      ORDER BY pc.display_order ASC, p.display_order ASC`,
     [restaurantId]
@@ -78,10 +78,11 @@ export async function getRestaurantProducts(restaurantId) {
   return rows;
 }
 
-/** Get all product categories. */
-export async function getAllCategories() {
+/** Get all product categories for a restaurant. */
+export async function getAllCategories(restaurantId) {
   const [rows] = await pool.execute(
-    'SELECT * FROM Product_Category ORDER BY display_order ASC, name ASC'
+    'SELECT * FROM Product_Category WHERE restaurant_id = ? ORDER BY display_order ASC, name ASC',
+    [restaurantId]
   );
   return rows;
 }
@@ -93,13 +94,19 @@ export async function createProduct(restaurantId, { name, price, description, ca
     conn = await pool.getConnection();
     await conn.beginTransaction();
 
-    let finalCategoryId = categoryId || null;
+    let finalCategoryId = (categoryId === 'NEW' || !categoryId) ? null : categoryId;
     if (!finalCategoryId && newCategoryName) {
-      const [existing] = await conn.execute('SELECT id FROM Product_Category WHERE name = ?', [newCategoryName]);
+      const [existing] = await conn.execute(
+        'SELECT id FROM Product_Category WHERE name = ? AND restaurant_id = ?', 
+        [newCategoryName, restaurantId]
+      );
       if (existing.length > 0) {
         finalCategoryId = existing[0].id;
       } else {
-        const [catResult] = await conn.execute('INSERT INTO Product_Category (name) VALUES (?)', [newCategoryName]);
+        const [catResult] = await conn.execute(
+          'INSERT INTO Product_Category (name, restaurant_id) VALUES (?, ?)', 
+          [newCategoryName, restaurantId]
+        );
         finalCategoryId = catResult.insertId;
       }
     }
@@ -158,14 +165,10 @@ export async function getRestaurantByUserId(userId) {
   return rows[0] || null;
 }
 
-/** Get all product categories associated with a restaurant's products. */
+/** Get all product categories belonging to a restaurant. */
 export async function getCategoriesByRestaurant(restaurantId) {
   const [rows] = await pool.execute(
-    `SELECT DISTINCT pc.* 
-     FROM Product_Category pc
-     JOIN Product_Category_Mapping pcm ON pc.id = pcm.category_id
-     JOIN Product p ON pcm.product_id = p.id
-     WHERE p.restaurant_id = ?`,
+    `SELECT * FROM Product_Category WHERE restaurant_id = ? ORDER BY display_order ASC, name ASC`,
     [restaurantId]
   );
   return rows;
@@ -182,14 +185,7 @@ export async function reorderItem(restaurantId, type, id, direction) {
     // 1. Get all items in current order
     let query, params;
     if (type === 'category') {
-      // For categories, we only reorder those USED by this restaurant
-      query = `SELECT pc.id, pc.display_order 
-               FROM Product_Category pc
-               JOIN Product_Category_Mapping pcm ON pc.id = pcm.category_id
-               JOIN Product p ON pcm.product_id = p.id
-               WHERE p.restaurant_id = ?
-               GROUP BY pc.id
-               ORDER BY pc.display_order ASC, pc.name ASC`;
+      query = `SELECT id, display_order FROM Product_Category WHERE restaurant_id = ? ORDER BY display_order ASC, name ASC`;
       params = [restaurantId];
     } else {
       query = `SELECT id, display_order FROM Product WHERE restaurant_id = ? ORDER BY display_order ASC, name ASC`;

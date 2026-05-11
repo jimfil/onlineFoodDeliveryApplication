@@ -73,7 +73,9 @@ CREATE TABLE Product (
 CREATE TABLE Product_Category (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
-  display_order INT DEFAULT 0
+  display_order INT DEFAULT 0,
+  restaurant_id INT NOT NULL,
+  FOREIGN KEY (restaurant_id) REFERENCES Restaurant(id)
 );
 
 CREATE TABLE Product_Category_Mapping (

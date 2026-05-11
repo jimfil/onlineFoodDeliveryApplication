@@ -26,7 +26,7 @@ export async function showManage(req, res) {
   try {
     const restaurant = await restaurantModel.getRestaurantByUserId(req.session.user.id);
     const products = await restaurantModel.getRestaurantProducts(req.session.user.id);
-    const allCategories = await restaurantModel.getAllCategories();
+    const allCategories = await restaurantModel.getAllCategories(req.session.user.id);
     const restaurantCategories = await restaurantModel.getCategoriesByRestaurant(req.session.user.id);
 
     // Group products by category for the view
