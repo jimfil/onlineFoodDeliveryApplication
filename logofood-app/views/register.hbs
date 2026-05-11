@@ -1,0 +1,112 @@
+{{!-- views/register.hbs — Customer registration --}}
+<main class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow-sm p-4 rounded-4">
+                <h2 class="fw-bold mb-4 text-center">Δημιουργία Λογαριασμού</h2>
+
+                <form action="/register" method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="firstName" class="form-label text-muted small fw-bold">Όνομα</label>
+                            <input type="text" id="firstName" name="firstName" class="form-control" 
+                                   placeholder="Γιώργος" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="lastName" class="form-label text-muted small fw-bold">Επώνυμο</label>
+                            <input type="text" id="lastName" name="lastName" class="form-control" 
+                                   placeholder="Παπαδόπουλος" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="street" class="form-label text-muted small fw-bold">Οδός</label>
+                            <input type="text" id="registerStreet" name="street" class="form-control" 
+                                   placeholder="π.χ. Ερμού" required>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="streetNumber" class="form-label text-muted small fw-bold">Αριθμός</label>
+                            <input type="text" id="registerNumber" name="streetNumber" class="form-control" 
+                                   placeholder="π.χ. 12" required>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="zipCode" class="form-label text-muted small fw-bold">Τ.Κ.</label>
+                            <input type="text" id="registerZip" name="zipCode" class="form-control" 
+                                   placeholder="π.χ. 10563">
+                        </div>
+
+                        <div class="col-12">
+                            <button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold" id="toggleRegisterMap">
+                                📍 Επιλογή διεύθυνσης στο χάρτη
+                            </button>
+                            <div id="registerMapContainer" class="d-none mt-3">
+                                <div class="mb-3 position-relative">
+                                    <label for="registerAddressSearch" class="form-label">Αναζήτηση διεύθυνσης</label>
+                                    <input type="text" id="registerAddressSearch" class="form-control" placeholder="π.χ. Ερμού 12" autocomplete="off">
+                                    <div id="registerAddressResults" class="list-group mt-2 d-none"></div>
+                                </div>
+                                <div id="registerMap" style="height: 300px; border-radius: 16px;"></div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="email" class="form-label text-muted small fw-bold">Email</label>
+                            <input type="email" id="email" name="email" class="form-control" 
+                                   placeholder="example@example.com" required>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="password" class="form-label text-muted small fw-bold">Κωδικός Πρόσβασης</label>
+                            <input type="password" id="password" name="password" class="form-control" 
+                                   placeholder="Τουλάχιστον 6 χαρακτήρες" required minlength="6">
+                        </div>
+
+                        <div class="col-12">
+                            <label for="contactPhone" class="form-label text-muted small fw-bold">Τηλέφωνο</label>
+                            <input type="tel" id="contactPhone" name="contactPhone" class="form-control" 
+                                   placeholder="69xxxxxxxx" required>
+                        </div>
+
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-menu btn-lg w-100 fw-bold shadow-sm">Δημιουργία Λογαριασμού</button>
+                        </div>
+
+                        <div class="col-12 text-center mt-3">
+                            <a href="/login" class="text-decoration-none text-muted small">Έχετε ήδη λογαριασμό? Συνδεθείτε</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+document.getElementById('toggleRegisterMap')?.addEventListener('click', function() {
+    const container = document.getElementById('registerMapContainer');
+    container.classList.toggle('d-none');
+    if (!container.classList.contains('d-none') && !window._regMapInit) {
+        window._regMapInit = true;
+        initLeafletMap('registerMap', async (lat, lon) => {
+            const addr = await reverseGeocode(lat, lon);
+            fillAddressFields(addr, {
+                streetId: 'registerStreet',
+                numberId: 'registerNumber',
+                zipId: 'registerZip'
+            });
+        }, {
+            searchInputId: 'registerAddressSearch',
+            resultsContainerId: 'registerAddressResults',
+            onAddressPicked: (selected) => {
+                fillAddressFields(selected.address, {
+                    streetId: 'registerStreet',
+                    numberId: 'registerNumber',
+                    zipId: 'registerZip'
+                });
+            }
+        });
+    }
+});
+</script>

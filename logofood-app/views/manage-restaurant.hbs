@@ -1,0 +1,215 @@
+<main class="container dashboard-container my-5">
+    <div class="row mb-5 text-center text-md-start">
+        <div class="col-12">
+            <h2 class="fw-bold mb-1">Πίνακας Ελέγχου</h2>
+            <p class="text-muted">Διαχειριστείτε το κατάστημα και το μενού σας.</p>
+        </div>
+    </div>
+
+    {{!-- Settings Row --}}
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="glass-card h-100 border-start border-4 border-primary">
+                <h5 class="fw-bold mb-3 text-primary">Όνομα Καταστήματος</h5>
+                <form action="/manage/settings" method="POST" class="d-flex gap-2">
+                    <input type="text" name="name" class="form-control" value="{{restaurant.name}}" required>
+                    <button type="submit" class="btn btn-dashboard-submit px-4">Αλλαγή</button>
+                </form>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="glass-card h-100 border-start border-4 border-primary">
+                <h5 class="fw-bold mb-3 text-primary">Χρόνος Προετοιμασίας</h5>
+                <form action="/manage/settings" method="POST" class="d-flex gap-2">
+                    <input type="text" name="estimatedPreparationTime" class="form-control" 
+                           value="{{restaurant.estimated_preparation_time}}" placeholder="π.χ. 20-30 λεπτά" required>
+                    <button type="submit" class="btn btn-dashboard-submit px-4">Αλλαγή</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{!-- Category Management Section (New) --}}
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="glass-card border-start border-4 border-secondary">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0 text-secondary">Διαχείριση Κατηγοριών</h5>
+                    <p class="small text-muted mb-0">Ορίστε τη σειρά εμφάνισης των κατηγοριών στο μενού.</p>
+                </div>
+                <div id="categoryOrderList" class="d-flex flex-wrap gap-2">
+                    {{#each restaurantCategories}}
+                    <div class="category-order-item d-flex align-items-center gap-2 p-2 px-3 border rounded-pill bg-white shadow-sm">
+                        <span class="fw-bold small me-2">{{name}}</span>
+                        <button class="btn btn-light btn-sm rounded-circle p-1 leading-none d-flex align-items-center justify-content-center" 
+                                style="width: 24px; height: 24px;"
+                                onclick="reorder('category', {{id}}, -1)">
+                            <i class="bi bi-caret-left-fill text-secondary small"></i>
+                        </button>
+                        <button class="btn btn-light btn-sm rounded-circle p-1 leading-none d-flex align-items-center justify-content-center" 
+                                style="width: 24px; height: 24px;"
+                                onclick="reorder('category', {{id}}, 1)">
+                            <i class="bi bi-caret-right-fill text-secondary small"></i>
+                        </button>
+                    </div>
+                    {{else}}
+                    <p class="text-muted small">Δεν υπάρχουν ακόμα κατηγορίες στο μενού σας.</p>
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {{!-- Add Product Column --}}
+        <div class="col-lg-4">
+            <div class="glass-card">
+                <h5 class="fw-bold mb-4 text-primary">Προσθήκη Προϊόντος</h5>
+                <form method="POST" action="/manage/products">
+                    <div class="mb-3">
+                        <label class="form-label">Όνομα Προϊόντος</label>
+                        <input type="text" name="name" class="form-control" placeholder="π.χ. Burger Classic" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Κατηγορία</label>
+                        <select name="categoryId" class="form-select mb-2" id="categorySelect" required>
+                            <option value="" disabled selected>Επιλέξτε κατηγορία...</option>
+                            <option value="NEW">+ Νέα Κατηγορία...</option>
+                            {{#each allCategories}}
+                            <option value="{{id}}">{{name}}</option>
+                            {{/each}}
+                        </select>
+                        <div id="newCategoryWrapper" class="d-none">
+                            <input type="text" name="newCategoryName" class="form-control" placeholder="Όνομα νέας κατηγορίας">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Τιμή (€)</label>
+                        <input type="number" name="price" class="form-control" step="0.01" placeholder="0.00" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Περιγραφή</label>
+                        <textarea name="description" class="form-control" rows="3" placeholder="Συστατικά..."></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Εικόνα (URL)</label>
+                        <input type="url" name="imageUrl" class="form-control" placeholder="https://...">
+                    </div>
+
+                    <button type="submit" class="btn btn-dashboard-submit w-100">
+                        <i class="bi bi-plus-lg me-2"></i>Προσθήκη στο Μενού
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        {{!-- Menu Items Table --}}
+        <div class="col-lg-8">
+            <div class="glass-card border-start border-4 border-primary">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                    <h5 class="fw-bold mb-0 text-primary">Ενεργό Μενού</h5>
+                    <div class="input-group input-group-sm w-auto">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                        <input type="text" id="menuSearch" class="form-control border-start-0" placeholder="Αναζήτηση...">
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle border-top" id="menuTable">
+                        <tbody>
+                            {{#each productsByCategory}}
+                            <tr class="table-light category-header">
+                                <td colspan="4" class="fw-bold text-secondary small text-uppercase py-2">{{categoryName}}</td>
+                            </tr>
+                            {{#each products}}
+                            <tr class="product-row">
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        {{#if image_url}}
+                                        <img src="{{image_url}}" class="rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                                        {{/if}}
+                                        <div>
+                                            <div class="fw-bold product-name">{{name}}</div>
+                                            <div class="text-muted small text-truncate" style="max-width: 250px;">{{description}}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-end fw-bold">{{formatPrice price}}</td>
+                                <td class="text-end">
+                                    <div class="d-flex align-items-center justify-content-end gap-1">
+                                        <button class="btn btn-light btn-sm rounded-circle p-1 d-flex align-items-center justify-content-center border shadow-sm" 
+                                                style="width: 28px; height: 28px;"
+                                                onclick="reorder('product', {{id}}, -1)" title="Μετακίνηση πάνω">
+                                            <i class="bi bi-caret-up-fill text-primary small"></i>
+                                        </button>
+                                        <button class="btn btn-light btn-sm rounded-circle p-1 d-flex align-items-center justify-content-center border shadow-sm" 
+                                                style="width: 28px; height: 28px;"
+                                                onclick="reorder('product', {{id}}, 1)" title="Μετακίνηση κάτω">
+                                            <i class="bi bi-caret-down-fill text-primary small"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <form method="POST" action="/manage/products/{{id}}/delete">
+                                        <button type="submit" class="btn btn-light btn-sm rounded-circle p-1 d-flex align-items-center justify-content-center border shadow-sm text-danger" 
+                                                style="width: 28px; height: 28px;"
+                                                onclick="return confirm('Διαγραφή;')">
+                                            <i class="bi bi-trash3-fill small"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {{/each}}
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    // New Category Toggle
+    const select = document.getElementById('categorySelect');
+    const wrapper = document.getElementById('newCategoryWrapper');
+    select?.addEventListener('change', () => {
+        wrapper.classList.toggle('d-none', select.value !== 'NEW');
+    });
+
+    // Menu Table Search
+    document.getElementById('menuSearch')?.addEventListener('input', function(e) {
+        const query = e.target.value.toLowerCase();
+        document.querySelectorAll('.product-row').forEach(row => {
+            const name = row.querySelector('.product-name').textContent.toLowerCase();
+            row.style.display = name.includes(query) ? '' : 'none';
+        });
+        // Hide category headers if all products under them are hidden
+        document.querySelectorAll('.category-header').forEach(header => {
+            let next = header.nextElementSibling;
+            let hasVisible = false;
+            while (next && !next.classList.contains('category-header')) {
+                if (next.style.display !== 'none') hasVisible = true;
+                next = next.nextElementSibling;
+            }
+            header.style.display = hasVisible ? '' : 'none';
+        });
+    });
+
+    // Reorder Logic
+    async function reorder(type, id, direction) {
+        const res = await fetch('/manage/reorder', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type, id, direction })
+        });
+        if (res.ok) {
+            window.location.reload();
+        } else {
+            alert('Σφάλμα κατά την αναδιάταξη.');
+        }
+    }
+</script>

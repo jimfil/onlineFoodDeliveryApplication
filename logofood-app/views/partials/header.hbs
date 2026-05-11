@@ -1,0 +1,42 @@
+<header class="custom-header py-3 shadow-sm">
+    <div class="container d-flex justify-content-between align-items-center">
+        <h1 class="h4 mb-0 custom-header-text fw-bold">
+            <a href="/browse" class="text-decoration-none text-dark" id="logo">logofood</a>
+        </h1>
+        <div class="d-flex gap-2 align-items-center">
+            {{#if user}}
+                {{#eq user.accountType "RESTAURANT"}}
+                    {{!-- Hide cart for restaurants --}}
+                {{else}}
+                    {{#unless noCartBadge}}
+                    <a href="/cart" class="btn btn-custom btn-sm fw-bold" id="cartBtn">
+                        Καλάθι <span id="cartBadge" class="badge custom-number ms-1">{{cartCount}}</span>
+                    </a>
+                    {{/unless}}
+                {{/eq}}
+            {{else}}
+                {{#unless noCartBadge}}
+                <a href="/cart" class="btn btn-custom btn-sm fw-bold" id="cartBtn">
+                    Καλάθι <span id="cartBadge" class="badge custom-number ms-1">{{cartCount}}</span>
+                </a>
+                {{/unless}}
+            {{/if}}
+
+            {{#if user}}
+                <div class="d-flex align-items-center gap-3">
+                    <a href="{{#eq user.accountType 'RESTAURANT'}}/manage{{else}}/account{{/eq}}" 
+                       class="text-white text-decoration-none fw-bold small">
+                        {{#eq user.accountType "RESTAURANT"}}
+                            {{user.restaurantName}}
+                        {{else}}
+                            {{user.firstName}} {{user.lastName}}
+                        {{/eq}}
+                    </a>
+                    <a href="/logout" class="btn btn-sm btn-danger fw-bold">Αποσύνδεση</a>
+                </div>
+            {{else}}
+                <a href="/login" class="btn btn-sm text-auth fw-bold">Σύνδεση/Εγγραφή</a>
+            {{/if}}
+        </div>
+    </div>
+</header>

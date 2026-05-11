@@ -1,0 +1,73 @@
+{{!-- views/index.hbs — Landing page --}}
+<div class="landing-wrapper px-3">
+    <h1 class="landing-logo mb-2">logofood</h1>
+    <h2 class="h5 text-muted mb-5 text-center">Βάλε τη διεύθυνσή σου για να δεις τα εστιατόρια</h2>
+
+    <div class="address-box">
+        <form method="GET" action="/browse">
+            <div class="row g-2 mb-4">
+                <div class="col-12 col-md-6">
+                    <label for="landingStreet" class="form-label fw-bold text-secondary">Οδός</label>
+                    <input type="text" id="landingStreet" name="street"
+                           class="form-control form-control-lg" placeholder="π.χ. Ερμού">
+                </div>
+                <div class="col-6 col-md-3">
+                    <label for="landingNumber" class="form-label fw-bold text-secondary">Αριθμός</label>
+                    <input type="text" id="landingNumber" name="streetNumber"
+                           class="form-control form-control-lg" placeholder="12">
+                </div>
+                <div class="col-6 col-md-3">
+                    <label for="landingZip" class="form-label fw-bold text-secondary">Τ.Κ.</label>
+                    <input type="text" id="landingZip" name="zipCode"
+                           class="form-control form-control-lg" placeholder="10563">
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold"
+                        id="toggleLandingMap">
+                    📍 Επιλογή στο χάρτη
+                </button>
+                <div id="landingMapContainer" class="d-none mt-3">
+                    <div class="mb-3 position-relative">
+                        <label for="landingAddressSearch" class="form-label">Αναζήτηση διεύθυνσης</label>
+                        <input type="text" id="landingAddressSearch" class="form-control"
+                               placeholder="π.χ. Ερμού 12" autocomplete="off">
+                        <div id="landingAddressResults" class="list-group mt-2 d-none"></div>
+                    </div>
+                    <div id="landingMap" style="height: 300px; border-radius: 16px;"></div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-custom btn-lg w-100 fw-bold">Βρες Εστιατόρια</button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('toggleLandingMap')?.addEventListener('click', function () {
+    const container = document.getElementById('landingMapContainer');
+    container.classList.toggle('d-none');
+    if (!container.classList.contains('d-none') && !window._landingMapInit) {
+        window._landingMapInit = true;
+        initLeafletMap('landingMap', async (lat, lon) => {
+            const addr = await reverseGeocode(lat, lon);
+            fillAddressFields(addr, {
+                streetId: 'landingStreet',
+                numberId: 'landingNumber',
+                zipId: 'landingZip'
+            });
+        }, {
+            searchInputId: 'landingAddressSearch',
+            resultsContainerId: 'landingAddressResults',
+            onAddressPicked: (selected) => {
+                fillAddressFields(selected.address, {
+                    streetId: 'landingStreet',
+                    numberId: 'landingNumber',
+                    zipId: 'landingZip'
+                });
+            }
+        });
+    }
+});
+</script>
