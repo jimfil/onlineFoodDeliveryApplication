@@ -3,6 +3,7 @@
  * Customer account & address management.
  */
 import * as userModel from '../model/user-model.mjs';
+import * as orderModel from '../model/order-model.mjs';
 
 /** GET /account */
 export async function showAccount(req, res) {
@@ -72,4 +73,16 @@ export async function deleteAddress(req, res) {
     req.flash('error', 'Σφάλμα διαγραφής διεύθυνσης.');
   }
   res.redirect('/account');
+}
+
+/** GET /track-orders */
+export async function renderTrackOrders(req, res) {
+  try {
+    const customerId = req.session.user.id;
+    const orders = await orderModel.getOrdersByCustomerId(customerId);
+    res.render('track-orders', { orders });
+  } catch (err) {
+    console.error('Track orders error:', err);
+    res.render('error', { message: 'Αδυναμία φόρτωσης παραγγελιών.' });
+  }
 }

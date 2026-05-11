@@ -196,38 +196,11 @@
 
             <!-- Orders Section -->
             <div id="section-orders" class="d-none">
-                <div class="glass-card border-start border-4 border-primary">
-                    <h5 class="fw-bold mb-4 text-primary">Εισερχόμενες Παραγγελίες</h5>
-                    <div class="table-responsive">
-                        <table class="table align-middle">
-                            <thead>
-                                <tr>
-                                    <th>Κωδικός</th>
-                                    <th>Ημερομηνία</th>
-                                    <th>Πελάτης</th>
-                                    <th>Διεύθυνση</th>
-                                    <th>Κατάσταση</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {{#each orders}}
-                                <tr>
-                                    <td class="fw-bold text-primary">#{{id}}</td>
-                                    <td>{{created_at}}</td>
-                                    <td>{{first_name}} {{last_name}}</td>
-                                    <td>{{street}} {{street_number}}</td>
-                                    <td>
-                                        <span class="badge bg-secondary">{{status}}</span>
-                                    </td>
-                                </tr>
-                                {{else}}
-                                <tr>
-                                    <td colspan="5" class="text-center text-muted py-4">Δεν υπάρχουν παραγγελίες.</td>
-                                </tr>
-                                {{/each}}
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="glass-card text-center p-5 border-start border-4 border-primary">
+                    <div class="display-4 mb-4">📦</div>
+                    <h3 class="fw-bold mb-3">Διαχείριση Παραγγελιών</h3>
+                    <p class="text-muted mb-4">Δείτε τις λεπτομέρειες των εισερχόμενων παραγγελιών και ενημερώστε την κατάστασή τους (Προετοιμασία, Έτοιμη, Διανομή κ.λπ.)</p>
+                    <a href="/manage/orders" class="btn btn-menu btn-lg fw-bold px-5 shadow-sm">Είσοδος στη Διαχείριση</a>
                 </div>
             </div>
 

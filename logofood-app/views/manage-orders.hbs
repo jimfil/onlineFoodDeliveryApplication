@@ -1,0 +1,82 @@
+{{!-- views/manage-orders.hbs — Restaurant Order Management --}}
+<main class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">Διαχείριση Παραγγελιών</h2>
+        <a href="/manage" class="btn btn-outline-secondary rounded-pill fw-bold">
+            <i class="bi bi-arrow-left me-1"></i> Πίσω στο Μενού
+        </a>
+    </div>
+
+    {{#if orders.length}}
+    <div class="row g-4">
+        {{#each orders}}
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-white py-3 border-0">
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            <h5 class="fw-bold mb-1">Παραγγελία #{{id}}</h5>
+                            <small class="text-muted">{{created_at}}</small>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge {{#eq status 'COMPLETED'}}bg-success{{else}}{{#eq status 'CANCELLED'}}bg-danger{{else}}bg-warning text-dark{{/eq}}{{/eq}} px-3 py-2 rounded-pill">
+                                    {{status}}
+                                </span>
+                                <i class="bi bi-arrow-right text-muted"></i>
+                                <form method="POST" action="/manage/orders/{{id}}/status" class="d-flex gap-2">
+                                    <select name="status" class="form-select form-select-sm rounded-pill border-secondary-subtle" onchange="this.form.submit()">
+                                        <option value="" disabled selected>Αλλαγή...</option>
+                                        <option value="PENDING">PENDING</option>
+                                        <option value="PREPARING">PREPARING</option>
+                                        <option value="READY">READY</option>
+                                        <option value="DELIVERING">DELIVERING</option>
+                                        <option value="COMPLETED">COMPLETED</option>
+                                        <option value="CANCELLED">CANCELLED</option>
+                                    </select>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                            <h5 class="fw-bold mb-0 text-danger">{{formatPrice total}}</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-4 border-top">
+                    <div class="row">
+                        <div class="col-md-6 border-end">
+                            <h6 class="fw-bold mb-3 text-primary"><i class="bi bi-person-fill me-2"></i>Στοιχεία Πελάτη</h6>
+                            <p class="mb-1 fw-bold">{{customerName}}</p>
+                            <p class="mb-1 text-muted small"><i class="bi bi-geo-alt-fill me-1"></i>{{address}}</p>
+                            {{#if floor}}<p class="mb-1 text-muted small"><i class="bi bi-building me-1"></i>Όροφος: {{floor}}</p>{{/if}}
+                            {{#if comments}}
+                            <div class="alert alert-light border-0 small mt-3 mb-0">
+                                <i class="bi bi-chat-left-dots-fill me-2"></i><strong>Σχόλια:</strong> {{comments}}
+                            </div>
+                            {{/if}}
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold mb-3 text-primary ps-md-4"><i class="bi bi-list-ul me-2"></i>Προϊόντα</h6>
+                            <ul class="list-group list-group-flush ps-md-4">
+                                {{#each items}}
+                                <li class="list-group-item bg-transparent px-0 py-2 border-0 d-flex justify-content-between">
+                                    <span><strong>{{quantity}}x</strong> {{productName}}</span>
+                                    <span class="text-muted">{{formatPrice price}}</span>
+                                </li>
+                                {{/each}}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{/each}}
+    </div>
+    {{else}}
+    <div class="text-center py-5 bg-white rounded-4 shadow-sm">
+        <div class="display-1 mb-4">📦</div>
+        <h3 class="fw-bold">Δεν υπάρχουν παραγγελίες</h3>
+        <p class="text-muted">Οι νέες παραγγελίες του εστιατορίου σας θα εμφανιστούν εδώ.</p>
+    </div>
+    {{/if}}
+</main>

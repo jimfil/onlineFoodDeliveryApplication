@@ -24,6 +24,7 @@
 
             {{#if user}}
                 <div class="d-flex align-items-center gap-3">
+                    <a href="/track-orders" class="text-white text-decoration-none fw-bold small me-3">Παραγγελίες</a>
                     <a href="{{#eq user.accountType 'RESTAURANT'}}/manage{{else}}/account{{/eq}}" 
                        class="text-white text-decoration-none fw-bold small">
                         {{#eq user.accountType "RESTAURANT"}}

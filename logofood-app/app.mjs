@@ -44,9 +44,14 @@ const hbs = exphbs.create({
   layoutsDir:   'views/layouts',
   partialsDir:  'views/partials',
   helpers: {
-    // {{#eq a b}}...{{else}}...{{/eq}} — block equality check
+    // {{#eq a b}}...{{else}}...{{/eq}} — block equality check OR (eq a b) — inline
     eq: function(a, b, options) {
-      return a === b ? options.fn(this) : options.inverse(this);
+      if (options && typeof options.fn === 'function') {
+        // Block usage
+        return a === b ? options.fn(this) : (options.inverse ? options.inverse(this) : '');
+      }
+      // Inline usage
+      return a === b;
     },
     // {{formatPrice price}} — e.g. 12.5 → "12,50 €"
     formatPrice: (price) => {

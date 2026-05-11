@@ -117,3 +117,32 @@ export async function reorder(req, res) {
     res.status(500).json({ error: 'Αποτυχία αναδιάταξης.' });
   }
 }
+
+/** GET /manage/orders — restaurant order management page */
+export async function showManageOrders(req, res) {
+  try {
+    const orders = await orderModel.getOrdersByRestaurantDetailed(req.session.user.id);
+    res.render('manage-orders', { orders });
+  } catch (err) {
+    console.error('Manage orders error:', err);
+    res.render('error', { message: 'Αδυναμία φόρτωσης παραγγελιών.' });
+  }
+}
+
+/** POST /manage/orders/:id/status — update order status */
+export async function updateOrderStatus(req, res) {
+  const { status } = req.body;
+  const orderId = req.params.id;
+  try {
+    const success = await orderModel.updateOrderStatus(orderId, req.session.user.id, status);
+    if (success) {
+      req.flash('success', `Η κατάσταση της παραγγελίας #${orderId} ενημερώθηκε σε ${status}.`);
+    } else {
+      req.flash('error', 'Δεν ήταν δυνατή η ενημέρωση της παραγγελίας.');
+    }
+  } catch (err) {
+    console.error('Status update error:', err);
+    req.flash('error', 'Σφάλμα κατά την ενημέρωση της κατάστασης.');
+  }
+  res.redirect('/manage/orders');
+}

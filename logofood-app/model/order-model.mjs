@@ -73,3 +73,113 @@ export async function getOrdersByRestaurant(restaurantId) {
   );
   return rows;
 }
+
+/** 
+ * Get full order details for a customer, including items and restaurant info.
+ * Grouped by order_id.
+ */
+export async function getOrdersByCustomerId(customerId) {
+  const [rows] = await pool.execute(
+    `SELECT o.id AS order_id, o.created_at, o.status, 
+            r.name AS restaurantName,
+            a.street, a.street_number, a.floor, a.comments AS addressComments,
+            oi.product_id, oi.quantity,
+            p.name AS productName, p.price
+     FROM Order_table o
+     JOIN Restaurant r ON o.restaurant_id = r.id
+     JOIN Address a ON o.delivery_address_id = a.id
+     JOIN Order_Item oi ON o.id = oi.order_id
+     JOIN Product p ON oi.product_id = p.id
+     WHERE o.customer_id = ?
+     ORDER BY o.created_at DESC`,
+    [customerId]
+  );
+
+  // Group items by order_id
+  const ordersMap = new Map();
+  for (const row of rows) {
+    if (!ordersMap.has(row.order_id)) {
+      ordersMap.set(row.order_id, {
+        id: row.order_id,
+        created_at: row.created_at,
+        status: row.status,
+        restaurantName: row.restaurantName,
+        address: `${row.street} ${row.street_number}`,
+        floor: row.floor,
+        comments: row.addressComments,
+        items: [],
+        total: 0
+      });
+    }
+    const order = ordersMap.get(row.order_id);
+    order.items.push({
+      productName: row.productName,
+      quantity: row.quantity,
+      price: row.price
+    });
+    order.total += row.price * row.quantity;
+  }
+
+  return Array.from(ordersMap.values());
+}
+
+/**
+ * Get detailed orders for a restaurant (most recent first), including items and customer info.
+ * Grouped by order_id.
+ */
+export async function getOrdersByRestaurantDetailed(restaurantId) {
+  const [rows] = await pool.execute(
+    `SELECT o.id AS order_id, o.created_at, o.status, 
+            COALESCE(c.first_name, 'Επισκέπτης') AS firstName, 
+            COALESCE(c.last_name, '') AS lastName,
+            a.street, a.street_number, a.floor, a.comments AS addressComments,
+            oi.product_id, oi.quantity,
+            p.name AS productName, p.price
+     FROM Order_table o
+     LEFT JOIN Customer c ON o.customer_id = c.id
+     JOIN Address a ON o.delivery_address_id = a.id
+     JOIN Order_Item oi ON o.id = oi.order_id
+     JOIN Product p ON oi.product_id = p.id
+     WHERE o.restaurant_id = ?
+     ORDER BY o.created_at DESC`,
+    [restaurantId]
+  );
+
+  const ordersMap = new Map();
+  for (const row of rows) {
+    if (!ordersMap.has(row.order_id)) {
+      ordersMap.set(row.order_id, {
+        id: row.order_id,
+        created_at: row.created_at,
+        status: row.status,
+        customerName: `${row.firstName} ${row.lastName}`.trim(),
+        address: `${row.street} ${row.street_number}`,
+        floor: row.floor,
+        comments: row.addressComments,
+        items: [],
+        total: 0
+      });
+    }
+    const order = ordersMap.get(row.order_id);
+    order.items.push({
+      productName: row.productName,
+      quantity: row.quantity,
+      price: row.price
+    });
+    order.total += row.price * row.quantity;
+  }
+
+  return Array.from(ordersMap.values());
+}
+
+/** Update order status if the restaurant owns it. */
+export async function updateOrderStatus(orderId, restaurantUserId, status) {
+  // Verify ownership first
+  const [rows] = await pool.execute(
+    `UPDATE Order_table 
+     SET status = ? 
+     WHERE id = ? AND restaurant_id = ?`,
+    [status, orderId, restaurantUserId]
+  );
+  return rows.affectedRows > 0;
+}
