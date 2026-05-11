@@ -11,7 +11,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h4 class="fw-bold mb-0 text-primary">{{restaurantName}}</h4>
-                            <div class="small text-muted mb-1">#{{id}} • {{created_at}}</div>
+                            <div class="small text-muted mb-1">#{{id}} • {{formatTime created_at}}</div>
                             <div class="small fw-bold"><i class="bi bi-geo-alt-fill me-1"></i>Παράδοση σε:
                                 {{address}}{{#if floor}} (Όροφος {{floor}}){{/if}}</div>
                             {{#if comments}}<div class="smaller text-muted mt-1"><i

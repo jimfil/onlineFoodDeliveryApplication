@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import exphbs from 'express-handlebars';
 import session from 'express-session';
 import flash from 'connect-flash';
+import * as orderModel from './model/order-model.mjs';
 
 if (process.env.NODE_ENV !== 'production') {
   dotenv.config();
@@ -29,11 +30,23 @@ app.use(session({
 app.use(flash());
 
 // ─── Make session user + flash available to every HBS template ───────────────
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
   res.locals.user         = req.session.user || null;
   res.locals.cartCount    = (req.session.cart || []).reduce((s, i) => s + i.quantity, 0);
   res.locals.flashError   = req.flash('error')[0]   || null;
   res.locals.flashSuccess = req.flash('success')[0] || null;
+
+  // Check for pending orders
+  let hasPendingOrders = false;
+  if (req.session.user) {
+    if (req.session.user.accountType === 'CUSTOMER') {
+      hasPendingOrders = await orderModel.hasPendingOrdersForCustomer(req.session.user.id);
+    } else if (req.session.user.accountType === 'RESTAURANT') {
+      hasPendingOrders = await orderModel.hasPendingOrdersForRestaurant(req.session.user.id);
+    }
+  }
+  res.locals.hasPendingOrders = hasPendingOrders;
+
   next();
 });
 
@@ -53,10 +66,22 @@ const hbs = exphbs.create({
       // Inline usage
       return a === b;
     },
-    // {{formatPrice price}} — e.g. 12.5 → "12,50 €"
+    // {{formatPrice price}} — e.g. 12.5 → "12,50€"
     formatPrice: (price) => {
       if (price == null) return '';
-      return parseFloat(price).toFixed(2).replace('.', ',') + ' €';
+      return parseFloat(price).toFixed(2).replace('.', ',') + '€';
+    },
+    // {{formatTime date}} — e.g. "2024-01-15T21:55:30Z" → "05/11/2026 22:05"
+    formatTime: (date) => {
+      if (!date) return '';
+      const d = new Date(date);
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const year = d.getFullYear();
+      //add +3 hours for Greece timezone (UTC+3)
+      const hours = String(d.getHours() + 3).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      return `${month}/${day}/${year} ${hours}:${minutes}`;
     },
     // {{totalPrice price quantity}}
     totalPrice: (price, qty) => (parseFloat(price) * parseInt(qty)),

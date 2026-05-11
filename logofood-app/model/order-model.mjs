@@ -183,3 +183,21 @@ export async function updateOrderStatus(orderId, restaurantUserId, status) {
   );
   return rows.affectedRows > 0;
 }
+
+/** Check if customer has any pending orders. */
+export async function hasPendingOrdersForCustomer(customerId) {
+  const [rows] = await pool.execute(
+    `SELECT COUNT(*) AS count FROM Order_table WHERE customer_id = ? AND status = 'PENDING'`,
+    [customerId]
+  );
+  return rows[0].count > 0;
+}
+
+/** Check if restaurant has any pending orders. */
+export async function hasPendingOrdersForRestaurant(restaurantId) {
+  const [rows] = await pool.execute(
+    `SELECT COUNT(*) AS count FROM Order_table WHERE restaurant_id = ? AND status = 'PENDING'`,
+    [restaurantId]
+  );
+  return rows[0].count > 0;
+}

@@ -7,7 +7,7 @@ import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 
 if (process.env.NODE_ENV !== 'production') {
-  dotenv.config();
+  dotenv.config({ path: '../backend/.env' });
 }
 
 const pool = mysql.createPool({

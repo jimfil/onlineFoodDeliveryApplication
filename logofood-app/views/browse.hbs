@@ -142,8 +142,8 @@
                     {{/unless}}
                 </div>
                 <div class="card-body p-4">
-                    <h4 class="card-title h5 fw-bold mb-1">{{name}}</h4>
-                    <p class="card-text text-muted small mb-3">Ελάχιστη παραγγελία: {{formatPrice 10}}</p>
+                    <h4 class="card-title h5 fw-bold mb-1">{{name}} <span class="badge bg-warning text-dark">{{rating}}</span></h4>
+                    <p class="card-text text-muted small mb-3">Ελ. Παρ.: {{formatPrice 10}}. Χρόνος: {{estimated_preparation_time}}</p>
                     <a href="/restaurant/{{id}}" class="btn btn-menu w-100 fw-bold py-2 rounded-pill">Δες το Μενού</a>
                 </div>
             </div>

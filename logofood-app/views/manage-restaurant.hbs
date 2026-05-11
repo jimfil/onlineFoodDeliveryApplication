@@ -1,4 +1,12 @@
 <main class="container dashboard-container my-5">
+    {{#if hasPendingOrders}}
+    <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        Έχετε νέες εκκρεμείς παραγγελίες! <a href="#" onclick="switchTab('orders')" class="alert-link">Δείτε τις παραγγελίες</a>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {{/if}}
+
     <div class="row mb-5 text-center text-md-start">
         <div class="col-12">
             <h2 class="fw-bold mb-1">Πίνακας Ελέγχου</h2>

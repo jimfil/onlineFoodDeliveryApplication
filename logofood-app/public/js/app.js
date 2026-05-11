@@ -137,3 +137,31 @@ function initLeafletMap(containerId, onLocationSelected, options = {}) {
     setTimeout(() => map.invalidateSize(), 200);
     return { map, marker };
 }
+
+// ─── Hide/Show header on scroll ────────────────────────────────────────────────
+(function() {
+    const header = document.querySelector('.custom-header');
+    if (!header) return;
+
+    let lastScrollTop = 0;
+    let scrollDelay = null;
+
+    window.addEventListener('scroll', () => {
+        if (scrollDelay) return;
+        scrollDelay = setTimeout(() => {
+            const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+            
+            // Scrolling down: hide header
+            if (currentScroll > lastScrollTop && currentScroll > 60) {
+                header.classList.add('header-hidden');
+            } 
+            // Scrolling up: show header
+            else if (currentScroll < lastScrollTop) {
+                header.classList.remove('header-hidden');
+            }
+            
+            lastScrollTop = currentScroll;
+            scrollDelay = null;
+        }, 50);
+    }, false);
+})();
