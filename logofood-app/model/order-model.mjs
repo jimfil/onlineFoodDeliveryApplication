@@ -132,7 +132,7 @@ export async function getOrdersByRestaurantDetailed(restaurantId) {
     `SELECT o.id AS order_id, o.created_at, o.status, 
             COALESCE(c.first_name, 'Επισκέπτης') AS firstName, 
             COALESCE(c.last_name, '') AS lastName,
-            COALESCE(a.phone, c.contact_phone, 'N/A') AS phone,
+            COALESCE(c.contact_phone, 'N/A') AS phone,
             a.street, a.street_number, a.floor, a.comments AS addressComments,
             oi.product_id, oi.quantity,
             p.name AS productName, p.price

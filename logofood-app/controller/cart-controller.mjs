@@ -118,24 +118,24 @@ export async function checkout(req, res) {
     // If guest, create a temporary address
     if (!customerId) {
       const { street, streetNumber, zipCode } = req.body;
-      if (!street || !streetNumber || !floor || !phone) {
-        req.flash('error', 'Συμπληρώστε την οδό, τον αριθμό, τον όροφο και το τηλέφωνο για την παράδοση.');
+      if (!street || !streetNumber || !floor) {
+        req.flash('error', 'Συμπληρώστε την οδό, τον αριθμό και τον όροφο για την παράδοση.');
         return res.redirect('/cart');
       }
       
       const [addrRes] = await pool.execute(
-        `INSERT INTO Address (street, street_number, zip_code, floor, comments, phone) VALUES (?, ?, ?, ?, ?, ?)`,
-        [street, streetNumber, zipCode || null, floor, comments || null, phone]
+        `INSERT INTO Address (street, street_number, zip_code, floor, comments) VALUES (?, ?, ?, ?, ?)`,
+        [street, streetNumber, zipCode || null, floor, comments || null]
       );
       addressId = addrRes.insertId;
     } else if (!addressId) {
       req.flash('error', 'Επιλέξτε διεύθυνση παράδοσης.');
       return res.redirect('/cart');
     } else {
-      // Update the existing address with the floor, comments and phone provided at checkout
+      // Update the existing address with the floor and comments provided at checkout
       await pool.execute(
-        `UPDATE Address SET floor = ?, comments = ?, phone = ? WHERE id = ?`,
-        [floor || null, comments || null, phone || null, addressId]
+        `UPDATE Address SET floor = ?, comments = ? WHERE id = ?`,
+        [floor || null, comments || null, addressId]
       );
     }
 

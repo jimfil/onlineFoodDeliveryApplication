@@ -34,7 +34,7 @@
                                                 class="list-group-item d-flex gap-3 py-3 border-0 bg-transparent mb-0">
                                                 <input class="form-check-input flex-shrink-0 address-radio" type="radio"
                                                     name="addressId" value="{{id}}" data-floor="{{floor}}"
-                                                    data-comments="{{comments}}" data-phone="{{phone}}" {{#if @first}}checked{{/if}}>
+                                                    data-comments="{{comments}}" {{#if @first}}checked{{/if}}>
                                                 <span class="pt-1 small">
                                                     <strong>{{street}} {{street_number}}</strong>
                                                     {{#if zip_code}}<br><span
@@ -306,9 +306,8 @@
                     if (floorInput) floorInput.value = selected.dataset.floor || '';
                     if (commentsInput) commentsInput.value = selected.dataset.comments || '';
                     const phoneInput = document.getElementById('selectedPhone');
-                    if (phoneInput) {
-                        // Priority: Address-specific phone > Customer profile phone
-                        phoneInput.value = selected.dataset.phone || '{{customer.contact_phone}}' || '';
+                    if (phoneInput && !phoneInput.value) {
+                        phoneInput.value = '{{customer.contact_phone}}' || '';
                     }
                 }
             };
