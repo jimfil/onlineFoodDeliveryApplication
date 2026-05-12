@@ -47,7 +47,7 @@ function extractAddressParts(address = {}) {
     return {
         street: address.road || address.pedestrian || address.footway || address.residential || address.path || '',
         number: address.house_number || address.housenumber || '',
-        zipCode: address.postcode || ''
+        zipCode: (address.postcode || '').replace(/\s+/g, '')
     };
 }
 

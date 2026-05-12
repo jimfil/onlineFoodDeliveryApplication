@@ -4,6 +4,7 @@
  */
 import * as restaurantModel from '../model/restaurant-model.mjs';
 import * as userModel from '../model/user-model.mjs';
+import { validationResult } from 'express-validator';
 
 /** GET / — render landing page */
 export async function showLanding(req, res) {
@@ -20,10 +21,15 @@ export async function showBrowse(req, res) {
     return res.redirect('/manage');
   }
   try {
+    const errors = validationResult(req);
     const { street, streetNumber, zipCode } = req.query;
 
-    // 1. If address in query, save to session
-    if (street && streetNumber) {
+    // 1. If address in query, validate and save to session
+    if (street || streetNumber || zipCode) {
+      if (!errors.isEmpty()) {
+        req.flash('error', errors.array()[0].msg);
+        return res.redirect('/');
+      }
       req.session.deliveryAddress = { street, streetNumber, zipCode };
     }
 

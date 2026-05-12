@@ -44,6 +44,8 @@ app.use(async (req, res, next) => {
     } else if (req.session.user.accountType === 'RESTAURANT') {
       hasPendingOrders = await orderModel.hasPendingOrdersForRestaurant(req.session.user.id);
     }
+  } else if (req.session.guestOrderIds && req.session.guestOrderIds.length > 0) {
+    hasPendingOrders = await orderModel.hasPendingOrdersForGuest(req.session.guestOrderIds);
   }
   res.locals.hasPendingOrders = hasPendingOrders;
 
@@ -93,6 +95,18 @@ const hbs = exphbs.create({
     totalPrice: (price, qty) => (parseFloat(price) * parseInt(qty)),
     // {{add a b}}
     add: (a, b) => (parseFloat(a) + parseFloat(b)),
+    // {{subtract a b}}
+    subtract: (a, b) => (parseFloat(a) - parseFloat(b)),
+    // {{le a b}} — less or equal
+    le: (a, b) => (parseFloat(a) <= parseFloat(b)),
+    // {{#repeat n}}...{{/repeat}}
+    repeat: function(n, options) {
+      let accum = '';
+      for (let i = 0; i < n; ++i) {
+        accum += options.fn(i);
+      }
+      return accum;
+    },
     json: (ctx) => JSON.stringify(ctx),
     getItemQty: (cart, productId) => {
       if (!cart || !Array.isArray(cart)) return 0;

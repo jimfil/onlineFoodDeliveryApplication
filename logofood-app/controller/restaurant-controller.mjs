@@ -4,6 +4,7 @@
  */
 import * as restaurantModel from '../model/restaurant-model.mjs';
 import * as orderModel from '../model/order-model.mjs';
+import { validationResult } from 'express-validator';
 
 /** GET /restaurant/:id — public menu view */
 export async function showRestaurant(req, res) {
@@ -83,6 +84,11 @@ export async function deleteProduct(req, res) {
 }
 
 export async function updateSettings(req, res) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.flash('error', errors.array()[0].msg);
+    return res.redirect('/manage');
+  }
   const { name, estimatedPreparationTime, operatingHours, phone } = req.body;
   try {
     const restaurant = await restaurantModel.getRestaurantByUserId(req.session.user.id);
@@ -166,3 +172,16 @@ export async function updateOrderStatus(req, res) {
   }
   res.redirect('/manage/orders');
 }
+
+/** POST /manage/status — toggle open/closed */
+export async function toggleStatus(req, res) {
+  try {
+    const newStatus = await restaurantModel.toggleRestaurantStatus(req.session.user.id);
+    req.flash('success', `Το κατάστημα είναι πλέον ${newStatus === 'OPEN' ? 'ΑΝΟΙΧΤΟ' : 'ΚΛΕΙΣΤΟ'}.`);
+  } catch (err) {
+    console.error('Toggle status error:', err);
+    req.flash('error', 'Σφάλμα κατά την αλλαγή κατάστασης.');
+  }
+  res.redirect('/manage');
+}
+

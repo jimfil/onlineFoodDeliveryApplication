@@ -8,18 +8,32 @@
             <span class="text-muted">LogoFood</span>
             {{/unless}}
         </div>
-        <div class="card-body text-center py-4">
+        <div class="card-body text-center py-4 position-relative">
+            {{#eq restaurant.status 'CLOSED'}}
+            <div class="alert alert-danger mb-4 py-3 border-0 rounded-4 shadow-sm">
+                <i class="bi bi-door-closed-fill me-2 fs-5"></i>
+                <span class="fw-bold">ΤΟ ΚΑΤΑΣΤΗΜΑ ΕΙΝΑΙ ΠΡΟΣΩΡΙΝΑ ΚΛΕΙΣΤΟ</span>
+                <div class="smaller">Δεν είναι δυνατή η προσθήκη προϊόντων στο καλάθι.</div>
+            </div>
+            {{/eq}}
+
             <h2 class="fw-bold mb-2">{{restaurant.name}}</h2>
             {{#if restaurant.categories}}
             <div class="mb-3">
                 {{#each restaurant.categories}}
-                <span class="badge bg-primary me-2" style="font-size: 0.85rem; padding: 0.5rem 0.75rem;">{{this}}</span>
+                <span class="badge bg-primary me-2 badge-md">{{this}}</span>
                 {{/each}}
             </div>
             {{/if}}
             <p class="text-muted mb-3">{{restaurant.description}}</p>
             <div class="d-flex justify-content-center gap-3 flex-wrap">
-                <span class="badge bg-success bg-opacity-10 text-success p-2 px-3 rounded-pill">⭐ {{restaurant.rating}}/5</span>
+                <span class="badge bg-success bg-opacity-10 text-success p-2 px-3 rounded-pill">
+                    {{#if (eq restaurant.rating_count 0)}}
+                    No ratings yet
+                    {{else}}
+                    ⭐ {{restaurant.rating}}/5 ({{restaurant.rating_count}})
+                    {{/if}}
+                </span>
                 <span class="badge bg-primary bg-opacity-10 text-primary p-2 px-3 rounded-pill">🕒
                     {{restaurant.estimated_preparation_time}}'</span>
                 <span class="badge bg-primary bg-opacity-10 text-primary p-2 px-3 rounded-pill">🛵 Ελάχιστη
@@ -42,8 +56,8 @@
         <div class="col-12 col-md-6">
             <div class="card border-0 shadow-sm h-100 rounded-4 overflow-hidden product-card">
                 <div class="row g-0 h-100 align-items-center">
-                    <div class="col-4 bg-light text-muted d-flex justify-content-center align-items-center h-100"
-                        style="min-height: 140px; background: url('{{image_url}}') center/cover no-repeat;">
+                    <div class="col-4 bg-light text-muted d-flex justify-content-center align-items-center h-100 min-h-140"
+                        style="background: url('{{image_url}}') center/cover no-repeat;">
                         {{#unless image_url}}
                         <small>Φωτό</small>
                         {{/unless}}
@@ -55,24 +69,28 @@
                                 <span class="fw-bold text-danger small">{{formatPrice price}}</span>
                             </div>
                             <p class="card-text text-muted smaller mb-3">{{description}}</p>
-                            <div class="mt-auto text-end d-flex align-items-center justify-content-end" id="actions-{{id}}" style="min-height: 40px;">
-                                {{#if (getItemQty ../../cart id)}}
-                                    <div class="d-flex align-items-center justify-content-end gap-2 bg-white border border-2 border-secondary rounded-pill px-2 py-2 d-inline-flex shadow-sm" style="line-height: 1;">
-                                    <button
-                                        class="btn btn-danger btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center"
-                                        style="width: 24px; height: 24px;"
-                                        onclick="changeQty({{id}}, -1, '{{name}}', {{price}}, {{../../restaurant.id}})">−</button>
-                                    <span class="px-2 small fw-bold" id="qty-{{id}}">{{getItemQty ../../cart id}}</span>
-                                    <button
-                                        class="btn btn-success btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center"
-                                        style="width: 24px; height: 24px;"
-                                        onclick="changeQty({{id}}, 1, '{{name}}', {{price}}, {{../../restaurant.id}})">+</button>
-                                </div>
+                            <div class="mt-auto text-end d-flex align-items-center justify-content-end min-h-40" id="actions-{{id}}">
+                                {{#if (eq ../../restaurant.status 'CLOSED')}}
+                                    <button class="btn btn-outline-secondary btn-sm px-3 fw-bold rounded-pill disabled">
+                                        Μη Διαθέσιμο
+                                    </button>
                                 {{else}}
-                                <button class="btn btn-menu btn-sm px-3 fw-bold rounded-pill"
-                                    onclick="changeQty({{id}}, 1, '{{name}}', {{price}}, {{../../restaurant.id}})">
-                                    + Προσθήκη
-                                </button>
+                                    {{#if (getItemQty ../../cart id)}}
+                                        <div class="d-flex align-items-center justify-content-end gap-2 bg-white border border-2 border-secondary rounded-pill px-2 py-2 d-inline-flex shadow-sm line-height-1">
+                                        <button
+                                            class="btn btn-danger btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center btn-circle-xs btn-restaurant-qty"
+                                            data-product-id="{{id}}" data-delta="-1" data-name="{{name}}" data-price="{{price}}" data-restaurant-id="{{../../restaurant.id}}">−</button>
+                                        <span class="px-2 small fw-bold" id="qty-{{id}}">{{getItemQty ../../cart id}}</span>
+                                        <button
+                                            class="btn btn-success btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center btn-circle-xs btn-restaurant-qty"
+                                            data-product-id="{{id}}" data-delta="1" data-name="{{name}}" data-price="{{price}}" data-restaurant-id="{{../../restaurant.id}}">+</button>
+                                    </div>
+                                    {{else}}
+                                    <button class="btn btn-menu btn-sm px-3 fw-bold rounded-pill btn-restaurant-qty"
+                                        data-product-id="{{id}}" data-delta="1" data-name="{{name}}" data-price="{{price}}" data-restaurant-id="{{../../restaurant.id}}">
+                                        + Προσθήκη
+                                    </button>
+                                    {{/if}}
                                 {{/if}}
                             </div>
                         </div>
@@ -85,44 +103,3 @@
         {{/each}}
     </div>
 </main>
-
-<script>
-    async function changeQty(productId, delta, name, price, restaurantId) {
-        const endpoint = delta > 0 ? '/cart/add' : '/cart/remove';
-        const res = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ productId, name, price, restaurantId })
-        });
-
-        if (res.ok) {
-            const data = await res.json();
-            document.getElementById('cartBadge').textContent = data.cartCount;
-
-            // Find the quantity for this specific product in the new cart state
-            const item = data.cart.find(i => i.productId == productId);
-            const newQty = item ? item.quantity : 0;
-
-            const container = document.getElementById(`actions-${productId}`);
-            if (newQty > 0) {
-                container.innerHTML = `
-                <div class="d-flex align-items-center justify-content-end gap-2 bg-white border border-2 border-secondary rounded-pill px-2 py-2 d-inline-flex shadow-sm" style="line-height: 1;">
-                    <button class="btn btn-danger btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;" onclick="changeQty(${productId}, -1, '${name}', ${price}, ${restaurantId})">−</button>
-                    <span class="px-2 small fw-bold" id="qty-${productId}">${newQty}</span>
-                    <button class="btn btn-success btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;" onclick="changeQty(${productId}, 1, '${name}', ${price}, ${restaurantId})">+</button>
-                </div>
-            `;
-            } else {
-                container.innerHTML = `
-                <button class="btn btn-menu btn-sm px-3 fw-bold rounded-pill" 
-                        onclick="changeQty(${productId}, 1, '${name}', ${price}, ${restaurantId})">
-                    + Προσθήκη
-                </button>
-            `;
-            }
-        } else {
-            const data = await res.json();
-            alert(data.error || 'Σφάλμα κατά την ενημέρωση του καλαθιού');
-        }
-    }
-</script>

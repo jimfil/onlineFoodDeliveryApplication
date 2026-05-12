@@ -199,8 +199,28 @@ textarea {
 }
 
 .card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 36px 90px rgba(79, 72, 124, 0.12);
+    transform: translateY(-8px);
+    box-shadow: 0 32px 80px rgba(79, 72, 124, 0.14);
+}
+
+/* Restaurant Status Styling */
+.restaurant-closed {
+    filter: grayscale(0.8) opacity(0.8);
+    transition: filter 0.5s ease, opacity 0.5s ease;
+}
+
+.restaurant-closed:hover {
+    filter: grayscale(0.4) opacity(0.9);
+}
+
+.restaurant-closed .btn-menu {
+    border-color: #ccc;
+    color: #999;
+}
+
+.badge-xs {
+    font-size: 0.65rem;
+    padding: 0.25rem 0.5rem;
 }
 
 .card .card-body {
@@ -405,4 +425,129 @@ footer p {
 .btn-dashboard-submit:hover {
     transform: translateY(-2px);
     box-shadow: 0 20px 40px rgba(166, 216, 105, 0.24);
+}
+
+/* Utilities for removing inline styles */
+.map-container-lg {
+    height: 300px;
+    border-radius: 16px;
+}
+
+.map-container-sm {
+    height: 200px;
+    border-radius: 12px;
+}
+
+.rounded-start-custom {
+    border-top-left-radius: 1.25rem;
+    border-bottom-left-radius: 1.25rem;
+}
+
+.rounded-end-custom {
+    border-top-right-radius: 1.25rem;
+    border-bottom-right-radius: 1.25rem;
+}
+
+.btn-circle-xs {
+    width: 24px;
+    height: 24px;
+}
+
+.btn-circle-sm {
+    width: 28px;
+    height: 28px;
+}
+
+.badge-xs {
+    font-size: 0.5rem;
+    padding: 0.2em 0.4em;
+}
+
+.badge-md {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.min-h-140 {
+    min-height: 140px;
+}
+
+.min-h-110 {
+    min-height: 110px;
+}
+
+.min-h-40 {
+    min-height: 40px;
+}
+
+.line-height-1 {
+    line-height: 1;
+}
+
+.hero-banner-large {
+    height: 200px;
+}
+
+.img-cover-50 {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+}
+
+.max-w-250 {
+    max-width: 250px;
+}
+
+/* Browse Page Categories */
+.category-scroll {
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 10px 0;
+}
+.category-scroll::-webkit-scrollbar {
+    display: none;
+}
+.category-btn {
+    display: inline-block;
+    padding: 1.2rem 1.8rem;
+    margin-right: 1rem;
+    background: white;
+    border: 2px solid transparent;
+    border-radius: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+    min-width: 120px;
+    flex-shrink: 0;
+    text-decoration: none;
+    color: inherit;
+}
+.category-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    border-color: #ff9f43;
+}
+.category-btn.active {
+    background: linear-gradient(135deg, #ff9f43 0%, #ff6b6b 100%);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 8px 20px rgba(255, 159, 67, 0.3);
+}
+.category-emoji {
+    font-size: 2.2rem;
+    display: block;
+    margin-bottom: 0.6rem;
+}
+.category-name {
+    font-weight: 800;
+    font-size: 1rem;
+    letter-spacing: -0.02em;
+}
+
+.badge-tiny {
+    font-size: 0.5rem;
+    padding: 0.2em 0.4em;
 }

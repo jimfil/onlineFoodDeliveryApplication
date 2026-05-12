@@ -27,8 +27,8 @@ export async function createOrder(customerId, restaurantId, addressId, items) {
 
     for (const item of items) {
       await conn.execute(
-        'INSERT INTO Order_Item (order_id, product_id, quantity) VALUES (?, ?, ?)',
-        [orderId, item.productId, item.quantity || 1]
+        'INSERT INTO Order_Item (order_id, product_id, quantity, price_at_order_time) VALUES (?, ?, ?, ?)',
+        [orderId, item.productId, item.quantity || 1, item.price || 0]
       );
     }
 
@@ -80,7 +80,7 @@ export async function getOrdersByRestaurant(restaurantId) {
  */
 export async function getOrdersByCustomerId(customerId) {
   const [rows] = await pool.execute(
-    `SELECT o.id AS order_id, o.created_at, o.status, 
+    `SELECT o.id AS order_id, o.created_at, o.status, o.rating,
             r.name AS restaurantName,
             a.street, a.street_number, a.floor, a.comments AS addressComments,
             oi.product_id, oi.quantity,
@@ -103,6 +103,7 @@ export async function getOrdersByCustomerId(customerId) {
         id: row.order_id,
         created_at: row.created_at,
         status: row.status,
+        rating: row.rating,
         restaurantName: row.restaurantName,
         address: `${row.street} ${row.street_number}`,
         floor: row.floor,
@@ -203,3 +204,119 @@ export async function hasPendingOrdersForRestaurant(restaurantId) {
   );
   return rows[0].count > 0;
 }
+
+/** Get full order details for specific order IDs (for guests). */
+export async function getOrdersByIds(orderIds) {
+  if (!orderIds || orderIds.length === 0) return [];
+  
+  const placeholders = orderIds.map(() => '?').join(',');
+  const [rows] = await pool.execute(
+    `SELECT o.id AS order_id, o.created_at, o.status, o.rating,
+            r.name AS restaurantName,
+            a.street, a.street_number, a.floor, a.comments AS addressComments,
+            oi.product_id, oi.quantity,
+            p.name AS productName, p.price
+     FROM Order_table o
+     JOIN Restaurant r ON o.restaurant_id = r.id
+     JOIN Address a ON o.delivery_address_id = a.id
+     JOIN Order_Item oi ON o.id = oi.order_id
+     JOIN Product p ON oi.product_id = p.id
+     WHERE o.id IN (${placeholders})
+     ORDER BY o.created_at DESC`,
+    orderIds
+  );
+
+  // Group items by order_id
+  const ordersMap = new Map();
+  for (const row of rows) {
+    if (!ordersMap.has(row.order_id)) {
+      ordersMap.set(row.order_id, {
+        id: row.order_id,
+        created_at: row.created_at,
+        status: row.status,
+        rating: row.rating,
+        restaurantName: row.restaurantName,
+        address: `${row.street} ${row.street_number}`,
+        floor: row.floor,
+        comments: row.addressComments,
+        items: [],
+        total: 0
+      });
+    }
+    const order = ordersMap.get(row.order_id);
+    order.items.push({
+      productName: row.productName,
+      quantity: row.quantity,
+      price: row.price
+    });
+    order.total += row.price * row.quantity;
+  }
+
+  return Array.from(ordersMap.values());
+}
+
+/** Check if guest has any pending orders based on session IDs. */
+export async function hasPendingOrdersForGuest(orderIds) {
+  if (!orderIds || orderIds.length === 0) return false;
+  
+  const placeholders = orderIds.map(() => '?').join(',');
+  const [rows] = await pool.execute(
+    `SELECT COUNT(*) AS count FROM Order_table WHERE id IN (${placeholders}) AND status = 'PENDING'`,
+    orderIds
+  );
+  return rows[0].count > 0;
+}
+
+/**
+ * Rate an order and update restaurant average rating.
+ */
+export async function rateOrder(orderId, rating) {
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    await conn.beginTransaction();
+
+    // 1. Get restaurant_id and check if already rated
+    const [orders] = await conn.execute(
+      'SELECT restaurant_id, rating FROM Order_table WHERE id = ?',
+      [orderId]
+    );
+    if (orders.length === 0 || orders[0].rating !== null) {
+      await conn.rollback();
+      return false;
+    }
+    const restaurantId = orders[0].restaurant_id;
+
+    // 2. Update Order rating
+    await conn.execute(
+      'UPDATE Order_table SET rating = ? WHERE id = ?',
+      [rating, orderId]
+    );
+
+    // 3. Update Restaurant stats
+    const [restaurants] = await conn.execute(
+      'SELECT rating, rating_count FROM Restaurant WHERE id = ?',
+      [restaurantId]
+    );
+    if (restaurants.length > 0) {
+      const oldRating = restaurants[0].rating || 0;
+      const oldCount = restaurants[0].rating_count || 0;
+      const newCount = oldCount + 1;
+      const newRating = ((oldRating * oldCount) + parseFloat(rating)) / newCount;
+
+      await conn.execute(
+        'UPDATE Restaurant SET rating = ?, rating_count = ? WHERE id = ?',
+        [newRating.toFixed(1), newCount, restaurantId]
+      );
+    }
+
+    await conn.commit();
+    return true;
+  } catch (err) {
+    if (conn) await conn.rollback();
+    throw err;
+  } finally {
+    if (conn) conn.release();
+  }
+}
+

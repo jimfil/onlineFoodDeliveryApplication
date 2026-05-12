@@ -9,5 +9,6 @@ router.post('/cart/add',      controller.addToCart);
 router.post('/cart/remove',   controller.removeFromCart);
 router.post('/cart/delete',   controller.deleteFromCart);
 router.post('/cart/checkout', controller.checkout);
+router.post('/cart/clear',    controller.clearCart);
 
 export default router;

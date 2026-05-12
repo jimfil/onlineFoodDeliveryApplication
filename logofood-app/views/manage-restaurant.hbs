@@ -2,25 +2,56 @@
     {{#if hasPendingOrders}}
     <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
         <i class="bi bi-exclamation-triangle-fill me-2"></i>
-        Έχετε νέες εκκρεμείς παραγγελίες! <a href="#" onclick="switchTab('orders')" class="alert-link">Δείτε τις παραγγελίες</a>
+        Έχετε νέες εκκρεμείς παραγγελίες! <a href="#" class="alert-link nav-tab-btn" data-tab="orders">Δείτε τις παραγγελίες</a>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     {{/if}}
 
-    <div class="row mb-5 text-center text-md-start">
-        <div class="col-12">
+    <div class="row mb-5 text-center text-md-start align-items-end">
+        <div class="col-md-8">
             <h2 class="fw-bold mb-1">Πίνακας Ελέγχου</h2>
             <p class="text-muted">Διαχειριστείτε το κατάστημα και το μενού σας.</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <div class="glass-card d-inline-block px-4 py-2 border-start border-4 border-success shadow-sm">
+                <div class="small fw-bold text-muted text-uppercase mb-1">Συνολική Βαθμολογία</div>
+                <div class="d-flex align-items-center justify-content-md-end gap-2">
+                    <span class="h4 fw-bold mb-0 text-success">{{#if restaurant.rating}}{{restaurant.rating}}{{else}}0{{/if}}</span>
+                    <div class="text-success small">
+                        {{#repeat 5}}
+                        <i class="bi {{#if (le @index (subtract ../restaurant.rating 1))}}bi-star-fill{{else}}bi-star{{/if}}"></i>
+                        {{/repeat}}
+                    </div>
+                    <span class="text-muted small">({{restaurant.rating_count}} κριτικές)</span>
+                </div>
+            </div>
         </div>
     </div>
 
     <div class="row">
         <!-- Sidebar Navigation -->
         <div class="col-md-3 mb-4">
-            <div class="list-group shadow-sm">
-                <button type="button" class="list-group-item list-group-item-action active" onclick="switchTab('profile')" id="nav-profile">Profile Management</button>
-                <button type="button" class="list-group-item list-group-item-action" onclick="switchTab('menu')" id="nav-menu">Menu Management</button>
-                <button type="button" class="list-group-item list-group-item-action" onclick="switchTab('orders')" id="nav-orders">Orders</button>
+            <div class="list-group shadow-sm mb-4">
+                <button type="button" class="list-group-item list-group-item-action active nav-tab-btn" data-tab="profile" id="nav-profile">Profile Management</button>
+                <button type="button" class="list-group-item list-group-item-action nav-tab-btn" data-tab="menu" id="nav-menu">Menu Management</button>
+                <button type="button" class="list-group-item list-group-item-action nav-tab-btn" data-tab="orders" id="nav-orders">Orders</button>
+            </div>
+
+            <div class="glass-card shadow-sm border-0 p-3 text-center">
+                <div class="small fw-bold text-muted text-uppercase mb-2">Κατάσταση Καταστήματος</div>
+                <form action="/manage/status" method="POST" id="statusToggleForm">
+                    <div class="form-check form-switch d-flex justify-content-center p-0">
+                        <input class="form-check-input ms-0 me-2 cursor-pointer" type="checkbox" role="switch" 
+                               id="statusSwitch" {{#eq restaurant.status 'OPEN'}}checked{{/eq}}
+                               onchange="document.getElementById('statusToggleForm').submit()">
+                        <label class="form-check-label fw-bold {{#eq restaurant.status 'OPEN'}}text-success{{else}}text-danger{{/eq}}" for="statusSwitch">
+                            {{#eq restaurant.status 'OPEN'}}ΑΝΟΙΧΤΟ{{else}}ΚΛΕΙΣΤΟ{{/eq}}
+                        </label>
+                    </div>
+                </form>
+                <div class="smaller text-muted mt-2">
+                    {{#eq restaurant.status 'OPEN'}}Οι πελάτες μπορούν να παραγγείλουν.{{else}}Το κατάστημα δεν δέχεται παραγγελίες.{{/eq}}
+                </div>
             </div>
         </div>
 
@@ -40,10 +71,10 @@
                     </div>
                     <div class="col-md-12">
                         <div class="glass-card h-100 border-start border-4 border-primary">
-                            <h5 class="fw-bold mb-3 text-primary">Χρόνος Προετοιμασίας</h5>
+                            <h5 class="fw-bold mb-3 text-primary">Χρόνος Προετοιμασίας (λεπτά)</h5>
                             <form action="/manage/settings" method="POST" class="d-flex gap-2">
-                                <input type="text" name="estimatedPreparationTime" class="form-control" 
-                                       value="{{restaurant.estimated_preparation_time}}" placeholder="π.χ. 20-30 λεπτά" required>
+                                <input type="number" name="estimatedPreparationTime" class="form-control" 
+                                       value="{{restaurant.estimated_preparation_time}}" placeholder="π.χ. 20" required min="1">
                                 <button type="submit" class="btn btn-dashboard-submit px-4">Αλλαγή</button>
                             </form>
                         </div>
@@ -115,10 +146,10 @@
                                 <div class="category-order-item d-flex align-items-center gap-2 p-2 px-3 border rounded-pill bg-white shadow-sm">
                                     <span class="fw-bold small me-2">{{name}}</span>
                                     <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-secondary py-0" onclick="reorder('category', {{id}}, -1)">
+                                        <button class="btn btn-outline-secondary py-0 btn-reorder" data-type="category" data-id="{{id}}" data-dir="-1">
                                             <i class="bi bi-chevron-left"></i>
                                         </button>
-                                        <button class="btn btn-outline-secondary py-0" onclick="reorder('category', {{id}}, 1)">
+                                        <button class="btn btn-outline-secondary py-0 btn-reorder" data-type="category" data-id="{{id}}" data-dir="1">
                                             <i class="bi bi-chevron-right"></i>
                                         </button>
                                     </div>
@@ -200,11 +231,11 @@
                                             <td>
                                                 <div class="d-flex align-items-center gap-3">
                                                     {{#if image_url}}
-                                                    <img src="{{image_url}}" class="rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                                                    <img src="{{image_url}}" class="rounded img-cover-50">
                                                     {{/if}}
                                                     <div>
                                                         <div class="fw-bold product-name">{{name}}</div>
-                                                        <div class="text-muted small text-truncate" style="max-width: 250px;">{{description}}</div>
+                                                        <div class="text-muted small text-truncate max-w-250">{{description}}</div>
                                                     </div>
                                                 </div>
                                             </td>
@@ -212,10 +243,10 @@
                                             <td class="text-end">
                                                 <div class="d-flex align-items-center justify-content-end gap-1">
                                                     <div class="btn-group btn-group-sm">
-                                                        <button class="btn btn-outline-secondary py-0" onclick="reorder('product', {{id}}, -1)" title="Μετακίνηση πάνω">
+                                                        <button class="btn btn-outline-secondary py-0 btn-reorder" data-type="product" data-id="{{id}}" data-dir="-1" title="Μετακίνηση πάνω">
                                                             <i class="bi bi-chevron-up"></i>
                                                         </button>
-                                                        <button class="btn btn-outline-secondary py-0" onclick="reorder('product', {{id}}, 1)" title="Μετακίνηση κάτω">
+                                                        <button class="btn btn-outline-secondary py-0 btn-reorder" data-type="product" data-id="{{id}}" data-dir="1" title="Μετακίνηση κάτω">
                                                             <i class="bi bi-chevron-down"></i>
                                                         </button>
                                                     </div>
@@ -223,8 +254,7 @@
                                             </td>
                                             <td class="text-end">
                                                 <form method="POST" action="/manage/products/{{id}}/delete">
-                                                    <button type="submit" class="btn btn-light btn-sm rounded-circle p-1 d-flex align-items-center justify-content-center border shadow-sm text-danger" 
-                                                            style="width: 28px; height: 28px;"
+                                                    <button type="submit" class="btn btn-light btn-sm rounded-circle p-1 d-flex align-items-center justify-content-center border shadow-sm text-danger btn-circle-sm" 
                                                             onclick="return confirm('Διαγραφή;')">
                                                         <i class="bi bi-trash3-fill small"></i>
                                                     </button>
@@ -255,72 +285,3 @@
     </div>
 </main>
 
-<script>
-    // Tab Switching Logic
-    function switchTab(tabId) {
-        // Hide all sections
-        document.getElementById('section-profile').classList.add('d-none');
-        document.getElementById('section-menu').classList.add('d-none');
-        document.getElementById('section-orders').classList.add('d-none');
-
-        // Remove active class from all nav items
-        document.getElementById('nav-profile').classList.remove('active');
-        document.getElementById('nav-menu').classList.remove('active');
-        document.getElementById('nav-orders').classList.remove('active');
-
-        // Show target section and set active
-        document.getElementById('section-' + tabId).classList.remove('d-none');
-        document.getElementById('nav-' + tabId).classList.add('active');
-        
-        // Save state
-        sessionStorage.setItem('manageRestaurantActiveTab', tabId);
-    }
-
-    // Restore active tab on load
-    document.addEventListener('DOMContentLoaded', () => {
-        const activeTab = sessionStorage.getItem('manageRestaurantActiveTab');
-        if (activeTab) {
-            switchTab(activeTab);
-        }
-    });
-
-    // New Category Toggle
-    const select = document.getElementById('categorySelect');
-    const wrapper = document.getElementById('newCategoryWrapper');
-    select?.addEventListener('change', () => {
-        wrapper.classList.toggle('d-none', select.value !== 'NEW');
-    });
-
-    // Menu Table Search
-    document.getElementById('menuSearch')?.addEventListener('input', function(e) {
-        const query = e.target.value.toLowerCase();
-        document.querySelectorAll('.product-row').forEach(row => {
-            const name = row.querySelector('.product-name').textContent.toLowerCase();
-            row.style.display = name.includes(query) ? '' : 'none';
-        });
-        // Hide category headers if all products under them are hidden
-        document.querySelectorAll('.category-header').forEach(header => {
-            let next = header.nextElementSibling;
-            let hasVisible = false;
-            while (next && !next.classList.contains('category-header')) {
-                if (next.style.display !== 'none') hasVisible = true;
-                next = next.nextElementSibling;
-            }
-            header.style.display = hasVisible ? '' : 'none';
-        });
-    });
-
-    // Reorder Logic
-    async function reorder(type, id, direction) {
-        const res = await fetch('/manage/reorder', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ type, id, direction })
-        });
-        if (res.ok) {
-            window.location.reload();
-        } else {
-            alert('Σφάλμα κατά την αναδιάταξη.');
-        }
-    }
-</script>

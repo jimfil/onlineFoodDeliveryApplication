@@ -7,14 +7,20 @@ import { requireLogin, requireRestaurant } from '../middleware/session-auth.mjs'
 // Public: view a restaurant menu
 router.get('/restaurant/:id', controller.showRestaurant);
 
+import { body } from 'express-validator';
+const settingsValidation = [
+  body('estimatedPreparationTime').optional({ checkFalsy: true }).isNumeric().withMessage('Ο χρόνος προετοιμασίας πρέπει να είναι αριθμός')
+];
+
 // Restaurant admin panel (requires RESTAURANT role)
 router.get ('/manage',                        requireLogin, requireRestaurant, controller.showManage);
 router.post('/manage/products',               requireLogin, requireRestaurant, controller.addProduct);
 router.post('/manage/products/:id/delete',    requireLogin, requireRestaurant, controller.deleteProduct);
-router.post('/manage/settings',               requireLogin, requireRestaurant, controller.updateSettings);
+router.post('/manage/settings',               requireLogin, requireRestaurant, settingsValidation, controller.updateSettings);
 router.post('/manage/categories',             requireLogin, requireRestaurant, controller.updateCategories);
 router.post('/manage/reorder',                requireLogin, requireRestaurant, controller.reorder);
 router.get ('/manage/orders',                 requireLogin, requireRestaurant, controller.showManageOrders);
 router.post('/manage/orders/:id/status',     requireLogin, requireRestaurant, controller.updateOrderStatus);
+router.post('/manage/status',                 requireLogin, requireRestaurant, controller.toggleStatus);
 
 export default router;

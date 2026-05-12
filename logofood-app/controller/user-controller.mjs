@@ -36,7 +36,9 @@ export async function updateProfile(req, res) {
 
 /** POST /account/addresses */
 export async function addAddress(req, res) {
-  const { street, streetNumber, zipCode, latitude, longitude, floor, comments } = req.body;
+  let { street, streetNumber, zipCode, latitude, longitude, floor, comments } = req.body;
+  if (zipCode) zipCode = zipCode.replace(/\s+/g, '');
+
   try {
     await userModel.addAddress(req.session.user.id, { street, streetNumber, zipCode, latitude, longitude, floor, comments });
     req.flash('success', 'Η διεύθυνση προστέθηκε.');
@@ -49,7 +51,9 @@ export async function addAddress(req, res) {
 
 /** POST /account/addresses/:id/edit */
 export async function editAddress(req, res) {
-  const { street, streetNumber, zipCode, floor, comments, latitude, longitude } = req.body;
+  let { street, streetNumber, zipCode, floor, comments, latitude, longitude } = req.body;
+  if (zipCode) zipCode = zipCode.replace(/\s+/g, '');
+
   try {
     await userModel.updateAddress(req.params.id, req.session.user.id, { street, streetNumber, zipCode, floor, comments, latitude, longitude });
     req.flash('success', 'Η διεύθυνση ενημερώθηκε.');
@@ -80,11 +84,57 @@ export async function deleteAddress(req, res) {
 /** GET /track-orders */
 export async function renderTrackOrders(req, res) {
   try {
-    const customerId = req.session.user.id;
-    const orders = await orderModel.getOrdersByCustomerId(customerId);
+    let orders = [];
+    if (req.session.user && req.session.user.accountType === 'CUSTOMER') {
+      const customerId = req.session.user.id;
+      orders = await orderModel.getOrdersByCustomerId(customerId);
+    } else if (req.session.guestOrderIds && req.session.guestOrderIds.length > 0) {
+      orders = await orderModel.getOrdersByIds(req.session.guestOrderIds);
+    }
+    
     res.render('track-orders', { orders });
   } catch (err) {
     console.error('Track orders error:', err);
     res.render('error', { message: 'Αδυναμία φόρτωσης παραγγελιών.' });
   }
 }
+
+/** POST /orders/:id/rate */
+export async function rateOrder(req, res) {
+  const { id } = req.params;
+  const { rating } = req.body;
+  const numericRating = parseFloat(rating);
+
+  if (isNaN(numericRating) || numericRating < 1 || numericRating > 5) {
+    req.flash('error', 'Μη έγκυρη βαθμολογία.');
+    return res.redirect('/track-orders');
+  }
+
+  try {
+    // Check if user or guest "owns" this order
+    let isOwner = false;
+    if (req.session.user && req.session.user.accountType === 'CUSTOMER') {
+      const orders = await orderModel.getOrdersByCustomerId(req.session.user.id);
+      isOwner = orders.some(o => o.id == id);
+    } else if (req.session.guestOrderIds) {
+      isOwner = req.session.guestOrderIds.includes(parseInt(id));
+    }
+
+    if (!isOwner) {
+      req.flash('error', 'Δεν έχετε δικαίωμα βαθμολόγησης αυτής της παραγγελίας.');
+      return res.redirect('/track-orders');
+    }
+
+    const success = await orderModel.rateOrder(id, numericRating);
+    if (success) {
+      req.flash('success', 'Ευχαριστούμε για τη βαθμολογία σας!');
+    } else {
+      req.flash('error', 'Η παραγγελία έχει ήδη βαθμολογηθεί ή δεν βρέθηκε.');
+    }
+  } catch (err) {
+    console.error('Rate order error:', err);
+    req.flash('error', 'Σφάλμα κατά τη βαθμολόγηση.');
+  }
+  res.redirect('/track-orders');
+}
+

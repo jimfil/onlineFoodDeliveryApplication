@@ -25,6 +25,7 @@ CREATE TABLE Restaurant (
   id INT PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   rating DOUBLE DEFAULT 0,
+  rating_count INT DEFAULT 0,
   contact_phone VARCHAR(20),
   operating_hours TEXT,
   estimated_preparation_time VARCHAR(50),
@@ -32,6 +33,7 @@ CREATE TABLE Restaurant (
   owner_last_name VARCHAR(100),
   vat_number VARCHAR(50),
   address_id INT,
+  status ENUM('OPEN', 'CLOSED') DEFAULT 'OPEN',
   FOREIGN KEY (id) REFERENCES Account(id) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (address_id) REFERENCES Address(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
@@ -63,7 +65,7 @@ CREATE TABLE Customer_Address (
 CREATE TABLE Product (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
-  price DOUBLE NOT NULL,
+  price DECIMAL(10, 2) NOT NULL,
   description TEXT,
   ingredients TEXT,
   image_url VARCHAR(255),
@@ -107,6 +109,7 @@ CREATE TABLE Order_Item (
   order_id INT,
   product_id INT,
   quantity INT NOT NULL DEFAULT 1,
+  price_at_order_time DECIMAL(10, 2) NOT NULL,
   FOREIGN KEY (order_id) REFERENCES Order_table(id) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (product_id) REFERENCES Product(id) ON DELETE SET NULL ON UPDATE CASCADE
 );

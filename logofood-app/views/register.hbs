@@ -10,31 +10,36 @@
                         <div class="col-md-6">
                             <label for="firstName" class="form-label text-muted small fw-bold">Όνομα</label>
                             <input type="text" id="firstName" name="firstName" class="form-control" 
-                                   placeholder="Γιώργος" required>
+                                   placeholder="Γιώργος" value="{{userInput.firstName}}" required>
+                            {{#if errors.firstName}}<div class="text-danger small mt-1">{{errors.firstName}}</div>{{/if}}
                         </div>
 
                         <div class="col-md-6">
                             <label for="lastName" class="form-label text-muted small fw-bold">Επώνυμο</label>
                             <input type="text" id="lastName" name="lastName" class="form-control" 
-                                   placeholder="Παπαδόπουλος" required>
+                                   placeholder="Παπαδόπουλος" value="{{userInput.lastName}}" required>
+                            {{#if errors.lastName}}<div class="text-danger small mt-1">{{errors.lastName}}</div>{{/if}}
                         </div>
 
                         <div class="col-md-6">
                             <label for="street" class="form-label text-muted small fw-bold">Οδός</label>
                             <input type="text" id="registerStreet" name="street" class="form-control" 
-                                   placeholder="π.χ. Ερμού" required>
+                                   placeholder="π.χ. Ερμού" value="{{userInput.street}}" required>
+                            {{#if errors.street}}<div class="text-danger small mt-1">{{errors.street}}</div>{{/if}}
                         </div>
 
                         <div class="col-md-3">
                             <label for="streetNumber" class="form-label text-muted small fw-bold">Αριθμός</label>
                             <input type="text" id="registerNumber" name="streetNumber" class="form-control" 
-                                   placeholder="π.χ. 12" required>
+                                   placeholder="π.χ. 12" value="{{userInput.streetNumber}}" required>
+                            {{#if errors.streetNumber}}<div class="text-danger small mt-1">{{errors.streetNumber}}</div>{{/if}}
                         </div>
 
                         <div class="col-md-3">
                             <label for="zipCode" class="form-label text-muted small fw-bold">Τ.Κ.</label>
                             <input type="text" id="registerZip" name="zipCode" class="form-control" 
-                                   placeholder="π.χ. 10563">
+                                   placeholder="π.χ. 10563" value="{{userInput.zipCode}}">
+                            {{#if errors.zipCode}}<div class="text-danger small mt-1">{{errors.zipCode}}</div>{{/if}}
                         </div>
 
                         <div class="col-12">
@@ -47,33 +52,34 @@
                                     <input type="text" id="registerAddressSearch" class="form-control" placeholder="π.χ. Ερμού 12" autocomplete="off">
                                     <div id="registerAddressResults" class="list-group mt-2 d-none"></div>
                                 </div>
-                                <div id="registerMap" style="height: 300px; border-radius: 16px;"></div>
+                                <div id="registerMap" class="map-container-lg"></div>
                             </div>
                         </div>
 
                         <div class="col-12">
                             <label for="email" class="form-label text-muted small fw-bold">Email</label>
                             <input type="email" id="email" name="email" class="form-control" 
-                                   placeholder="example@example.com" required>
+                                   placeholder="example@example.com" value="{{userInput.email}}" required>
+                            {{#if errors.email}}<div class="text-danger small mt-1">{{errors.email}}</div>{{/if}}
                         </div>
 
                         <div class="col-12">
                             <label for="password" class="form-label text-muted small fw-bold">Κωδικός Πρόσβασης</label>
                             <div class="input-group">
-                                <input type="password" id="password" name="password" class="form-control" 
-                                       placeholder="Τουλάχιστον 6 χαρακτήρες" required minlength="6"
-                                       style="border-top-left-radius: 1.25rem; border-bottom-left-radius: 1.25rem;">
-                                <button class="btn btn-outline-secondary border-secondary-subtle" type="button" id="togglePassword"
-                                        style="border-top-right-radius: 1.25rem; border-bottom-right-radius: 1.25rem;">
+                                <input type="password" id="password" name="password" class="form-control rounded-start-custom" 
+                                       placeholder="Τουλάχιστον 6 χαρακτήρες" required minlength="6">
+                                <button class="btn btn-outline-secondary border-secondary-subtle rounded-end-custom" type="button" id="togglePassword">
                                     <i class="bi bi-eye"></i>
                                 </button>
                             </div>
+                            {{#if errors.password}}<div class="text-danger small mt-1">{{errors.password}}</div>{{/if}}
                         </div>
 
                         <div class="col-12">
                             <label for="contactPhone" class="form-label text-muted small fw-bold">Τηλέφωνο</label>
                             <input type="tel" id="contactPhone" name="contactPhone" class="form-control" 
-                                   placeholder="69xxxxxxxx" required>
+                                   placeholder="69xxxxxxxx" value="{{userInput.contactPhone}}" required>
+                            {{#if errors.contactPhone}}<div class="text-danger small mt-1">{{errors.contactPhone}}</div>{{/if}}
                         </div>
 
                         <div class="col-12 mt-4">
@@ -96,43 +102,3 @@
         </div>
     </div>
 </main>
-
-<script>
-document.getElementById('toggleRegisterMap')?.addEventListener('click', function() {
-    const container = document.getElementById('registerMapContainer');
-    container.classList.toggle('d-none');
-    if (!container.classList.contains('d-none') && !window._regMapInit) {
-        window._regMapInit = true;
-        initLeafletMap('registerMap', async (lat, lon) => {
-            const addr = await reverseGeocode(lat, lon);
-            fillAddressFields(addr, {
-                streetId: 'registerStreet',
-                numberId: 'registerNumber',
-                zipId: 'registerZip'
-            });
-        }, {
-            searchInputId: 'registerAddressSearch',
-            resultsContainerId: 'registerAddressResults',
-            onAddressPicked: (selected) => {
-                fillAddressFields(selected.address, {
-                    streetId: 'registerStreet',
-                    numberId: 'registerNumber',
-                    zipId: 'registerZip'
-                });
-            }
-        });
-    }
-});
-
-document.getElementById('togglePassword')?.addEventListener('click', function() {
-    const passwordInput = document.getElementById('password');
-    const icon = this.querySelector('i');
-    if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        icon.classList.replace('bi-eye', 'bi-eye-slash');
-    } else {
-        passwordInput.type = 'password';
-        icon.classList.replace('bi-eye-slash', 'bi-eye');
-    }
-});
-</script>

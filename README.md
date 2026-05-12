@@ -30,18 +30,21 @@
 - View restaurant menus with item details and prices
 - Add items to cart and proceed to checkout (manual address entry)
 - Pay by credit/debit card or cash on delivery
+- Track orders in real-time
+- Rate orders after delivery with a star-based system
 
 ### Registered Users (Customers)
 - All guest features, plus:
 - Register and log in with email and password
-- Save and select delivery addresses at checkout
+- Manage saved delivery addresses via a dedicated account panel
 - Persistent data across browser sessions
 
 ### Restaurant Owners (Admin)
-- Register a restaurant with business details (name, owner, ΑΦΜ, contact)
-- Log in to an admin dashboard
-- Add, edit, and delete menu items (name, category, price, description, image URL)
-- Manage the restaurant's menu in real time
+- **Secure Multi-Step Registration**: Two-step registration wizard for business and account details.
+- **Shop Status Management**: Toggle restaurant availability (Open/Closed) in real-time.
+- **Performance Tracking**: View overall restaurant rating and total review counts on the dashboard.
+- **Menu Management**: Add, edit, delete, and reorder menu items and categories.
+- **Order Handling**: Manage incoming orders and update their status (Preparing, Out for Delivery, etc.).
 
 ---
 
@@ -49,36 +52,17 @@
 
 ```
 onlineFoodDeliveryApplication/
-├── index.html              # Homepage – restaurant listing & search
-├── backend/                # Node.js/Express backend
-│   ├── server.js          # Main server file
-│   ├── database.js        # SQLite database setup
-│   ├── middleware/
-│   │   └── auth.js        # JWT authentication middleware
-│   ├── routes/
-│   │   ├── auth.js        # Authentication routes
-│   │   └── users.js       # User management routes
-│   └── README.md          # Backend documentation
-├── database/
-│   └── logofood.sql       # Database schema
-├── pages/                  # HTML pages
-├── js/                     # JavaScript files
-├── css/                    # Stylesheets
-└── assets/                 # Images and other assets
-```
-├── css/
-│   └── style.css           # Custom styles
-├── js/
-│   └── script.js           # JavaScript logic
-├── assets/                 # Static assets (images, etc.)
-└── pages/
-    ├── login.html          # Login page
-    ├── register.html       # Customer registration
-    ├── registeradmin.html  # Restaurant owner registration
-    ├── restaurant.html     # Restaurant menu page
-    ├── cart.html           # Cart & checkout (logged-in user)
-    ├── cartguest.html      # Cart & checkout (guest)
-    └── admin.html          # Restaurant admin dashboard
+├── logofood-app/          # Main Node.js/Express application
+│   ├── app.mjs           # Entry point
+│   ├── model/            # Database models (MySQL)
+│   ├── controller/       # Business logic handlers
+│   ├── routes/           # Express routers
+│   ├── views/            # Handlebars templates (.hbs)
+│   ├── public/           # Static assets (CSS, JS, Images)
+│   └── scripts/          # Utility scripts (e.g. data seeding)
+├── database/             # SQL schema files
+└── README.md             # Project documentation
+
 ```
 
 ---
@@ -87,14 +71,14 @@ onlineFoodDeliveryApplication/
 
 | Page | File | Description |
 |------|------|-------------|
-| Home | `index.html` | Lists popular restaurants with search bar |
-| Login | `pages/login.html` | Email/password login form |
-| Register (Customer) | `pages/register.html` | New customer account registration |
-| Register (Restaurant) | `pages/registeradmin.html` | Restaurant owner registration with ΑΦΜ |
-| Restaurant Menu | `pages/restaurant.html` | Menu items with prices and add-to-cart |
-| Cart (User) | `pages/cart.html` | Checkout with saved addresses & payment |
-| Cart (Guest) | `pages/cartguest.html` | Checkout with manual address entry |
-| Admin Panel | `pages/admin.html` | Restaurant dashboard for menu management |
+| Home / Browse | `browse.hbs` | Restaurant listing, search, and address selection |
+| Restaurant Menu | `restaurant.hbs` | Menu items, categories, and shopping cart integration |
+| Order Tracking | `track-orders.hbs` | Real-time order status and star-rating system |
+| Admin Panel | `manage-restaurant.hbs` | Restaurant dashboard for menu, status, and stats |
+| Admin Orders | `manage-orders.hbs` | Order management and status updates |
+| Cart | `cart.hbs` | Checkout flow with address selection & payment |
+| Login / Register | `login.hbs`, `register.hbs` | Authentication forms for all user types |
+| Restaurant Reg | `register-restaurant-step1.hbs` | Multi-step wizard for new restaurant owners |
 
 ---
 
@@ -106,39 +90,29 @@ onlineFoodDeliveryApplication/
 ### Backend Setup
 
 1. **Install Node.js** (if not already installed) from [nodejs.org](https://nodejs.org/)
+2. **Install MySQL** and import the schema from `database/logofood.sql`.
 
-2. **Start the backend server:**
+3. **Start the application:**
    ```bash
    # Option 1: Use the batch file (Windows)
    start-backend.bat
 
    # Option 2: Manual setup
-   cd backend
+   cd logofood-app
    npm install
    npm start
    ```
 
-   The backend API will be available at `http://localhost:3001`
+   The application will be available at `http://localhost:3000`
 
-### Frontend
+---
 
-No build step is required for the frontend. Simply open `index.html` in any modern browser:
+## Technical Stack
 
-```bash
-# Option 1: Open directly
-start index.html
-
-# Option 2: Use VS Code Live Server extension
-# Ctrl+Shift+P on index.html → "Live Server: Open with Live Server"
-```
-
-> **Note:** All pages use relative paths, so they must be opened from the project root directory. The frontend will automatically connect to the backend API.
-
-### Full Application
-
-1. Start the backend server (as above)
-2. Open `index.html` in your browser
-3. The application will now persist user data and addresses in the database
+- **Frontend**: Handlebars (HBS), Bootstrap 5, Leaflet.js (Maps)
+- **Backend**: Node.js, Express.js
+- **Database**: MySQL
+- **Auth**: Express-session, connect-flash, express-validator
 
 ---
 

@@ -8,14 +8,14 @@ import pool from './db.mjs';
 /** Get all restaurants with their basic info and categories. */
 export async function getAllRestaurants() {
   const [rows] = await pool.execute(
-    `SELECT r.id, r.name, r.rating, r.estimated_preparation_time,
+    `SELECT r.id, r.name, r.rating, r.rating_count, r.status, r.estimated_preparation_time,
             r.contact_phone, r.operating_hours,
             GROUP_CONCAT(c.name SEPARATOR ',') AS categories
      FROM Restaurant r
      LEFT JOIN Restaurant_Category rc ON r.id = rc.restaurant_id
      LEFT JOIN Category c ON rc.category_id = c.id
      GROUP BY r.id
-     ORDER BY r.name ASC`
+     ORDER BY r.status ASC, r.name ASC`
   );
   // Parse categories
   return rows.map(row => ({
@@ -27,7 +27,7 @@ export async function getAllRestaurants() {
 /** Get a single restaurant by id with categories. */
 export async function getRestaurantById(id) {
   const [rows] = await pool.execute(
-    `SELECT r.id, r.name, r.rating, r.estimated_preparation_time,
+    `SELECT r.id, r.name, r.rating, r.rating_count, r.status, r.estimated_preparation_time,
             r.contact_phone, r.operating_hours,
             r.owner_first_name, r.owner_last_name,
             GROUP_CONCAT(c.name SEPARATOR ',') AS categories
@@ -257,6 +257,22 @@ export async function updateRestaurantSettings(userId, { name, estimatedPreparat
     [name, estimatedPreparationTime, operatingHours, phone, userId]
   );
 }
+
+/** Toggle restaurant status between OPEN and CLOSED. */
+export async function toggleRestaurantStatus(userId) {
+  const [rows] = await pool.execute(
+    'SELECT status FROM Restaurant WHERE id = ?',
+    [userId]
+  );
+  if (rows.length === 0) return null;
+  const newStatus = rows[0].status === 'OPEN' ? 'CLOSED' : 'OPEN';
+  await pool.execute(
+    'UPDATE Restaurant SET status = ? WHERE id = ?',
+    [newStatus, userId]
+  );
+  return newStatus;
+}
+
 
 /** Update restaurant categories (up to 2). */
 export async function updateRestaurantCategories(restaurantId, categoryIds) {

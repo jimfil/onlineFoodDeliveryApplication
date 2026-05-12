@@ -1,5 +1,16 @@
 {{!-- views/browse.hbs — Restaurant listing --}}
 {{!-- Address Picker Section --}}
+<section class="container mb-4 text-center" id="heroSlogan" style="padding-top: 100px;">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <h1 class="display-5 fw-bold mb-1" style="background: linear-gradient(90deg, #ff4757, #ff6b81); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                Είτε αλοιφή είτε σως, LogoFood έχει τα πάντα
+            </h1>
+            <p class="text-muted lead">Ανακάλυψε τις καλύτερες γεύσεις της πόλης σου.</p>
+        </div>
+    </div>
+</section>
+
 <section class="container my-4" id="addressPickerSection">
     <div class="row justify-content-center">
         <div class="col-md-10 col-lg-8">
@@ -36,7 +47,7 @@
                                 <input type="text" id="browseAddressSearch" class="form-control" placeholder="π.χ. Ερμού 12" autocomplete="off">
                                 <div id="browseAddressResults" class="list-group mt-2 d-none"></div>
                             </div>
-                            <div id="browseMap" style="height: 300px; border-radius: 16px;"></div>
+                            <div id="browseMap" class="map-container-lg"></div>
                         </div>
                     </div>
                 </form>
@@ -69,8 +80,7 @@
                                     </a>
                                     {{else}}
                                     {{!-- Guest: show inline toggle --}}
-                                    <button type="button" class="list-group-item list-group-item-action py-3 text-primary fw-bold text-center border-dashed"
-                                            onclick="document.getElementById('guestUpdateForm').classList.toggle('d-none')">
+                                    <button type="button" class="list-group-item list-group-item-action py-3 text-primary fw-bold text-center border-dashed btn-toggle-guest-form">
                                         + Αλλαγή διεύθυνσης
                                     </button>
                                     <div id="guestUpdateForm" class="d-none p-3 bg-light border-top">
@@ -94,7 +104,7 @@
                                                             <input type="text" id="updateAddressSearch" class="form-control form-control-sm" placeholder="Αναζήτηση..." autocomplete="off">
                                                             <div id="updateAddressResults" class="list-group mt-1 d-none shadow-sm" style="position: absolute; z-index: 1000; width: 100%;"></div>
                                                         </div>
-                                                        <div id="updateMap" style="height: 200px; border-radius: 12px;"></div>
+                                                        <div id="updateMap" class="map-container-sm"></div>
                                                     </div>
                                                 </div>
                                                 <div class="col-12 mt-2">
@@ -116,55 +126,7 @@
     </div>
 </section>
 
-<style>
-    .category-scroll {
-        overflow-x: auto;
-        white-space: nowrap;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        padding: 10px 0;
-    }
-    .category-scroll::-webkit-scrollbar {
-        display: none;
-    }
-    .category-btn {
-        display: inline-block;
-        padding: 1.2rem 1.8rem;
-        margin-right: 1rem;
-        background: white;
-        border: 2px solid transparent;
-        border-radius: 1.5rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        text-align: center;
-        min-width: 120px;
-        flex-shrink: 0;
-        text-decoration: none;
-        color: inherit;
-    }
-    .category-btn:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        border-color: #ff9f43;
-    }
-    .category-btn.active {
-        background: linear-gradient(135deg, #ff9f43 0%, #ff6b6b 100%);
-        color: white;
-        border-color: transparent;
-        box-shadow: 0 8px 20px rgba(255, 159, 67, 0.3);
-    }
-    .category-emoji {
-        font-size: 2.2rem;
-        display: block;
-        margin-bottom: 0.6rem;
-    }
-    .category-name {
-        font-weight: 800;
-        font-size: 1rem;
-        letter-spacing: -0.02em;
-    }
-</style>
+
 
 <section class="container mb-3 text-center">
     <div class="row justify-content-center">
@@ -172,7 +134,7 @@
             <div class="d-flex gap-2">
                 <input type="text" id="searchRestaurant" class="form-control form-control-lg rounded-pill shadow-sm px-4"
                     placeholder="Αναζήτηση για εστιατόριο ή κουζίνα...">
-                <button class="btn btn-menu btn-lg px-4 rounded-pill shadow-sm" onclick="filterRestaurants()">Go</button>
+                <button class="btn btn-menu btn-lg px-4 rounded-pill shadow-sm btn-filter-restaurants">Go</button>
             </div>
         </div>
     </div>
@@ -181,12 +143,12 @@
 {{!-- Category Buttons --}}
 <section class="container mb-5 {{#if noAddress}}d-none{{/if}}" id="categorySection">
     <div class="category-scroll d-flex">
-        <div class="category-btn active" data-category="all" onclick="selectCategory(this)">
+        <div class="category-btn active btn-select-category" data-category="all">
             <span class="category-emoji">🍴</span>
             <span class="category-name">Όλα</span>
         </div>
         {{#each categories}}
-        <div class="category-btn" data-category="{{name}}" onclick="selectCategory(this)">
+        <div class="category-btn btn-select-category" data-category="{{name}}">
             <span class="category-emoji">{{emoji}}</span>
             <span class="category-name">{{name}}</span>
         </div>
@@ -201,24 +163,50 @@
     <div class="row g-4" id="restaurantList">
         {{#each restaurants}}
         <div class="col-12 col-md-6 col-lg-3 restaurant-card-wrapper" data-categories="{{join categories ','}}">
-            <div class="card h-100 border-0 shadow-sm restaurant-card" style="border-radius: 1.2rem; overflow: hidden;">
-                <div class="bg-light d-flex justify-content-center align-items-center" style="height: 160px; background: url('{{image_url}}') center/cover no-repeat;">
-                    {{#unless image_url}}
-                    <span class="text-muted">LogoFood</span>
-                    {{/unless}}
-                </div>
-                <div class="card-body p-4">
-                    <h4 class="card-title h5 fw-bold mb-0">{{name}} <span class="badge bg-warning text-dark">{{rating}}</span></h4>
-                    {{#if categories}}
-                    <div class="mb-2 mt-2">
-                        {{#each categories}}
-                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle me-1" style="font-size: 0.75rem;">{{this}}</span>
-                        {{/each}}
+            <div class="card h-100 border-0 shadow-sm restaurant-card rounded-4 overflow-hidden {{#eq status 'CLOSED'}}restaurant-closed{{/eq}}">
+                <a href="{{#eq status 'CLOSED'}}#{{else}}/restaurant/{{id}}{{/eq}}" class="text-decoration-none h-100 d-flex flex-column {{#eq status 'CLOSED'}}pe-none{{/eq}}">
+                    <div class="bg-light d-flex justify-content-center align-items-center position-relative" style="height: 160px; background: url('{{image_url}}') center/cover no-repeat;">
+                        {{#unless image_url}}
+                        <span class="text-muted">LogoFood</span>
+                        {{/unless}}
+                        {{#eq status 'CLOSED'}}
+                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50">
+                            <span class="badge bg-danger px-3 py-2 fs-6 shadow-sm border border-2 border-white">ΚΛΕΙΣΤΟ</span>
+                        </div>
+                        {{/eq}}
                     </div>
-                    {{/if}}
-                    <p class="card-text text-muted small mb-3">Ελ. Παρ.: {{formatPrice 10}}. Χρόνος: {{estimated_preparation_time}}</p>
-                    <a href="/restaurant/{{id}}" class="btn btn-menu w-100 fw-bold py-2 rounded-pill">Δες το Μενού</a>
-                </div>
+                    <div class="card-body p-4 d-flex flex-column h-100 text-dark">
+                        <h4 class="card-title h5 fw-bold mb-0 d-flex justify-content-between align-items-center">
+                            <span>
+                                {{name}}
+                                {{#eq status 'CLOSED'}}
+                                <small class="text-danger fs-6 ms-1">(ΚΛΕΙΣΤΟ)</small>
+                                {{/eq}}
+                            </span>
+                            <div>
+                                {{#if (eq rating_count 0)}}
+                                <span class="badge bg-light text-muted border fw-normal smaller" style="font-size: 0.65rem;">No ratings</span>
+                                {{else}}
+                                <span class="badge bg-success text-white">{{rating}} ({{rating_count}})</span>
+                                {{/if}}
+                            </div>
+                        </h4>
+                        {{#if categories}}
+                        <div class="mb-2 mt-2">
+                            {{#each categories}}
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle me-1 badge-xs">{{this}}</span>
+                            {{/each}}
+                        </div>
+                        {{/if}}
+                        <p class="card-text text-muted small mb-3">Ελ. Παρ.: {{formatPrice 1.0}}. Χρόνος: {{estimated_preparation_time}}'</p>
+                        
+                        <div class="mt-auto">
+                            <span class="btn {{#eq status 'CLOSED'}}btn-outline-secondary disabled{{else}}btn-menu{{/eq}} w-100 fw-bold py-2 rounded-pill">
+                                {{#eq status 'CLOSED'}}Μη Διαθέσιμο{{else}}Δες το Μενού{{/eq}}
+                            </span>
+                        </div>
+                    </div>
+                </a>
             </div>
         </div>
         {{else}}
@@ -229,112 +217,3 @@
     </div>
 </main>
 
-<script>
-document.getElementById('toggleBrowseMap')?.addEventListener('click', function() {
-    const container = document.getElementById('browseMapContainer');
-    container.classList.toggle('d-none');
-    if (!container.classList.contains('d-none') && !window._browseMapInit) {
-        window._browseMapInit = true;
-        initLeafletMap('browseMap', async (lat, lon) => {
-            const addr = await reverseGeocode(lat, lon);
-            fillAddressFields(addr, {
-                streetId: 'browseStreet',
-                numberId: 'browseNumber',
-                zipId: 'browseZip'
-            });
-        }, {
-            searchInputId: 'browseAddressSearch',
-            resultsContainerId: 'browseAddressResults',
-            onAddressPicked: (selected) => {
-                fillAddressFields(selected.address, {
-                    streetId: 'browseStreet',
-                    numberId: 'browseNumber',
-                    zipId: 'browseZip'
-                });
-            }
-        });
-    }
-});
-
-document.getElementById('toggleUpdateMap')?.addEventListener('click', function() {
-    const container = document.getElementById('updateMapContainer');
-    container.classList.toggle('d-none');
-    if (!container.classList.contains('d-none') && !window._updateMapInit) {
-        window._updateMapInit = true;
-        initLeafletMap('updateMap', async (lat, lon) => {
-            const addr = await reverseGeocode(lat, lon);
-            fillAddressFields(addr, {
-                streetId: 'updateStreet',
-                numberId: 'updateNumber',
-                zipId: 'updateZip'
-            });
-        }, {
-            searchInputId: 'updateAddressSearch',
-            resultsContainerId: 'updateAddressResults',
-            onAddressPicked: (selected) => {
-                fillAddressFields(selected.address, {
-                    streetId: 'updateStreet',
-                    numberId: 'updateNumber',
-                    zipId: 'updateZip'
-                });
-            }
-        });
-    }
-});
-
-
-let selectedCategory = 'all';
-
-function selectCategory(el) {
-    // If clicking the already active category, reset to 'all'
-    if (el.classList.contains('active')) {
-        if (selectedCategory !== 'all') {
-            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector('.category-btn[data-category="all"]').classList.add('active');
-            selectedCategory = 'all';
-        }
-    } else {
-        document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-        el.classList.add('active');
-        selectedCategory = el.getAttribute('data-category');
-    }
-    filterRestaurants();
-}
-
-function filterRestaurants() {
-    const query = document.getElementById('searchRestaurant').value.toLowerCase().trim();
-    const wrappers = document.querySelectorAll('.restaurant-card-wrapper');
-    let visibleCount = 0;
-
-    wrappers.forEach(wrapper => {
-        const name = wrapper.querySelector('.card-title').textContent.toLowerCase();
-        const categories = wrapper.getAttribute('data-categories').toLowerCase().split(',');
-        
-        const matchesQuery = name.includes(query) || categories.some(cat => cat.includes(query));
-        const matchesCategory = selectedCategory === 'all' || categories.includes(selectedCategory.toLowerCase());
-        
-        if (matchesQuery && matchesCategory) {
-            wrapper.style.display = '';
-            visibleCount++;
-        } else {
-            wrapper.style.display = 'none';
-        }
-    });
-
-    // Handle no results message if needed
-    const noResults = document.getElementById('noResultsMessage');
-    if (visibleCount === 0 && wrappers.length > 0) {
-        if (!noResults) {
-            const msg = document.createElement('div');
-            msg.id = 'noResultsMessage';
-            msg.className = 'col-12 text-center py-5';
-            msg.innerHTML = '<p class="text-muted">Δεν βρέθηκαν εστιατόρια που να ταιριάζουν με τα κριτήρια σας.</p>';
-            document.getElementById('restaurantList').appendChild(msg);
-        }
-    } else if (noResults) {
-        noResults.remove();
-    }
-}
-
-document.getElementById('searchRestaurant')?.addEventListener('input', filterRestaurants);
-</script>

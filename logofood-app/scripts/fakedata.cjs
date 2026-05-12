@@ -10,16 +10,16 @@ const menuSections = ["Starters", "Main Courses", "Desserts", "Drinks"];
 
 // Map restaurant names to categories
 const restaurantCategories = {
-  "Burger Barn": "Burger",
-  "Luigi's Pizza": "Pizza",
-  "Taco Fiesta": "Mexican",
-  "Sushi Central": "Asian",
-  "Noodle Ninja": "Asian",
-  "Breakfast Club": "Brunch",
-  "The Salty Spitoon": "Ψητά Σχάρας",
-  "Krusty Krab": "Ψητά Σχάρας",
-  "Steakhouse Supreme": "Ψητά Σχάρας",
-  "The Vegan Joint": "Brunch"
+    "Burger Barn": "Burger",
+    "Luigi's Pizza": "Pizza",
+    "Taco Fiesta": "Mexican",
+    "Sushi Central": "Asian",
+    "Noodle Ninja": "Asian",
+    "Breakfast Club": "Brunch",
+    "The Salty Spitoon": "Ψητά Σχάρας",
+    "Krusty Krab": "Ψητά Σχάρας",
+    "Steakhouse Supreme": "Ψητά Σχάρας",
+    "The Vegan Joint": "Brunch"
 };
 
 const foodItems = [
@@ -69,7 +69,7 @@ async function seedDatabase() {
         // 2. Seed Restaurants
         const NUMBER_OF_RESTAURANTS = 10;
         const defaultPasswordHash = await bcrypt.hash('password123', 10);
-        
+
         for (let i = 0; i < NUMBER_OF_RESTAURANTS; i++) {
             const baseName = randomItem(restaurantNames);
             const name = baseName + (i > 0 ? ` ${i}` : '');
@@ -90,9 +90,9 @@ async function seedDatabase() {
 
             // --- B. Create Restaurant Profile ---
             await pool.execute(
-                `INSERT INTO Restaurant (id, name, rating, contact_phone, operating_hours, estimated_preparation_time, address_id) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                [accountId, name, randomNum(3.5, 5.0).toFixed(1), `555-${Math.floor(randomNum(1000, 9999))}`, "09:00-22:00", "20-30 mins", addressId]
+                `INSERT INTO Restaurant (id, name, rating,rating_count, contact_phone, operating_hours, estimated_preparation_time, address_id) 
+                 VALUES (?, ?, ?, 10, ?, ?, ?, ?)`,
+                [accountId, name, randomNum(3.5, 5.0).toFixed(1), `555-${Math.floor(randomNum(1000, 9999))}`, "09:00-22:00", "20", addressId]
             );
 
             // --- C. Assign Categories based on restaurant name ---

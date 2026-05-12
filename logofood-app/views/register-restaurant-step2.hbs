@@ -1,0 +1,99 @@
+{{!-- views/register-restaurant-step2.hbs --}}
+<main class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <div class="card border-0 shadow-sm p-4 rounded-4">
+                <h2 class="fw-bold mb-2 text-center">Ολοκλήρωση Εγγραφής</h2>
+                <p class="text-muted text-center mb-4">Βήμα 2: Στοιχεία Καταστήματος</p>
+
+                <form action="/register-restaurant/step2" method="POST">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label for="businessName" class="form-label text-muted small fw-bold">Όνομα Επιχείρησης</label>
+                            <input type="text" id="businessName" name="businessName" class="form-control" 
+                                   placeholder="π.χ. Burger House" value="{{userInput.businessName}}" required>
+                            {{#if errors.businessName}}<div class="text-danger small mt-1">{{errors.businessName}}</div>{{/if}}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="afm" class="form-label text-muted small fw-bold">Α.Φ.Μ.</label>
+                            <input type="text" id="afm" name="afm" class="form-control" 
+                                   placeholder="123456789" value="{{userInput.afm}}" required>
+                            {{#if errors.afm}}<div class="text-danger small mt-1">{{errors.afm}}</div>{{/if}}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="phone" class="form-label text-muted small fw-bold">Τηλέφωνο Επικοινωνίας</label>
+                            <input type="tel" id="phone" name="phone" class="form-control" 
+                                   placeholder="210xxxxxxx" value="{{userInput.phone}}" required>
+                            {{#if errors.phone}}<div class="text-danger small mt-1">{{errors.phone}}</div>{{/if}}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="estimatedPreparationTime" class="form-label text-muted small fw-bold">Χρόνος Προετοιμασίας (λεπτά)</label>
+                            <input type="number" id="estimatedPreparationTime" name="estimatedPreparationTime" class="form-control" 
+                                   placeholder="20" value="{{userInput.estimatedPreparationTime}}" required min="1">
+                            {{#if errors.estimatedPreparationTime}}<div class="text-danger small mt-1">{{errors.estimatedPreparationTime}}</div>{{/if}}
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="openingTime" class="form-label text-muted small fw-bold">Ώρα Έναρξης</label>
+                            <input type="time" id="openingTime" name="openingTime" class="form-control" 
+                                   value="{{userInput.openingTime}}" required>
+                            {{#if errors.openingTime}}<div class="text-danger small mt-1">{{errors.openingTime}}</div>{{/if}}
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="closingTime" class="form-label text-muted small fw-bold">Ώρα Λήξης</label>
+                            <input type="time" id="closingTime" name="closingTime" class="form-control" 
+                                   value="{{userInput.closingTime}}" required>
+                            {{#if errors.closingTime}}<div class="text-danger small mt-1">{{errors.closingTime}}</div>{{/if}}
+                        </div>
+
+                        <div class="col-12 mt-4">
+                            <h5 class="fw-bold text-secondary mb-3">Διεύθυνση Καταστήματος</h5>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <input type="text" id="registerStreet" name="street" class="form-control" 
+                                           placeholder="Οδός" value="{{userInput.street}}" required>
+                                    {{#if errors.street}}<div class="text-danger small mt-1">{{errors.street}}</div>{{/if}}
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="text" id="registerNumber" name="streetNumber" class="form-control" 
+                                           placeholder="Αρ." value="{{userInput.streetNumber}}" required>
+                                    {{#if errors.streetNumber}}<div class="text-danger small mt-1">{{errors.streetNumber}}</div>{{/if}}
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="text" id="registerZip" name="zipCode" class="form-control" 
+                                           placeholder="Τ.Κ." value="{{userInput.zipCode}}" required>
+                                    {{#if errors.zipCode}}<div class="text-danger small mt-1">{{errors.zipCode}}</div>{{/if}}
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn btn-sm btn-outline-secondary w-100 mt-3 fw-bold" id="toggleRegisterMap">
+                                📍 Επιλογή στο χάρτη
+                            </button>
+                            <div id="registerMapContainer" class="d-none mt-3">
+                                <div class="mb-3 position-relative">
+                                    <input type="text" id="registerAddressSearch" class="form-control" 
+                                           placeholder="Αναζήτηση διεύθυνσης..." autocomplete="off">
+                                    <div id="registerAddressResults" class="list-group mt-2 d-none shadow-sm" style="position: absolute; z-index: 1000; width: 100%;"></div>
+                                </div>
+                                <div id="registerMap" class="map-container-lg rounded-4 shadow-sm"></div>
+                            </div>
+                            
+                            {{!-- Hidden fields for coordinates --}}
+                            <input type="hidden" name="latitude" id="registerLat" value="{{userInput.latitude}}">
+                            <input type="hidden" name="longitude" id="registerLon" value="{{userInput.longitude}}">
+                        </div>
+
+                        <div class="col-12 mt-5 d-flex gap-3">
+                            <a href="/register-restaurant" class="btn btn-outline-secondary btn-lg flex-grow-1 fw-bold"><i class="bi bi-arrow-left me-2"></i> Πίσω</a>
+                            <button type="submit" class="btn btn-menu btn-lg flex-grow-2 fw-bold shadow-sm">Ολοκλήρωση Εγγραφής</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>

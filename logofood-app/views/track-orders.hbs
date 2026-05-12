@@ -78,6 +78,32 @@
                         </div>
                         <div class="col-md-5 border-start">
                             <div class="ps-md-4 mt-3 mt-md-0">
+                                {{#if (eq status 'COMPLETED')}}
+                                <div class="mb-4 p-3 bg-light rounded-3 text-center border">
+                                    <h6 class="fw-bold mb-2">Βαθμολογήστε την παραγγελία</h6>
+                                    {{#if rating}}
+                                    <div class="text-warning h4 mb-0">
+                                        {{#repeat 5}}
+                                        <i class="bi {{#if (le @index (subtract ../rating 1))}}bi-star-fill{{else}}bi-star{{/if}}"></i>
+                                        {{/repeat}}
+                                    </div>
+                                    <div class="small text-muted mt-1">Η βαθμολογία σας: {{rating}}/5</div>
+                                    {{else}}
+                                    <form action="/orders/{{id}}/rate" method="POST" class="rating-form">
+                                        <div class="d-flex justify-content-center gap-2 mb-2 h3 rating-stars">
+                                            <i class="bi bi-star cursor-pointer star-btn" data-value="1"></i>
+                                            <i class="bi bi-star cursor-pointer star-btn" data-value="2"></i>
+                                            <i class="bi bi-star cursor-pointer star-btn" data-value="3"></i>
+                                            <i class="bi bi-star cursor-pointer star-btn" data-value="4"></i>
+                                            <i class="bi bi-star cursor-pointer star-btn" data-value="5"></i>
+                                        </div>
+                                        <input type="hidden" name="rating" id="rating-input-{{id}}" required>
+                                        <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold shadow-sm d-none" id="submit-rating-{{id}}">Υποβολή</button>
+                                    </form>
+                                    {{/if}}
+                                </div>
+                                {{/if}}
+
                                 <h6 class="fw-bold mb-3">Σύνοψη</h6>
                                 <div class="d-flex justify-content-between mb-2">
                                     <span class="text-muted small">Υποσύνολο</span>

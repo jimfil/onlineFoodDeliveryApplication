@@ -1,19 +1,13 @@
-{{!-- views/register-restaurant.hbs --}}
+{{!-- views/register-restaurant-step1.hbs --}}
 <main class="container my-5">
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
             <div class="card border-0 shadow-sm p-4 rounded-4">
-                <h2 class="fw-bold mb-4 text-center">Δημιουργία Λογαριασμού Εστιατορίου</h2>
+                <h2 class="fw-bold mb-2 text-center">Εγγραφή Εστιατορίου</h2>
+                <p class="text-muted text-center mb-4">Βήμα 1: Στοιχεία Υπευθύνου</p>
 
-                <form action="/register-restaurant" method="POST">
+                <form action="/register-restaurant/step1" method="POST">
                     <div class="row g-3">
-                        <div class="col-12">
-                            <label for="businessName" class="form-label text-muted small fw-bold">Όνομα Επιχείρησης</label>
-                            <input type="text" id="businessName" name="businessName" class="form-control" 
-                                   placeholder="π.χ. Burger House" value="{{userInput.businessName}}" required>
-                            {{#if errors.businessName}}<div class="text-danger small mt-1">{{errors.businessName}}</div>{{/if}}
-                        </div>
-
                         <div class="col-md-6">
                             <label for="firstNameOwner" class="form-label text-muted small fw-bold">Όνομα Ιδιοκτήτη</label>
                             <input type="text" id="firstNameOwner" name="firstNameOwner" class="form-control" 
@@ -28,15 +22,8 @@
                             {{#if errors.lastNameOwner}}<div class="text-danger small mt-1">{{errors.lastNameOwner}}</div>{{/if}}
                         </div>
 
-                        <div class="col-md-12">
-                            <label for="afm" class="form-label text-muted small fw-bold">Α.Φ.Μ.</label>
-                            <input type="text" id="afm" name="afm" class="form-control" 
-                                   placeholder="123456789" value="{{userInput.afm}}" required>
-                            {{#if errors.afm}}<div class="text-danger small mt-1">{{errors.afm}}</div>{{/if}}
-                        </div>
-
                         <div class="col-12">
-                            <label for="email" class="form-label text-muted small fw-bold">Email</label>
+                            <label for="email" class="form-label text-muted small fw-bold">Email (θα χρησιμοποιηθεί για login)</label>
                             <input type="email" id="email" name="email" class="form-control" 
                                    placeholder="example@example.com" value="{{userInput.email}}" required>
                             {{#if errors.email}}<div class="text-danger small mt-1">{{errors.email}}</div>{{/if}}
@@ -54,33 +41,13 @@
                             {{#if errors.password}}<div class="text-danger small mt-1">{{errors.password}}</div>{{/if}}
                         </div>
 
-                        <div class="col-12">
-                            <label for="phone" class="form-label text-muted small fw-bold">Τηλέφωνο</label>
-                            <input type="tel" id="phone" name="phone" class="form-control" 
-                                   placeholder="69xxxxxxxx" value="{{userInput.phone}}" required>
-                            {{#if errors.phone}}<div class="text-danger small mt-1">{{errors.phone}}</div>{{/if}}
-                        </div>
-
-                        <div class="col-12">
-                            <label for="estimatedPreparationTime" class="form-label text-muted small fw-bold">Χρόνος Προετοιμασίας (λεπτά)</label>
-                            <input type="number" id="estimatedPreparationTime" name="estimatedPreparationTime" class="form-control" 
-                                   placeholder="π.χ. 20" value="{{userInput.estimatedPreparationTime}}" required min="1">
-                            {{#if errors.estimatedPreparationTime}}<div class="text-danger small mt-1">{{errors.estimatedPreparationTime}}</div>{{/if}}
-                        </div>
-
                         <div class="col-12 mt-4">
-                            <button type="submit" class="btn btn-menu btn-lg w-100 fw-bold shadow-sm">Δημιουργία Λογαριασμού</button>
+                            <button type="submit" class="btn btn-menu btn-lg w-100 fw-bold shadow-sm">Επόμενο Βήμα <i class="bi bi-arrow-right ms-2"></i></button>
                         </div>
 
                         <div class="col-12 text-center mt-3">
                             <span class="text-muted small">Έχετε ήδη λογαριασμό? </span>
                             <a href="/login" class="text-decoration-none text-primary small fw-bold">Συνδεθείτε εδώ</a>
-                        </div>
-
-                        <div class="col-12 text-center mt-2">
-                            <hr class="text-muted opacity-25">
-                            <p class="text-muted small mb-1">Θέλετε να παραγγείλετε;</p>
-                            <a href="/register" class="text-decoration-none text-primary small fw-bold">Κάντε λογαριασμό εδώ</a>
                         </div>
                     </div>
                 </form>

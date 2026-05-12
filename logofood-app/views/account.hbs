@@ -5,7 +5,7 @@
             <h2 class="fw-bold mb-4 text-center">Διαχείριση Λογαριασμού</h2>
             
             {{!-- Quick Links / Orders --}}
-            <div class="card border-0 shadow-sm p-4 mb-4 text-center" style="border-radius: 1.5rem; background: var(--surface-soft);">
+            <div class="card border-0 shadow-sm p-4 mb-4 text-center rounded-4" style="background: var(--surface-soft);">
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="text-start">
                         <h4 class="fw-bold mb-1">Οι Παραγγελίες μου</h4>
@@ -16,7 +16,7 @@
             </div>
 
             {{!-- Profile Card --}}
-            <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: 1.5rem;">
+            <div class="card border-0 shadow-sm p-4 mb-4 rounded-4">
                 <h4 class="fw-bold mb-3">Προφίλ</h4>
                 <form method="POST" action="/account/profile">
                     <div class="row g-3">
@@ -43,7 +43,7 @@
             </div>
 
             {{!-- Addresses Card --}}
-            <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: 1.5rem;">
+            <div class="card border-0 shadow-sm p-4 mb-4 rounded-4">
                 <h4 class="fw-bold mb-3">Διευθύνσεις Παράδοσης</h4>
 
                 <div class="accordion mb-4" id="addressAccordion">
@@ -72,8 +72,7 @@
                                                     data-floor="{{floor}}" 
                                                     data-comments="{{comments}}">✏️</button>
                                             <form method="POST" action="/account/addresses/{{id}}/delete">
-                                                <button type="submit" class="btn btn-link text-danger p-0" 
-                                                        onclick="return confirm('Διαγραφή διεύθυνσης;')">🗑</button>
+                                                <button type="submit" class="btn btn-link text-danger p-0 btn-confirm" data-confirm="Διαγραφή διεύθυνσης;">🗑</button>
                                             </form>
                                         </div>
                                     </div>
@@ -112,7 +111,7 @@
                                     <input type="text" id="accountAddressSearch" class="form-control" placeholder="π.χ. Ερμού 12" autocomplete="off">
                                     <div id="accountAddressResults" class="list-group mt-2 d-none"></div>
                                 </div>
-                                <div id="accountMap" style="height: 300px; border-radius: 16px;"></div>
+                                <div id="accountMap" class="map-container-lg"></div>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -131,7 +130,7 @@
             </div>
 
             {{!-- Security Card --}}
-            <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: 1.5rem;">
+            <div class="card border-0 shadow-sm p-4 mb-4 rounded-4">
                 <h4 class="fw-bold mb-3">Ασφάλεια</h4>
                 <div class="text-muted small mb-0">Η αλλαγή κωδικού είναι προσωρινά μη διαθέσιμη.</div>
             </div>
@@ -182,52 +181,3 @@
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // 1. Edit Address Flow
-    document.addEventListener('click', function(e) {
-        const btn = e.target.closest('.edit-address-btn');
-        if (btn) {
-            const id = btn.dataset.id;
-            const form = document.getElementById('editAddressForm');
-            form.action = `/account/addresses/${id}/edit`;
-            
-            document.getElementById('editStreet').value = btn.dataset.street || '';
-            document.getElementById('editNumber').value = btn.dataset.number || '';
-            document.getElementById('editZip').value = btn.dataset.zip || '';
-            document.getElementById('editFloor').value = btn.dataset.floor || '';
-            document.getElementById('editComments').value = btn.dataset.comments || '';
-            
-            const modal = new bootstrap.Modal(document.getElementById('editAddressModal'));
-            modal.show();
-        }
-    });
-
-    // 2. Map Toggle
-    document.getElementById('toggleAccountMap')?.addEventListener('click', function() {
-        const container = document.getElementById('accountMapContainer');
-        container.classList.toggle('d-none');
-        if (!container.classList.contains('d-none') && !window._accMapInit) {
-            window._accMapInit = true;
-            initLeafletMap('accountMap', async (lat, lon) => {
-                const addr = await reverseGeocode(lat, lon);
-                fillAddressFields(addr, {
-                    streetId: 'accountStreet',
-                    numberId: 'accountNumber',
-                    zipId: 'accountZip'
-                });
-            }, {
-                searchInputId: 'accountAddressSearch',
-                resultsContainerId: 'accountAddressResults',
-                onAddressPicked: (selected) => {
-                    fillAddressFields(selected.address, {
-                        streetId: 'accountStreet',
-                        numberId: 'accountNumber',
-                        zipId: 'accountZip'
-                    });
-                }
-            });
-        }
-    });
-});
-</script>

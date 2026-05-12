@@ -94,22 +94,38 @@ export async function registerCustomer({ email, password, firstName, lastName, c
  * Returns { id, email, businessName, accountType }
  */
 export async function registerRestaurant({ email, password, businessName,
-                                           firstNameOwner, lastNameOwner, phone, afm }) {
+                                           firstNameOwner, lastNameOwner, phone, afm, 
+                                           estimatedPreparationTime, operatingHours,
+                                           street, streetNumber, zipCode, latitude, longitude }) {
   const hashed = await hashPassword(password);
   let conn;
   try {
     conn = await pool.getConnection();
     await conn.beginTransaction();
 
+    // 1. Create Account
     const [accResult] = await conn.execute(
       'INSERT INTO Account (email, password_hashed, account_type) VALUES (?, ?, ?)',
       [email, hashed, 'RESTAURANT']
     );
     const id = accResult.insertId;
 
+    // 2. Create Address
+    let addressId = null;
+    if (street && streetNumber) {
+      const [addrResult] = await conn.execute(
+        'INSERT INTO Address (street, street_number, zip_code, latitude, longitude) VALUES (?, ?, ?, ?, ?)',
+        [street, streetNumber, zipCode || '', latitude || null, longitude || null]
+      );
+      addressId = addrResult.insertId;
+    }
+
+    // 3. Create Restaurant Profile
     await conn.execute(
-      'INSERT INTO Restaurant (id, name, contact_phone, owner_first_name, owner_last_name, vat_number) VALUES (?, ?, ?, ?, ?, ?)',
-      [id, businessName, phone || null, firstNameOwner, lastNameOwner, afm || null]
+      `INSERT INTO Restaurant 
+       (id, name, contact_phone, owner_first_name, owner_last_name, vat_number, estimated_preparation_time, operating_hours, address_id) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, businessName, phone || null, firstNameOwner, lastNameOwner, afm || null, estimatedPreparationTime || "20", operatingHours || null, addressId]
     );
 
     await conn.commit();

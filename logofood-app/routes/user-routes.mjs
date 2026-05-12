@@ -9,6 +9,7 @@ router.post('/account/profile',            requireLogin, requireCustomer, contro
 router.post('/account/addresses',          requireLogin, requireCustomer, controller.addAddress);
 router.post('/account/addresses/:id/delete', requireLogin, requireCustomer, controller.deleteAddress);
 router.post('/account/addresses/:id/edit',   requireLogin, requireCustomer, controller.editAddress);
-router.get ('/track-orders',                requireLogin, requireCustomer, controller.renderTrackOrders);
+router.get ('/track-orders',                controller.renderTrackOrders);
+router.post('/orders/:id/rate',              controller.rateOrder);
 
 export default router;

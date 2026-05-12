@@ -9,8 +9,8 @@ import { app } from './app.mjs';
 
 const port = process.env.PORT || '3000';
 
-const server = app.listen(port, () => {
-  console.log(`LogoFood SSR running at http://127.0.0.1:${port}`);
+const server = app.listen(port, '0.0.0.0', () => {
+  console.log(`LogoFood SSR running at http://0.0.0.0:${port}`);
 });
 
 process.on('SIGTERM', () => {

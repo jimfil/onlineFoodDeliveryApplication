@@ -3,18 +3,18 @@
  * Cart view and checkout processing.
  * Cart items are stored in the session (server-side).
  */
-import * as userModel      from '../model/user-model.mjs';
+import * as userModel from '../model/user-model.mjs';
 import * as restaurantModel from '../model/restaurant-model.mjs';
-import * as orderModel     from '../model/order-model.mjs';
+import * as orderModel from '../model/order-model.mjs';
 
 /** GET /cart */
 export async function showCart(req, res) {
   try {
-    const cart      = req.session.cart || [];
+    const cart = req.session.cart || [];
     const addresses = req.session.user
       ? await userModel.getAddresses(req.session.user.id)
       : [];
-    
+
     let customer = null;
     if (req.session.user && req.session.user.accountType === 'CUSTOMER') {
       customer = await userModel.getCustomerById(req.session.user.id);
@@ -23,12 +23,12 @@ export async function showCart(req, res) {
     // Compute totals
     const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-    res.render('cart', { 
-      cart, 
-      addresses, 
+    res.render('cart', {
+      cart,
+      addresses,
       customer,
       total,
-      deliveryAddress: req.session.deliveryAddress || {} 
+      deliveryAddress: req.session.deliveryAddress || {}
     });
   } catch (err) {
     console.error('Cart error:', err);
@@ -52,7 +52,7 @@ export async function addToCart(req, res) {
   } else {
     req.session.cart.push({ productId: parseInt(productId), name, price: parseFloat(price), restaurantId: parseInt(restaurantId), quantity: 1 });
   }
-  res.json({ 
+  res.json({
     cartCount: req.session.cart.reduce((s, i) => s + i.quantity, 0),
     cart: req.session.cart
   });
@@ -71,7 +71,7 @@ export async function removeFromCart(req, res) {
       req.session.cart.splice(idx, 1);
     }
   }
-  res.json({ 
+  res.json({
     cartCount: req.session.cart.reduce((s, i) => s + i.quantity, 0),
     cart: req.session.cart
   });
@@ -86,7 +86,7 @@ export async function deleteFromCart(req, res) {
   if (idx !== -1) {
     req.session.cart.splice(idx, 1);
   }
-  res.json({ 
+  res.json({
     cartCount: req.session.cart.reduce((s, i) => s + i.quantity, 0),
     cart: req.session.cart
   });
@@ -117,40 +117,61 @@ export async function checkout(req, res) {
     const pool = (await import('../model/db.mjs')).default;
     // If guest, create a temporary address
     if (!customerId) {
-      const { street, streetNumber, zipCode } = req.body;
-      if (!street || !streetNumber || !floor) {
-        req.flash('error', 'Συμπληρώστε την οδό, τον αριθμό και τον όροφο για την παράδοση.');
+      let { street, streetNumber, zipCode } = req.body;
+      if (zipCode) zipCode = zipCode.replace(/\s+/g, '');
+
+      if (!street || !streetNumber || !floor || !phone) {
+        req.flash('error', 'Συμπληρώστε την οδό, τον αριθμό, τον όροφο και το τηλέφωνο για την παράδοση.');
         return res.redirect('/cart');
       }
-      
+
+      const guestComments = comments ? `Τηλέφωνο: ${phone} | Σχόλια: ${comments}` : `Τηλέφωνο: ${phone}`;
+
       const [addrRes] = await pool.execute(
         `INSERT INTO Address (street, street_number, zip_code, floor, comments) VALUES (?, ?, ?, ?, ?)`,
-        [street, streetNumber, zipCode || null, floor, comments || null]
+        [street, streetNumber, zipCode || null, floor, guestComments]
       );
       addressId = addrRes.insertId;
     } else if (!addressId) {
       req.flash('error', 'Επιλέξτε διεύθυνση παράδοσης.');
       return res.redirect('/cart');
     } else {
-      // Update the existing address with the floor and comments provided at checkout
+      // Update the existing address with the floor and comments (including phone) provided at checkout
+      const finalComments = comments;
       await pool.execute(
         `UPDATE Address SET floor = ?, comments = ? WHERE id = ?`,
-        [floor || null, comments || null, addressId]
+        [floor || null, finalComments, addressId]
+      );
+      await pool.execute(
+        `UPDATE Customer SET phone = ? WHERE id = ?`,
+        [phone, customerId]
       );
     }
 
     const restaurantId = cart[0].restaurantId;
-    const items = cart.map(i => ({ productId: i.productId, quantity: i.quantity }));
+    const items = cart.map(i => ({ productId: i.productId, quantity: i.quantity, price: i.price }));
 
-    await orderModel.createOrder(customerId, restaurantId, addressId, items);
+    const orderId = await orderModel.createOrder(customerId, restaurantId, addressId, items);
+
+    if (!customerId) {
+      if (!req.session.guestOrderIds) req.session.guestOrderIds = [];
+      req.session.guestOrderIds.push(orderId);
+    }
 
     // Clear cart after successful order
     req.session.cart = [];
     req.flash('success', 'Η παραγγελία σας καταχωρήθηκε!');
-    res.redirect('/browse');
+    res.redirect('/track-orders');
   } catch (err) {
     console.error('Checkout error:', err);
     req.flash('error', 'Σφάλμα κατά την παραγγελία. Προσπαθήστε ξανά.');
     res.redirect('/cart');
   }
 }
+
+/** POST /cart/clear — empty the entire cart */
+export async function clearCart(req, res) {
+  req.session.cart = [];
+  res.json({ success: true, cartCount: 0 });
+}
+

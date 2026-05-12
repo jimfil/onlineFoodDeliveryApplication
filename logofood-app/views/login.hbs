@@ -16,29 +16,13 @@
                         <div class="col-12">
                             <label for="password" class="form-label text-muted small fw-bold">Κωδικός Πρόσβασης</label>
                             <div class="input-group">
-                                <input type="password" id="password" name="password" class="form-control" 
-                                       placeholder="Τουλάχιστον 6 χαρακτήρες" required
-                                       style="border-top-left-radius: 1.25rem; border-bottom-left-radius: 1.25rem;">
-                                <button class="btn btn-outline-secondary border-secondary-subtle" type="button" id="togglePassword"
-                                        style="border-top-right-radius: 1.25rem; border-bottom-right-radius: 1.25rem;">
+                                <input type="password" id="password" name="password" class="form-control rounded-start-custom" 
+                                       placeholder="Τουλάχιστον 6 χαρακτήρες" required>
+                                <button class="btn btn-outline-secondary border-secondary-subtle rounded-end-custom" type="button" id="togglePassword">
                                     <i class="bi bi-eye"></i>
                                 </button>
                             </div>
                         </div>
-
-                        <script>
-                            document.getElementById('togglePassword').addEventListener('click', function() {
-                                const passwordInput = document.getElementById('password');
-                                const icon = this.querySelector('i');
-                                if (passwordInput.type === 'password') {
-                                    passwordInput.type = 'text';
-                                    icon.classList.replace('bi-eye', 'bi-eye-slash');
-                                } else {
-                                    passwordInput.type = 'password';
-                                    icon.classList.replace('bi-eye-slash', 'bi-eye');
-                                }
-                            });
-                        </script>
 
                         <div class="col-12 mt-4">
                             <button type="submit" class="btn btn-menu btn-lg w-100 fw-bold shadow-sm">Σύνδεση</button>

@@ -30,6 +30,7 @@
 		"express": "^5.2.1",
 		"express-handlebars": "^8.0.7",
 		"express-session": "^1.19.0",
+		"express-validator": "^7.3.2",
 		"mysql2": "^3.22.3"
 	},
 	"devDependencies": {
