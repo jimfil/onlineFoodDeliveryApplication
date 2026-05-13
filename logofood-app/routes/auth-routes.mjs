@@ -27,6 +27,7 @@ const restaurantStep2Validation = [
   body('afm').trim().isLength({ min: 9, max: 9 }).withMessage('Το ΑΦΜ πρέπει να έχει 9 ψηφία').isNumeric().withMessage('Το ΑΦΜ πρέπει να περιέχει μόνο αριθμούς'),
   body('phone').trim().matches(/^[26]\d{9}$/).withMessage('Εισάγετε ένα έγκυρο τηλέφωνο επικοινωνίας'),
   body('estimatedPreparationTime').trim().isNumeric().withMessage('Ο χρόνος προετοιμασίας πρέπει να είναι αριθμός'),
+  body('minOrderValue').optional().isFloat({ min: 0 }).withMessage('Η ελάχιστη παραγγελία πρέπει να είναι θετικός αριθμός'),
   body('openingTime').notEmpty().withMessage('Η ώρα έναρξης είναι υποχρεωτική'),
   body('closingTime').notEmpty().withMessage('Η ώρα λήξης είναι υποχρεωτική'),
   body('street').trim().escape().notEmpty().withMessage('Η οδός είναι υποχρεωτική'),

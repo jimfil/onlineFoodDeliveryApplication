@@ -22,5 +22,7 @@ router.post('/manage/reorder',                requireLogin, requireRestaurant, c
 router.get ('/manage/orders',                 requireLogin, requireRestaurant, controller.showManageOrders);
 router.post('/manage/orders/:id/status',     requireLogin, requireRestaurant, controller.updateOrderStatus);
 router.post('/manage/status',                 requireLogin, requireRestaurant, controller.toggleStatus);
+router.post('/manage/icon',                   requireLogin, requireRestaurant, controller.updateIcon);
+
 
 export default router;

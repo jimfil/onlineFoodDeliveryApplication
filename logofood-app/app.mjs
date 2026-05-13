@@ -99,6 +99,34 @@ const hbs = exphbs.create({
     subtract: (a, b) => (parseFloat(a) - parseFloat(b)),
     // {{le a b}} — less or equal
     le: (a, b) => (parseFloat(a) <= parseFloat(b)),
+    // {{roundStars rating}} — round rating to nearest half star for display
+    roundStars: (rating) => {
+      if (rating == null || rating === 0) return 0;
+      const r = parseFloat(rating);
+      if (Number.isNaN(r)) return 0;
+      const base = Math.floor(r);
+      const decimal = r - base;
+      if (decimal < 0.4) return base;
+      if (decimal < 0.8) return base + 0.5;
+      return base + 1;
+    },
+    // {{starIcon rating index}} — choose full, half, or empty star icon
+    starIcon: (rating, index) => {
+      const r = parseFloat(rating);
+      if (Number.isNaN(r) || r <= 0) return 'bi-star';
+      const rounded = (() => {
+        const base = Math.floor(r);
+        const decimal = r - base;
+        if (decimal < 0.4) return base;
+        if (decimal < 0.8) return base + 0.5;
+        return base + 1;
+      })();
+      const fullStars = Math.floor(rounded);
+      const hasHalf = rounded % 1 === 0.5;
+      if (index < fullStars) return 'bi-star-fill';
+      if (hasHalf && index === fullStars) return 'bi-star-half';
+      return 'bi-star';
+    },
     // {{#repeat n}}...{{/repeat}}
     repeat: function(n, options) {
       let accum = '';

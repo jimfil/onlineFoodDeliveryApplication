@@ -89,19 +89,21 @@ export async function updateSettings(req, res) {
     req.flash('error', errors.array()[0].msg);
     return res.redirect('/manage');
   }
-  const { name, estimatedPreparationTime, operatingHours, phone } = req.body;
+const { name, estimatedPreparationTime, operatingHours, phone, minOrderValue } = req.body;
   try {
     const restaurant = await restaurantModel.getRestaurantByUserId(req.session.user.id);
     const finalName = name || restaurant.name;
     const finalPrep = estimatedPreparationTime || restaurant.estimated_preparation_time;
     const finalHours = operatingHours || restaurant.operating_hours;
     const finalPhone = phone || restaurant.contact_phone;
+    const finalMinOrder = minOrderValue !== undefined ? minOrderValue : restaurant.min_order_value;
 
-    await restaurantModel.updateRestaurantSettings(req.session.user.id, { 
+    await restaurantModel.updateRestaurantSettings(req.session.user.id, {
       name: finalName, 
       estimatedPreparationTime: finalPrep,
       operatingHours: finalHours,
-      phone: finalPhone
+      phone: finalPhone,
+      minOrderValue: finalMinOrder
     });
     
     // Update session info if needed
@@ -135,7 +137,9 @@ export async function updateCategories(req, res) {
   try {
     // categories should be an array of category IDs
     const categoryIds = Array.isArray(categories) ? categories : (categories ? [categories] : []);
-    await restaurantModel.updateRestaurantCategories(req.session.user.id, categoryIds);
+    // Filter out empty strings
+    const filteredIds = categoryIds.filter(id => id && id.trim() !== '');
+    await restaurantModel.updateRestaurantCategories(req.session.user.id, filteredIds);
     req.flash('success', 'Οι κατηγορίες του εστιατορίου ενημερώθηκαν.');
   } catch (err) {
     console.error('Categories update error:', err);
@@ -185,3 +189,16 @@ export async function toggleStatus(req, res) {
   res.redirect('/manage');
 }
 
+
+/** POST /manage/icon — update restaurant icon URL */
+export async function updateIcon(req, res) {
+  const { imageUrl } = req.body;
+  try {
+    await restaurantModel.updateRestaurantImage(req.session.user.id, imageUrl);
+    req.flash('success', 'Το εικονίδιο του εστιατορίου ενημερώθηκε!');
+  } catch (err) {
+    console.error('Update icon error:', err);
+    req.flash('error', 'Σφάλμα κατά την ενημέρωση του εικονιδίου.');
+  }
+  res.redirect('/manage');
+}

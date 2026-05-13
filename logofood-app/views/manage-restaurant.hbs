@@ -2,7 +2,8 @@
     {{#if hasPendingOrders}}
     <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
         <i class="bi bi-exclamation-triangle-fill me-2"></i>
-        Έχετε νέες εκκρεμείς παραγγελίες! <a href="#" class="alert-link nav-tab-btn" data-tab="orders">Δείτε τις παραγγελίες</a>
+        Έχετε νέες εκκρεμείς παραγγελίες! <a href="#" class="alert-link nav-tab-btn" data-tab="orders">Δείτε τις
+            παραγγελίες</a>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     {{/if}}
@@ -16,10 +17,11 @@
             <div class="glass-card d-inline-block px-4 py-2 border-start border-4 border-success shadow-sm">
                 <div class="small fw-bold text-muted text-uppercase mb-1">Συνολική Βαθμολογία</div>
                 <div class="d-flex align-items-center justify-content-md-end gap-2">
-                    <span class="h4 fw-bold mb-0 text-success">{{#if restaurant.rating}}{{restaurant.rating}}{{else}}0{{/if}}</span>
+                    <span class="h4 fw-bold mb-0 text-success">{{#if
+                        restaurant.rating}}{{restaurant.rating}}{{else}}0{{/if}}</span>
                     <div class="text-success small">
                         {{#repeat 5}}
-                        <i class="bi {{#if (le @index (subtract ../restaurant.rating 1))}}bi-star-fill{{else}}bi-star{{/if}}"></i>
+                        <i class="bi {{starIcon ../restaurant.rating @index}}"></i>
                         {{/repeat}}
                     </div>
                     <span class="text-muted small">({{restaurant.rating_count}} κριτικές)</span>
@@ -32,25 +34,32 @@
         <!-- Sidebar Navigation -->
         <div class="col-md-3 mb-4">
             <div class="list-group shadow-sm mb-4">
-                <button type="button" class="list-group-item list-group-item-action active nav-tab-btn" data-tab="profile" id="nav-profile">Profile Management</button>
-                <button type="button" class="list-group-item list-group-item-action nav-tab-btn" data-tab="menu" id="nav-menu">Menu Management</button>
-                <button type="button" class="list-group-item list-group-item-action nav-tab-btn" data-tab="orders" id="nav-orders">Orders</button>
+                <button type="button" class="list-group-item list-group-item-action active nav-tab-btn"
+                    data-tab="profile" id="nav-profile">Profile Management</button>
+                <button type="button" class="list-group-item list-group-item-action nav-tab-btn" data-tab="menu"
+                    id="nav-menu">Menu Management</button>
+                <a href="/manage/orders" class="list-group-item list-group-item-action">Orders</a>
+                <button type="button" class="list-group-item list-group-item-action nav-tab-btn" data-tab="icon"
+                    id="nav-icon">Icon Management</button>
             </div>
 
             <div class="glass-card shadow-sm border-0 p-3 text-center">
                 <div class="small fw-bold text-muted text-uppercase mb-2">Κατάσταση Καταστήματος</div>
                 <form action="/manage/status" method="POST" id="statusToggleForm">
                     <div class="form-check form-switch d-flex justify-content-center p-0">
-                        <input class="form-check-input ms-0 me-2 cursor-pointer" type="checkbox" role="switch" 
-                               id="statusSwitch" {{#eq restaurant.status 'OPEN'}}checked{{/eq}}
-                               onchange="document.getElementById('statusToggleForm').submit()">
-                        <label class="form-check-label fw-bold {{#eq restaurant.status 'OPEN'}}text-success{{else}}text-danger{{/eq}}" for="statusSwitch">
+                        <input class="form-check-input ms-0 me-2 cursor-pointer" type="checkbox" role="switch"
+                            id="statusSwitch" {{#eq restaurant.status 'OPEN' }}checked{{/eq}}
+                            onchange="document.getElementById('statusToggleForm').submit()">
+                        <label
+                            class="form-check-label fw-bold {{#eq restaurant.status 'OPEN'}}text-success{{else}}text-danger{{/eq}}"
+                            for="statusSwitch">
                             {{#eq restaurant.status 'OPEN'}}ΑΝΟΙΧΤΟ{{else}}ΚΛΕΙΣΤΟ{{/eq}}
                         </label>
                     </div>
                 </form>
                 <div class="smaller text-muted mt-2">
-                    {{#eq restaurant.status 'OPEN'}}Οι πελάτες μπορούν να παραγγείλουν.{{else}}Το κατάστημα δεν δέχεται παραγγελίες.{{/eq}}
+                    {{#eq restaurant.status 'OPEN'}}Οι πελάτες μπορούν να παραγγείλουν.{{else}}Το κατάστημα δεν δέχεται
+                    παραγγελίες.{{/eq}}
                 </div>
             </div>
         </div>
@@ -64,7 +73,8 @@
                         <div class="glass-card h-100 border-start border-4 border-primary">
                             <h5 class="fw-bold mb-3 text-primary">Όνομα Καταστήματος</h5>
                             <form action="/manage/settings" method="POST" class="d-flex gap-2">
-                                <input type="text" name="name" class="form-control" value="{{restaurant.name}}" required>
+                                <input type="text" name="name" class="form-control" value="{{restaurant.name}}"
+                                    required>
                                 <button type="submit" class="btn btn-dashboard-submit px-4">Αλλαγή</button>
                             </form>
                         </div>
@@ -73,18 +83,19 @@
                         <div class="glass-card h-100 border-start border-4 border-primary">
                             <h5 class="fw-bold mb-3 text-primary">Χρόνος Προετοιμασίας (λεπτά)</h5>
                             <form action="/manage/settings" method="POST" class="d-flex gap-2">
-                                <input type="number" name="estimatedPreparationTime" class="form-control" 
-                                       value="{{restaurant.estimated_preparation_time}}" placeholder="π.χ. 20" required min="1">
+                                <input type="number" name="estimatedPreparationTime" class="form-control"
+                                    value="{{restaurant.estimated_preparation_time}}" placeholder="π.χ. 20" required
+                                    min="1">
                                 <button type="submit" class="btn btn-dashboard-submit px-4">Αλλαγή</button>
                             </form>
                         </div>
                     </div>
                     <div class="col-md-12">
                         <div class="glass-card h-100 border-start border-4 border-primary">
-                            <h5 class="fw-bold mb-3 text-primary">Τηλέφωνο Επικοινωνίας</h5>
+                            <h5 class="fw-bold mb-3 text-primary">Ελάχιστη Παραγγελία (€)</h5>
                             <form action="/manage/settings" method="POST" class="d-flex gap-2">
-                                <input type="tel" name="phone" class="form-control" 
-                                       value="{{restaurant.contact_phone}}" required>
+                                <input type="number" name="minOrderValue" class="form-control"
+                                    value="{{restaurant.min_order_value}}" placeholder="π.χ. 10.00" step="0.01" min="0">
                                 <button type="submit" class="btn btn-dashboard-submit px-4">Αλλαγή</button>
                             </form>
                         </div>
@@ -108,7 +119,8 @@
                                         <select name="categories" class="form-select">
                                             <option value="">-- Επιλέξτε κατηγορία --</option>
                                             {{#each availableRestaurantCategories}}
-                                            <option value="{{id}}" {{#if (eq id (getAt restaurant.categories 0))}}selected{{/if}}>{{name}}</option>
+                                            <option value="{{id}}" {{#if (eq id (getAt restaurant.categories
+                                                0))}}selected{{/if}}>{{name}}</option>
                                             {{/each}}
                                         </select>
                                     </div>
@@ -117,13 +129,15 @@
                                         <select name="categories" class="form-select">
                                             <option value="">-- Επιλέξτε κατηγορία --</option>
                                             {{#each availableRestaurantCategories}}
-                                            <option value="{{id}}" {{#if (eq id (getAt restaurant.categories 1))}}selected{{/if}}>{{name}}</option>
+                                            <option value="{{id}}" {{#if (eq id (getAt restaurant.categories
+                                                1))}}selected{{/if}}>{{name}}</option>
                                             {{/each}}
                                         </select>
                                     </div>
                                 </div>
                                 <div class="mt-3">
-                                    <button type="submit" class="btn btn-dashboard-submit px-4">Αποθήκευση Κατηγοριών</button>
+                                    <button type="submit" class="btn btn-dashboard-submit px-4">Αποθήκευση
+                                        Κατηγοριών</button>
                                 </div>
                             </form>
                         </div>
@@ -143,13 +157,16 @@
                             </div>
                             <div id="categoryOrderList" class="d-flex flex-wrap gap-2">
                                 {{#each restaurantCategories}}
-                                <div class="category-order-item d-flex align-items-center gap-2 p-2 px-3 border rounded-pill bg-white shadow-sm">
+                                <div
+                                    class="category-order-item d-flex align-items-center gap-2 p-2 px-3 border rounded-pill bg-white shadow-sm">
                                     <span class="fw-bold small me-2">{{name}}</span>
                                     <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-secondary py-0 btn-reorder" data-type="category" data-id="{{id}}" data-dir="-1">
+                                        <button class="btn btn-outline-secondary py-0 btn-reorder" data-type="category"
+                                            data-id="{{id}}" data-dir="-1">
                                             <i class="bi bi-chevron-left"></i>
                                         </button>
-                                        <button class="btn btn-outline-secondary py-0 btn-reorder" data-type="category" data-id="{{id}}" data-dir="1">
+                                        <button class="btn btn-outline-secondary py-0 btn-reorder" data-type="category"
+                                            data-id="{{id}}" data-dir="1">
                                             <i class="bi bi-chevron-right"></i>
                                         </button>
                                     </div>
@@ -170,7 +187,8 @@
                             <form method="POST" action="/manage/products">
                                 <div class="mb-3">
                                     <label class="form-label">Όνομα Προϊόντος</label>
-                                    <input type="text" name="name" class="form-control" placeholder="π.χ. Burger Classic" required>
+                                    <input type="text" name="name" class="form-control"
+                                        placeholder="π.χ. Burger Classic" required>
                                 </div>
 
                                 <div class="mb-3">
@@ -183,18 +201,21 @@
                                         {{/each}}
                                     </select>
                                     <div id="newCategoryWrapper" class="d-none">
-                                        <input type="text" name="newCategoryName" class="form-control" placeholder="Όνομα νέας κατηγορίας">
+                                        <input type="text" name="newCategoryName" class="form-control"
+                                            placeholder="Όνομα νέας κατηγορίας">
                                     </div>
                                 </div>
 
                                 <div class="mb-3">
                                     <label class="form-label">Τιμή (€)</label>
-                                    <input type="number" name="price" class="form-control" step="0.01" placeholder="0.00" required>
+                                    <input type="number" name="price" class="form-control" step="0.01"
+                                        placeholder="0.00" required>
                                 </div>
 
                                 <div class="mb-3">
                                     <label class="form-label">Περιγραφή</label>
-                                    <textarea name="description" class="form-control" rows="3" placeholder="Συστατικά..."></textarea>
+                                    <textarea name="description" class="form-control" rows="3"
+                                        placeholder="Συστατικά..."></textarea>
                                 </div>
 
                                 <div class="mb-4">
@@ -215,8 +236,10 @@
                             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                                 <h5 class="fw-bold mb-0 text-primary">Ενεργό Μενού</h5>
                                 <div class="input-group input-group-sm w-auto">
-                                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
-                                    <input type="text" id="menuSearch" class="form-control border-start-0" placeholder="Αναζήτηση...">
+                                    <span class="input-group-text bg-white border-end-0"><i
+                                            class="bi bi-search"></i></span>
+                                    <input type="text" id="menuSearch" class="form-control border-start-0"
+                                        placeholder="Αναζήτηση...">
                                 </div>
                             </div>
                             <div class="table-responsive">
@@ -224,7 +247,8 @@
                                     <tbody>
                                         {{#each productsByCategory}}
                                         <tr class="table-light category-header">
-                                            <td colspan="4" class="fw-bold text-secondary small text-uppercase py-2">{{categoryName}}</td>
+                                            <td colspan="4" class="fw-bold text-secondary small text-uppercase py-2">
+                                                {{categoryName}}</td>
                                         </tr>
                                         {{#each products}}
                                         <tr class="product-row">
@@ -235,7 +259,8 @@
                                                     {{/if}}
                                                     <div>
                                                         <div class="fw-bold product-name">{{name}}</div>
-                                                        <div class="text-muted small text-truncate max-w-250">{{description}}</div>
+                                                        <div class="text-muted small text-truncate max-w-250">
+                                                            {{description}}</div>
                                                     </div>
                                                 </div>
                                             </td>
@@ -243,10 +268,14 @@
                                             <td class="text-end">
                                                 <div class="d-flex align-items-center justify-content-end gap-1">
                                                     <div class="btn-group btn-group-sm">
-                                                        <button class="btn btn-outline-secondary py-0 btn-reorder" data-type="product" data-id="{{id}}" data-dir="-1" title="Μετακίνηση πάνω">
+                                                        <button class="btn btn-outline-secondary py-0 btn-reorder"
+                                                            data-type="product" data-id="{{id}}" data-dir="-1"
+                                                            title="Μετακίνηση πάνω">
                                                             <i class="bi bi-chevron-up"></i>
                                                         </button>
-                                                        <button class="btn btn-outline-secondary py-0 btn-reorder" data-type="product" data-id="{{id}}" data-dir="1" title="Μετακίνηση κάτω">
+                                                        <button class="btn btn-outline-secondary py-0 btn-reorder"
+                                                            data-type="product" data-id="{{id}}" data-dir="1"
+                                                            title="Μετακίνηση κάτω">
                                                             <i class="bi bi-chevron-down"></i>
                                                         </button>
                                                     </div>
@@ -254,8 +283,9 @@
                                             </td>
                                             <td class="text-end">
                                                 <form method="POST" action="/manage/products/{{id}}/delete">
-                                                    <button type="submit" class="btn btn-light btn-sm rounded-circle p-1 d-flex align-items-center justify-content-center border shadow-sm text-danger btn-circle-sm" 
-                                                            onclick="return confirm('Διαγραφή;')">
+                                                    <button type="submit"
+                                                        class="btn btn-light btn-sm rounded-circle p-1 d-flex align-items-center justify-content-center border shadow-sm text-danger btn-circle-sm"
+                                                        onclick="return confirm('Διαγραφή;')">
                                                         <i class="bi bi-trash3-fill small"></i>
                                                     </button>
                                                 </form>
@@ -271,17 +301,47 @@
                 </div>
             </div>
 
-            <!-- Orders Section -->
-            <div id="section-orders" class="d-none">
-                <div class="glass-card text-center p-5 border-start border-4 border-primary">
-                    <div class="display-4 mb-4">📦</div>
-                    <h3 class="fw-bold mb-3">Διαχείριση Παραγγελιών</h3>
-                    <p class="text-muted mb-4">Δείτε τις λεπτομέρειες των εισερχόμενων παραγγελιών και ενημερώστε την κατάστασή τους (Προετοιμασία, Έτοιμη, Διανομή κ.λπ.)</p>
-                    <a href="/manage/orders" class="btn btn-menu btn-lg fw-bold px-5 shadow-sm">Είσοδος στη Διαχείριση</a>
+
+            <!-- Icon Management Section -->
+            <div id="section-icon" class="d-none">
+                <div class="row g-4 justify-content-center">
+                    <div class="col-md-8">
+                        <div class="glass-card border-start border-4 border-primary">
+                            <h4 class="fw-bold mb-4 text-primary">Εικονίδιο Εστιατορίου</h4>
+
+                            <div class="text-center mb-4">
+                                <div class="mx-auto shadow-sm rounded-4 overflow-hidden border border-2 border-primary border-opacity-25"
+                                    style="width: 200px; height: 160px;">
+                                    {{#if restaurant.image_url}}
+                                    <img src="{{restaurant.image_url}}" class="w-100 h-100" style="object-fit: cover;">
+                                    {{else}}
+                                    <div
+                                        class="w-100 h-100 bg-light d-flex align-items-center justify-content-center text-muted">
+                                        No Icon
+                                    </div>
+                                    {{/if}}
+                                </div>
+                                <div class="small text-muted mt-2">Τρέχουσα προεπισκόπηση</div>
+                            </div>
+
+                            <form action="/manage/icon" method="POST">
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Image URL</label>
+                                    <input type="url" name="imageUrl" class="form-control"
+                                        value="{{restaurant.image_url}}" placeholder="https://example.com/image.jpg"
+                                        required>
+                                    <div class="form-text small">Παρέχετε έναν σύνδεσμο για την εικόνα που θέλετε να
+                                        εμφανίζεται ως εικονίδιο του καταστήματος.</div>
+                                </div>
+                                <button type="submit" class="btn btn-dashboard-submit w-100 py-3 fw-bold">
+                                    <i class="bi bi-save me-2"></i>Αποθήκευση Εικονιδίου
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
 
         </div>
     </div>
 </main>
-

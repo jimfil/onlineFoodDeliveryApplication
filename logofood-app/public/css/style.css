@@ -203,6 +203,11 @@ textarea {
     box-shadow: 0 32px 80px rgba(79, 72, 124, 0.14);
 }
 
+.restaurant-card {
+    background: linear-gradient(to bottom, #ffffff, #f8f6ff);
+    border: 1px solid rgba(124, 87, 199, 0.05) !important;
+}
+
 /* Restaurant Status Styling */
 .restaurant-closed {
     filter: grayscale(0.8) opacity(0.8);
@@ -225,6 +230,10 @@ textarea {
 
 .card .card-body {
     padding: 1.7rem;
+}
+
+.card-body {
+    background-color: #dbb7f8;
 }
 
 .card .bg-secondary {
@@ -506,9 +515,11 @@ footer p {
     scrollbar-width: none;
     padding: 10px 0;
 }
+
 .category-scroll::-webkit-scrollbar {
     display: none;
 }
+
 .category-btn {
     display: inline-block;
     padding: 1.2rem 1.8rem;
@@ -516,7 +527,7 @@ footer p {
     background: white;
     border: 2px solid transparent;
     border-radius: 1.5rem;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     text-align: center;
@@ -525,22 +536,49 @@ footer p {
     text-decoration: none;
     color: inherit;
 }
+
 .category-btn:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     border-color: #ff9f43;
 }
+
 .category-btn.active {
     background: linear-gradient(135deg, #ff9f43 0%, #ff6b6b 100%);
     color: white;
     border-color: transparent;
     box-shadow: 0 8px 20px rgba(255, 159, 67, 0.3);
 }
-.category-emoji {
-    font-size: 2.2rem;
+
+.category-emoji, .category-img {
     display: block;
-    margin-bottom: 0.6rem;
+    margin: 0 auto 0.8rem;
+    width: 4rem;
+    height: 4rem;
+    transition: all 0.3s ease;
 }
+
+.category-emoji {
+    font-size: 2.8rem;
+    line-height: 4rem;
+}
+
+.category-img {
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 2px solid white;
+}
+
+.category-btn:hover .category-img, 
+.category-btn:hover .category-emoji {
+    transform: scale(1.1);
+}
+
+.category-btn:hover .category-img {
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
 .category-name {
     font-weight: 800;
     font-size: 1rem;

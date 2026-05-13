@@ -36,6 +36,13 @@
                             {{#if errors.estimatedPreparationTime}}<div class="text-danger small mt-1">{{errors.estimatedPreparationTime}}</div>{{/if}}
                         </div>
 
+                        <div class="col-md-6">
+                            <label for="minOrderValue" class="form-label text-muted small fw-bold">Ελάχιστη Παραγγελία (€)</label>
+                            <input type="number" id="minOrderValue" name="minOrderValue" class="form-control" 
+                                   placeholder="0.00" value="{{userInput.minOrderValue}}" step="0.01" min="0">
+                            {{#if errors.minOrderValue}}<div class="text-danger small mt-1">{{errors.minOrderValue}}</div>{{/if}}
+                        </div>
+
                         <div class="col-md-3">
                             <label for="openingTime" class="form-label text-muted small fw-bold">Ώρα Έναρξης</label>
                             <input type="time" id="openingTime" name="openingTime" class="form-control" 

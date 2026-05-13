@@ -84,7 +84,7 @@
                                     {{#if rating}}
                                     <div class="text-warning h4 mb-0">
                                         {{#repeat 5}}
-                                        <i class="bi {{#if (le @index (subtract ../rating 1))}}bi-star-fill{{else}}bi-star{{/if}}"></i>
+                                        <i class="bi {{#if (le @index (subtract (roundStars ../rating) 1))}}bi-star-fill{{else}}bi-star{{/if}}"></i>
                                         {{/repeat}}
                                     </div>
                                     <div class="small text-muted mt-1">Η βαθμολογία σας: {{rating}}/5</div>

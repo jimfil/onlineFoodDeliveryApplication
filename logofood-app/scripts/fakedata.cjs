@@ -90,9 +90,9 @@ async function seedDatabase() {
 
             // --- B. Create Restaurant Profile ---
             await pool.execute(
-                `INSERT INTO Restaurant (id, name, rating,rating_count, contact_phone, operating_hours, estimated_preparation_time, address_id) 
-                 VALUES (?, ?, ?, 10, ?, ?, ?, ?)`,
-                [accountId, name, randomNum(3.5, 5.0).toFixed(1), `555-${Math.floor(randomNum(1000, 9999))}`, "09:00-22:00", "20", addressId]
+                `INSERT INTO Restaurant (id, name, rating, rating_count, contact_phone, operating_hours, estimated_preparation_time, address_id, min_order_value) 
+                 VALUES (?, ?, ?, 10, ?, ?, ?, ?, ?)`,
+                [accountId, name, randomNum(3.5, 5.0).toFixed(1), `555-${Math.floor(randomNum(1000, 9999))}`, "09:00-22:00", "20", addressId, 5.00]
             );
 
             // --- C. Assign Categories based on restaurant name ---

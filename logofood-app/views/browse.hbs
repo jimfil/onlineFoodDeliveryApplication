@@ -1,9 +1,10 @@
 {{!-- views/browse.hbs — Restaurant listing --}}
 {{!-- Address Picker Section --}}
-<section class="container mb-4 text-center" id="heroSlogan" style="padding-top: 100px;">
+<section class="container mb-4 text-center" id="heroSlogan" style="padding-top: 30px; padding-bottom: 10px;">
     <div class="row justify-content-center">
         <div class="col-md-10">
-            <h1 class="display-5 fw-bold mb-1" style="background: linear-gradient(90deg, #ff4757, #ff6b81); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            <h1 class="display-5 fw-bold mb-1"
+                style="background: linear-gradient(180deg, #4f0163, #cd03ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;padding-bottom: 5px;">
                 Είτε αλοιφή είτε σως, LogoFood έχει τα πάντα
             </h1>
             <p class="text-muted lead">Ανακάλυψε τις καλύτερες γεύσεις της πόλης σου.</p>
@@ -25,10 +26,12 @@
                 <form action="/browse" method="GET">
                     <div class="row g-2 mb-2">
                         <div class="col-md-5">
-                            <input type="text" name="street" id="browseStreet" class="form-control" placeholder="Οδός (π.χ. Ερμού)" required>
+                            <input type="text" name="street" id="browseStreet" class="form-control"
+                                placeholder="Οδός (π.χ. Ερμού)" required>
                         </div>
                         <div class="col-md-2">
-                            <input type="text" name="streetNumber" id="browseNumber" class="form-control" placeholder="Αρ." required>
+                            <input type="text" name="streetNumber" id="browseNumber" class="form-control"
+                                placeholder="Αρ." required>
                         </div>
                         <div class="col-md-2">
                             <input type="text" name="zipCode" id="browseZip" class="form-control" placeholder="Τ.Κ.">
@@ -38,13 +41,15 @@
                         </div>
                     </div>
                     <div class="col-12">
-                        <button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold" id="toggleBrowseMap">
+                        <button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold"
+                            id="toggleBrowseMap">
                             📍 Επιλογή στο χάρτη
                         </button>
                         <div id="browseMapContainer" class="d-none mt-3">
                             <div class="mb-3 position-relative">
                                 <label for="browseAddressSearch" class="form-label">Αναζήτηση διεύθυνσης</label>
-                                <input type="text" id="browseAddressSearch" class="form-control" placeholder="π.χ. Ερμού 12" autocomplete="off">
+                                <input type="text" id="browseAddressSearch" class="form-control"
+                                    placeholder="π.χ. Ερμού 12" autocomplete="off">
                                 <div id="browseAddressResults" class="list-group mt-2 d-none"></div>
                             </div>
                             <div id="browseMap" class="map-container-lg"></div>
@@ -58,57 +63,73 @@
                 <div class="accordion" id="browseAccordion">
                     <div class="accordion-item border-0 shadow-sm rounded-4 overflow-hidden">
                         <h2 class="accordion-header">
-                            <button class="accordion-button fw-bold bg-white" type="button" data-bs-toggle="collapse" data-bs-target="#browseAddressCollapse">
+                            <button class="accordion-button fw-bold bg-white" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#browseAddressCollapse">
                                 <i class="bi bi-geo-alt-fill me-2 text-primary"></i>
                                 {{#if deliveryAddress}}{{deliveryAddress}}{{else}}Επιλογή διεύθυνσης παράδοσης{{/if}}
                             </button>
                         </h2>
-                        <div id="browseAddressCollapse" class="accordion-collapse collapse" data-bs-parent="#browseAccordion">
+                        <div id="browseAddressCollapse" class="accordion-collapse collapse"
+                            data-bs-parent="#browseAccordion">
                             <div class="accordion-body p-0">
                                 <div class="list-group list-group-flush">
                                     {{#each addresses}}
-                                    <a href="/browse?street={{street}}&streetNumber={{street_number}}&zipCode={{zip_code}}" 
-                                       class="list-group-item list-group-item-action py-3">
+                                    <a href="/browse?street={{street}}&streetNumber={{street_number}}&zipCode={{zip_code}}"
+                                        class="list-group-item list-group-item-action py-3">
                                         {{street}} {{street_number}}
                                     </a>
                                     {{/each}}
-                                    
+
                                     {{#if user}}
                                     {{!-- Logged in: go to account --}}
-                                    <a href="/account" class="list-group-item list-group-item-action py-3 text-primary fw-bold text-center border-dashed">
+                                    <a href="/account"
+                                        class="list-group-item list-group-item-action py-3 text-primary fw-bold text-center border-dashed">
                                         + Διαχείριση διευθύνσεων
                                     </a>
                                     {{else}}
                                     {{!-- Guest: show inline toggle --}}
-                                    <button type="button" class="list-group-item list-group-item-action py-3 text-primary fw-bold text-center border-dashed btn-toggle-guest-form">
+                                    <button type="button"
+                                        class="list-group-item list-group-item-action py-3 text-primary fw-bold text-center border-dashed btn-toggle-guest-form">
                                         + Αλλαγή διεύθυνσης
                                     </button>
                                     <div id="guestUpdateForm" class="d-none p-3 bg-light border-top">
                                         <form action="/browse" method="GET">
                                             <div class="row g-2">
                                                 <div class="col-8">
-                                                    <input type="text" name="street" id="updateStreet" class="form-control form-control-sm" placeholder="Οδός" required>
+                                                    <input type="text" name="street" id="updateStreet"
+                                                        class="form-control form-control-sm" placeholder="Οδός"
+                                                        required>
                                                 </div>
                                                 <div class="col-4">
-                                                    <input type="text" name="streetNumber" id="updateNumber" class="form-control form-control-sm" placeholder="Αρ." required>
+                                                    <input type="text" name="streetNumber" id="updateNumber"
+                                                        class="form-control form-control-sm" placeholder="Αρ." required>
                                                 </div>
                                                 <div class="col-12">
-                                                    <input type="text" name="zipCode" id="updateZip" class="form-control form-control-sm" placeholder="Τ.Κ.">
+                                                    <input type="text" name="zipCode" id="updateZip"
+                                                        class="form-control form-control-sm" placeholder="Τ.Κ.">
                                                 </div>
                                                 <div class="col-12 mt-2">
-                                                    <button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold" id="toggleUpdateMap">
+                                                    <button type="button"
+                                                        class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold"
+                                                        id="toggleUpdateMap">
                                                         📍 Χάρτης
                                                     </button>
                                                     <div id="updateMapContainer" class="d-none mt-2">
                                                         <div class="mb-2 position-relative">
-                                                            <input type="text" id="updateAddressSearch" class="form-control form-control-sm" placeholder="Αναζήτηση..." autocomplete="off">
-                                                            <div id="updateAddressResults" class="list-group mt-1 d-none shadow-sm" style="position: absolute; z-index: 1000; width: 100%;"></div>
+                                                            <input type="text" id="updateAddressSearch"
+                                                                class="form-control form-control-sm"
+                                                                placeholder="Αναζήτηση..." autocomplete="off">
+                                                            <div id="updateAddressResults"
+                                                                class="list-group mt-1 d-none shadow-sm"
+                                                                style="position: absolute; z-index: 1000; width: 100%;">
+                                                            </div>
                                                         </div>
                                                         <div id="updateMap" class="map-container-sm"></div>
                                                     </div>
                                                 </div>
                                                 <div class="col-12 mt-2">
-                                                    <button type="submit" class="btn btn-menu btn-sm w-100 fw-bold">Ενημέρωση</button>
+                                                    <button type="submit"
+                                                        class="btn btn-menu btn-sm w-100 fw-bold">Ενημέρωση</button>
                                                 </div>
                                             </div>
                                         </form>
@@ -132,7 +153,8 @@
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
             <div class="d-flex gap-2">
-                <input type="text" id="searchRestaurant" class="form-control form-control-lg rounded-pill shadow-sm px-4"
+                <input type="text" id="searchRestaurant"
+                    class="form-control form-control-lg rounded-pill shadow-sm px-4"
                     placeholder="Αναζήτηση για εστιατόριο ή κουζίνα...">
                 <button class="btn btn-menu btn-lg px-4 rounded-pill shadow-sm btn-filter-restaurants">Go</button>
             </div>
@@ -149,7 +171,11 @@
         </div>
         {{#each categories}}
         <div class="category-btn btn-select-category" data-category="{{name}}">
+            {{#if image_url}}
+            <img src="{{image_url}}" class="category-img" alt="{{name}}">
+            {{else}}
             <span class="category-emoji">{{emoji}}</span>
+            {{/if}}
             <span class="category-name">{{name}}</span>
         </div>
         {{/each}}
@@ -163,15 +189,24 @@
     <div class="row g-4" id="restaurantList">
         {{#each restaurants}}
         <div class="col-12 col-md-6 col-lg-3 restaurant-card-wrapper" data-categories="{{join categories ','}}">
-            <div class="card h-100 border-0 shadow-sm restaurant-card rounded-4 overflow-hidden {{#eq status 'CLOSED'}}restaurant-closed{{/eq}}">
-                <a href="{{#eq status 'CLOSED'}}#{{else}}/restaurant/{{id}}{{/eq}}" class="text-decoration-none h-100 d-flex flex-column {{#eq status 'CLOSED'}}pe-none{{/eq}}">
-                    <div class="bg-light d-flex justify-content-center align-items-center position-relative" style="height: 160px; background: url('{{image_url}}') center/cover no-repeat;">
-                        {{#unless image_url}}
-                        <span class="text-muted">LogoFood</span>
-                        {{/unless}}
+            <div
+                class="card h-100 border-0 shadow-sm restaurant-card rounded-4 overflow-hidden {{#eq status 'CLOSED'}}restaurant-closed{{/eq}}">
+                <a href="{{#eq status 'CLOSED'}}#{{else}}/restaurant/{{id}}{{/eq}}"
+                    class="text-decoration-none h-100 d-flex flex-column {{#eq status 'CLOSED'}}pe-none{{/eq}}">
+                    <div class="restaurant-card-photo-wrapper">
+                        {{#if image_url}}
+                        <img src="{{image_url}}" class="restaurant-card-photo" alt="{{name}}">
+                        {{else}}
+                        <div class="restaurant-card-photo d-flex align-items-center justify-content-center"
+                            style="background-color: #f6f3ff;">
+                            <span class="text-muted">LogoFood</span>
+                        </div>
+                        {{/if}}
                         {{#eq status 'CLOSED'}}
-                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50">
-                            <span class="badge bg-danger px-3 py-2 fs-6 shadow-sm border border-2 border-white">ΚΛΕΙΣΤΟ</span>
+                        <div
+                            class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50">
+                            <span
+                                class="badge bg-danger px-3 py-2 fs-6 shadow-sm border border-2 border-white">ΚΛΕΙΣΤΟ</span>
                         </div>
                         {{/eq}}
                     </div>
@@ -185,23 +220,28 @@
                             </span>
                             <div>
                                 {{#if (eq rating_count 0)}}
-                                <span class="badge bg-light text-muted border fw-normal smaller" style="font-size: 0.65rem;">No ratings</span>
+                                <span class="badge bg-light text-muted border fw-normal smaller"
+                                    style="font-size: 0.65rem;">New</span>
                                 {{else}}
-                                <span class="badge bg-success text-white">{{rating}} ({{rating_count}})</span>
+                                <span class="badge bg-success text-white">{{rating}} <small
+                                        style="font-weight: normal; opacity: 0.9;">({{rating_count}})</small></span>
                                 {{/if}}
                             </div>
                         </h4>
                         {{#if categories}}
                         <div class="mb-2 mt-2">
                             {{#each categories}}
-                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle me-1 badge-xs">{{this}}</span>
+                            <span
+                                class="badge bg-primary-subtle text-primary border border-primary-subtle me-1 badge-m" style="margin-top: 1rem; margin-bottom: 1rem;">{{this}}</span>
                             {{/each}}
                         </div>
                         {{/if}}
-                        <p class="card-text text-muted small mb-3">Ελ. Παρ.: {{formatPrice 1.0}}. Χρόνος: {{estimated_preparation_time}}'</p>
-                        
+                        <p class="card-text text-muted small mb-3">Ελ. Παρ.: {{formatPrice min_order_value}}. Χρόνος:
+                            {{estimated_preparation_time}}'</p>
+
                         <div class="mt-auto">
-                            <span class="btn {{#eq status 'CLOSED'}}btn-outline-secondary disabled{{else}}btn-menu{{/eq}} w-100 fw-bold py-2 rounded-pill">
+                            <span
+                                class="btn {{#eq status 'CLOSED'}}btn-outline-secondary disabled{{else}}btn-menu{{/eq}} w-100 fw-bold py-2 rounded-pill">
                                 {{#eq status 'CLOSED'}}Μη Διαθέσιμο{{else}}Δες το Μενού{{/eq}}
                             </span>
                         </div>
@@ -216,4 +256,3 @@
         {{/each}}
     </div>
 </main>
-

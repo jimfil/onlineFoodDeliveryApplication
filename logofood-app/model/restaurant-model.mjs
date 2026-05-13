@@ -9,7 +9,7 @@ import pool from './db.mjs';
 export async function getAllRestaurants() {
   const [rows] = await pool.execute(
     `SELECT r.id, r.name, r.rating, r.rating_count, r.status, r.estimated_preparation_time,
-            r.contact_phone, r.operating_hours,
+            r.contact_phone, r.operating_hours, r.image_url, r.min_order_value,
             GROUP_CONCAT(c.name SEPARATOR ',') AS categories
      FROM Restaurant r
      LEFT JOIN Restaurant_Category rc ON r.id = rc.restaurant_id
@@ -28,7 +28,7 @@ export async function getAllRestaurants() {
 export async function getRestaurantById(id) {
   const [rows] = await pool.execute(
     `SELECT r.id, r.name, r.rating, r.rating_count, r.status, r.estimated_preparation_time,
-            r.contact_phone, r.operating_hours,
+            r.contact_phone, r.operating_hours, r.image_url, r.min_order_value,
             r.owner_first_name, r.owner_last_name,
             GROUP_CONCAT(c.name SEPARATOR ',') AS categories
      FROM Restaurant r
@@ -69,11 +69,11 @@ export async function getRestaurantMenu(restaurantId) {
       categoryMap.set(catKey, { categoryName: catName, products: [] });
     }
     categoryMap.get(catKey).products.push({
-      id:          row.id,
-      name:        row.name,
-      price:       row.price,
+      id: row.id,
+      name: row.name,
+      price: row.price,
       description: row.description,
-      image_url:   row.image_url
+      image_url: row.image_url
     });
   }
   return [...categoryMap.values()];
@@ -112,14 +112,14 @@ export async function createProduct(restaurantId, { name, price, description, ca
     let finalCategoryId = (categoryId === 'NEW' || !categoryId) ? null : categoryId;
     if (!finalCategoryId && newCategoryName) {
       const [existing] = await conn.execute(
-        'SELECT id FROM Product_Category WHERE name = ? AND restaurant_id = ?', 
+        'SELECT id FROM Product_Category WHERE name = ? AND restaurant_id = ?',
         [newCategoryName, restaurantId]
       );
       if (existing.length > 0) {
         finalCategoryId = existing[0].id;
       } else {
         const [catResult] = await conn.execute(
-          'INSERT INTO Product_Category (name, restaurant_id) VALUES (?, ?)', 
+          'INSERT INTO Product_Category (name, restaurant_id) VALUES (?, ?)',
           [newCategoryName, restaurantId]
         );
         finalCategoryId = catResult.insertId;
@@ -214,7 +214,7 @@ export async function reorderItem(restaurantId, type, id, direction) {
       const [catMap] = await conn.execute(`SELECT category_id FROM Product_Category_Mapping WHERE product_id = ?`, [id]);
       if (catMap.length === 0) throw new Error('Product not mapped to category');
       const categoryId = catMap[0].category_id;
-      
+
       query = `
         SELECT p.id, p.display_order 
         FROM Product p
@@ -251,10 +251,10 @@ export async function reorderItem(restaurantId, type, id, direction) {
 }
 
 /** Update restaurant details and operating hours. */
-export async function updateRestaurantSettings(userId, { name, estimatedPreparationTime, operatingHours, phone }) {
+export async function updateRestaurantSettings(userId, { name, estimatedPreparationTime, operatingHours, phone, minOrderValue }) {
   await pool.execute(
-    'UPDATE Restaurant SET name = ?, estimated_preparation_time = ?, operating_hours = ?, contact_phone = ? WHERE id = ?',
-    [name, estimatedPreparationTime, operatingHours, phone, userId]
+    'UPDATE Restaurant SET name = ?, estimated_preparation_time = ?, operating_hours = ?, contact_phone = ?, min_order_value = ? WHERE id = ?',
+    [name, estimatedPreparationTime, operatingHours, phone, minOrderValue, userId]
   );
 }
 
@@ -278,13 +278,13 @@ export async function toggleRestaurantStatus(userId) {
 export async function updateRestaurantCategories(restaurantId, categoryIds) {
   // Limit to 2 categories
   const ids = (categoryIds || []).slice(0, 2);
-  
+
   // Delete existing categories
   await pool.execute(
     'DELETE FROM Restaurant_Category WHERE restaurant_id = ?',
     [restaurantId]
   );
-  
+
   // Insert new categories
   for (const categoryId of ids) {
     await pool.execute(
@@ -296,23 +296,76 @@ export async function updateRestaurantCategories(restaurantId, categoryIds) {
 
 /** Get all available restaurant categories (global). */
 export async function getAllRestaurantCategories() {
-  const defaultCategories = [
-    'Burger', 'Brunch', 'Pizza', 'Mexican', 'Asian', 'Σουβλάκια', 'Ψητά Σχάρας', 'Italian'
-  ];
+
+
+
 
   const [rows] = await pool.execute(
-    'SELECT id, name FROM Category ORDER BY name ASC'
+    'SELECT id, name, image_url FROM Category ORDER BY name ASC'
   );
 
-  const existingNames = rows.map(r => r.name);
-  const missing = defaultCategories.filter(name => !existingNames.includes(name));
 
-  for (const name of missing) {
-    await pool.execute('INSERT INTO Category (name) VALUES (?)', [name]);
-  }
 
-  const [updatedRows] = await pool.execute(
-    'SELECT id, name FROM Category ORDER BY name ASC'
-  );
-  return updatedRows;
+
+
+
+
+
+
+
+
+  return rows;
 }
+
+/** Update restaurant image URL */
+export async function updateRestaurantImage(restaurantId, imageUrl) {
+  await pool.execute(
+    'UPDATE Restaurant SET image_url = ? WHERE id = ?',
+    [imageUrl, restaurantId]
+  );
+}
+
+/** Initialize default restaurant categories with images if they don't exist. */
+export async function initializeCategories() {
+  const categoriesData = [
+    { name: 'Burger', image_url: '/images/categories/burger.jpg' },
+    { name: 'American', image_url: '/images/categories/american.jpg' },
+    { name: 'Fast Food', image_url: '/images/categories/fast-food.jpg' },
+    { name: 'Healthy', image_url: '/images/categories/healthy.jpg' },
+    { name: 'Italian', image_url: '/images/categories/italian.jpg' },
+    { name: 'Seafood', image_url: '/images/categories/seafood.jpg' },
+    { name: 'Brunch', image_url: '/images/categories/brunch.jpg' },
+    { name: 'Pizza', image_url: '/images/categories/pizza.jpg' },
+    { name: 'Mexican', image_url: '/images/categories/mexican.jpg' },
+    { name: 'Asian', image_url: '/images/categories/asian.jpg' },
+    { name: 'Σουβλάκια', image_url: '/images/categories/souvlakia.jpg' },
+    { name: 'Ψητά Σχάρας', image_url: '/images/categories/psita-sxaras.jpg' },
+    { name: 'Sushi', image_url: '/images/categories/sushi.jpg' },
+    { name: 'Pasta', image_url: '/images/categories/pasta.jpg' },
+    { name: 'Salads', image_url: '/images/categories/salads.jpg' },
+    { name: 'Desserts', image_url: '/images/categories/desserts.jpg' },
+    { name: 'Coffee', image_url: '/images/categories/coffee.jpg' },
+    { name: 'Crepes', image_url: '/images/categories/crepes.jpg' }
+  ];
+
+  const [rows] = await pool.execute('SELECT name, image_url FROM Category');
+  const existingCategories = rows;
+
+  for (const cat of categoriesData) {
+    const existing = existingCategories.find(c => c.name === cat.name);
+    if (!existing) {
+      console.log(`Initializing category: ${cat.name}`);
+      await pool.execute(
+        'INSERT INTO Category (name, image_url) VALUES (?, ?)',
+        [cat.name, cat.image_url]
+      );
+    } else if (!existing.image_url || existing.image_url.startsWith('http')) {
+      console.log(`Updating missing or remote image for category: ${cat.name}`);
+      await pool.execute(
+        'UPDATE Category SET image_url = ? WHERE name = ?',
+        [cat.image_url, cat.name]
+      );
+    }
+  }
+}
+

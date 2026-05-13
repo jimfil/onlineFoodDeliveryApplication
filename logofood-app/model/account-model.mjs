@@ -96,7 +96,8 @@ export async function registerCustomer({ email, password, firstName, lastName, c
 export async function registerRestaurant({ email, password, businessName,
                                            firstNameOwner, lastNameOwner, phone, afm, 
                                            estimatedPreparationTime, operatingHours,
-                                           street, streetNumber, zipCode, latitude, longitude }) {
+                                           street, streetNumber, zipCode, latitude, longitude,
+                                           minOrderValue }) {
   const hashed = await hashPassword(password);
   let conn;
   try {
@@ -123,9 +124,9 @@ export async function registerRestaurant({ email, password, businessName,
     // 3. Create Restaurant Profile
     await conn.execute(
       `INSERT INTO Restaurant 
-       (id, name, contact_phone, owner_first_name, owner_last_name, vat_number, estimated_preparation_time, operating_hours, address_id) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, businessName, phone || null, firstNameOwner, lastNameOwner, afm || null, estimatedPreparationTime || "20", operatingHours || null, addressId]
+       (id, name, contact_phone, owner_first_name, owner_last_name, vat_number, estimated_preparation_time, operating_hours, address_id, min_order_value) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, businessName, phone || null, firstNameOwner, lastNameOwner, afm || null, estimatedPreparationTime || "20", operatingHours || null, addressId, minOrderValue || 0]
     );
 
     await conn.commit();

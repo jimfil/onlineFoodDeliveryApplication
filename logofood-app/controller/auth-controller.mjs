@@ -162,7 +162,7 @@ export async function processRegisterRestaurantStep2(req, res) {
   }
 
   const step1 = req.session.restaurantRegStep1;
-  const { businessName, phone, afm, estimatedPreparationTime, openingTime, closingTime, street, streetNumber, zipCode, latitude, longitude } = req.body;
+  const { businessName, phone, afm, estimatedPreparationTime, minOrderValue, openingTime, closingTime, street, streetNumber, zipCode, latitude, longitude } = req.body;
   
   const operatingHours = `${openingTime}-${closingTime}`;
 
@@ -176,6 +176,7 @@ export async function processRegisterRestaurantStep2(req, res) {
       phone,
       afm,
       estimatedPreparationTime,
+      minOrderValue,
       operatingHours,
       street,
       streetNumber,

@@ -91,7 +91,8 @@ export async function getOrdersByCustomerId(customerId) {
      JOIN Order_Item oi ON o.id = oi.order_id
      JOIN Product p ON oi.product_id = p.id
      WHERE o.customer_id = ?
-     ORDER BY o.created_at DESC`,
+     ORDER BY o.created_at DESC
+     LIMIT 10`,
     [customerId]
   );
 
@@ -143,7 +144,8 @@ export async function getOrdersByRestaurantDetailed(restaurantId) {
      JOIN Order_Item oi ON o.id = oi.order_id
      JOIN Product p ON oi.product_id = p.id
      WHERE o.restaurant_id = ?
-     ORDER BY o.created_at DESC`,
+     ORDER BY o.created_at DESC
+     LIMIT 20`,
     [restaurantId]
   );
 
@@ -222,7 +224,8 @@ export async function getOrdersByIds(orderIds) {
      JOIN Order_Item oi ON o.id = oi.order_id
      JOIN Product p ON oi.product_id = p.id
      WHERE o.id IN (${placeholders})
-     ORDER BY o.created_at DESC`,
+     ORDER BY o.created_at DESC
+     LIMIT 10`,
     orderIds
   );
 

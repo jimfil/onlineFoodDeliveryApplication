@@ -7,7 +7,8 @@ CREATE TABLE Account (
 
 CREATE TABLE Category (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(100) NOT NULL
+  name VARCHAR(100) NOT NULL,
+  image_url VARCHAR(255)
 );
 
 CREATE TABLE Address (
@@ -33,7 +34,9 @@ CREATE TABLE Restaurant (
   owner_last_name VARCHAR(100),
   vat_number VARCHAR(50),
   address_id INT,
+  image_url VARCHAR(255),
   status ENUM('OPEN', 'CLOSED') DEFAULT 'OPEN',
+  min_order_value DECIMAL(10,2) DEFAULT 0.00,
   FOREIGN KEY (id) REFERENCES Account(id) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (address_id) REFERENCES Address(id) ON DELETE CASCADE ON UPDATE CASCADE
 );

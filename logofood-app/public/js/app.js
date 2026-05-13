@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Tab Switching Logic
     function switchManageTab(tabId) {
         // Hide all sections
-        ['profile', 'menu', 'orders'].forEach(id => {
+        ['profile', 'menu', 'icon'].forEach(id => {
             const section = document.getElementById('section-' + id);
             if (section) section.classList.add('d-none');
             const nav = document.getElementById('nav-' + id);
