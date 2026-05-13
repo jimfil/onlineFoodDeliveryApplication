@@ -5,6 +5,7 @@
 import * as restaurantModel from '../model/restaurant-model.mjs';
 import * as orderModel from '../model/order-model.mjs';
 import { validationResult } from 'express-validator';
+import { getDistanceKm } from '../utils/geo-utils.mjs';
 
 /** GET /restaurant/:id — public menu view */
 export async function showRestaurant(req, res) {
@@ -14,6 +15,30 @@ export async function showRestaurant(req, res) {
   try {
     const restaurant = await restaurantModel.getRestaurantById(req.params.id);
     if (!restaurant) return res.render('error', { message: 'Εστιατόριο δεν βρέθηκε.' });
+
+    // 1. Check for valid user coordinates
+    const deliveryCoords = req.session.deliveryAddress?.latitude != null && req.session.deliveryAddress?.longitude != null
+      ? { lat: req.session.deliveryAddress.latitude, lon: req.session.deliveryAddress.longitude }
+      : null;
+
+    if (!deliveryCoords) {
+      return res.render('error', { message: 'Απαιτείται έγκυρη διεύθυνση για να δείτε το εστιατόριο.' });
+    }
+
+    // 2. Check for restaurant coordinates and distance
+    if (restaurant.latitude == null || restaurant.longitude == null) {
+      return res.render('error', { message: 'Το εστιατόριο δεν έχει έγκυρες συντεταγμένες.' });
+    }
+
+    const distanceKm = getDistanceKm(deliveryCoords.lat, deliveryCoords.lon, restaurant.latitude, restaurant.longitude);
+    if (distanceKm > 4) {
+      return res.render('error', { message: 'Το εστιατόριο είναι εκτός εμβέλειας (πάνω από 4 χλμ).' });
+    }
+
+    // 3. Calculate delivery time
+    const prepMinutes = Number.parseInt(restaurant.estimated_preparation_time, 10) || 0;
+    const travelMinutes = Math.max(2, Math.round(distanceKm / 18 * 60));
+    restaurant.deliveryMinutes = prepMinutes + travelMinutes;
 
     const categories = await restaurantModel.getRestaurantMenu(req.params.id);
     const cart = req.session.cart || [];
@@ -41,9 +66,9 @@ export async function showManage(req, res) {
       }))
       .filter(c => c.products.length > 0);
 
-    res.render('manage-restaurant', { 
-      restaurant, 
-      products, 
+    res.render('manage-restaurant', {
+      restaurant,
+      products,
       allCategories,
       restaurantCategories,
       availableRestaurantCategories,
@@ -89,7 +114,7 @@ export async function updateSettings(req, res) {
     req.flash('error', errors.array()[0].msg);
     return res.redirect('/manage');
   }
-const { name, estimatedPreparationTime, operatingHours, phone, minOrderValue } = req.body;
+  const { name, estimatedPreparationTime, operatingHours, phone, minOrderValue } = req.body;
   try {
     const restaurant = await restaurantModel.getRestaurantByUserId(req.session.user.id);
     const finalName = name || restaurant.name;
@@ -99,18 +124,18 @@ const { name, estimatedPreparationTime, operatingHours, phone, minOrderValue } =
     const finalMinOrder = minOrderValue !== undefined ? minOrderValue : restaurant.min_order_value;
 
     await restaurantModel.updateRestaurantSettings(req.session.user.id, {
-      name: finalName, 
+      name: finalName,
       estimatedPreparationTime: finalPrep,
       operatingHours: finalHours,
       phone: finalPhone,
       minOrderValue: finalMinOrder
     });
-    
+
     // Update session info if needed
     req.session.user.restaurantName = finalName;
-    req.session.user.preparationTime  = finalPrep;
+    req.session.user.preparationTime = finalPrep;
     req.session.user.contactPhone = finalPhone;
-    
+
     req.flash('success', 'Τα στοιχεία εστιατορίου ενημερώθηκαν.');
   } catch (err) {
     console.error('Settings update error:', err);

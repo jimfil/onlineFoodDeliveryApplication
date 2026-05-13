@@ -5,23 +5,68 @@
  */
 import pool from './db.mjs';
 
-/** Get all restaurants with their basic info and categories. */
-export async function getAllRestaurants() {
-  const [rows] = await pool.execute(
-    `SELECT r.id, r.name, r.rating, r.rating_count, r.status, r.estimated_preparation_time,
-            r.contact_phone, r.operating_hours, r.image_url, r.min_order_value,
-            GROUP_CONCAT(c.name SEPARATOR ',') AS categories
+/** Get restaurants within 4km, with pagination. */
+export async function getAllRestaurants({ lat, lon, limit = 20, offset = 0 } = {}) {
+  let query = `
+    SELECT r.id, r.name, r.rating, r.rating_count, r.status, r.estimated_preparation_time,
+           r.contact_phone, r.operating_hours, r.image_url, r.min_order_value,
+           a.latitude AS latitude, a.longitude AS longitude,
+           GROUP_CONCAT(c.name SEPARATOR ',') AS categories`;
+  
+  const params = [];
+  
+  if (lat != null && lon != null) {
+    query += `,
+           (6371 * acos(cos(radians(?)) * cos(radians(a.latitude)) * cos(radians(a.longitude) - radians(?)) + sin(radians(?)) * sin(radians(a.latitude)))) AS distanceKm`;
+    params.push(lat, lon, lat);
+  }
+
+  query += `
      FROM Restaurant r
+     LEFT JOIN Address a ON r.address_id = a.id
      LEFT JOIN Restaurant_Category rc ON r.id = rc.restaurant_id
      LEFT JOIN Category c ON rc.category_id = c.id
-     GROUP BY r.id
-     ORDER BY r.status ASC, r.name ASC`
-  );
-  // Parse categories
+     GROUP BY r.id, r.name, r.rating, r.rating_count, r.status, r.estimated_preparation_time,
+              r.contact_phone, r.operating_hours, r.image_url, r.min_order_value,
+              a.latitude, a.longitude`;
+  if (lat != null && lon != null) {
+    query += ` HAVING distanceKm <= 4`;
+  }
+
+  query += ` ORDER BY r.status ASC, r.name ASC LIMIT ${Number(limit)} OFFSET ${Number(offset)}`;
+
+  const [rows] = await pool.query(query, params);
+
   return rows.map(row => ({
     ...row,
     categories: row.categories ? row.categories.split(',').filter(Boolean) : []
   }));
+}
+
+/** Get total count of restaurants within 4km. */
+export async function getRestaurantsCount({ lat, lon } = {}) {
+  let query = `SELECT COUNT(*) as total FROM (
+    SELECT r.id`;
+  
+  const params = [];
+  if (lat != null && lon != null) {
+    query += `, (6371 * acos(cos(radians(?)) * cos(radians(a.latitude)) * cos(radians(a.longitude) - radians(?)) + sin(radians(?)) * sin(radians(a.latitude)))) AS distanceKm`;
+    params.push(lat, lon, lat);
+  }
+
+  query += `
+    FROM Restaurant r
+    LEFT JOIN Address a ON r.address_id = a.id
+    GROUP BY r.id, a.latitude, a.longitude`;
+
+  if (lat != null && lon != null) {
+    query += ` HAVING distanceKm <= 4`;
+  }
+
+  query += `) AS sub`;
+
+  const [rows] = await pool.query(query, params);
+  return rows[0].total;
 }
 
 /** Get a single restaurant by id with categories. */
@@ -30,12 +75,16 @@ export async function getRestaurantById(id) {
     `SELECT r.id, r.name, r.rating, r.rating_count, r.status, r.estimated_preparation_time,
             r.contact_phone, r.operating_hours, r.image_url, r.min_order_value,
             r.owner_first_name, r.owner_last_name,
+            a.latitude, a.longitude,
             GROUP_CONCAT(c.name SEPARATOR ',') AS categories
      FROM Restaurant r
+     LEFT JOIN Address a ON r.address_id = a.id
      LEFT JOIN Restaurant_Category rc ON r.id = rc.restaurant_id
      LEFT JOIN Category c ON rc.category_id = c.id
      WHERE r.id = ?
-     GROUP BY r.id`,
+     GROUP BY r.id, r.name, r.rating, r.rating_count, r.status, r.estimated_preparation_time,
+              r.contact_phone, r.operating_hours, r.image_url, r.min_order_value,
+              r.owner_first_name, r.owner_last_name, a.latitude, a.longitude`,
     [id]
   );
   if (!rows[0]) return null;

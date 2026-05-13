@@ -41,6 +41,15 @@ async function searchAddresses(query) {
 }
 
 /**
+ * Geocode a specific address string to coordinates.
+ */
+async function geocodeAddress(street, number, zip, city = 'Patra') {
+    const query = `${street} ${number}, ${zip}, ${city}, Greece`;
+    const results = await searchAddresses(query);
+    return results.length > 0 ? { lat: results[0].lat, lon: results[0].lon } : null;
+}
+
+/**
  * Extract street, number, zip from Nominatim address object
  */
 function extractAddressParts(address = {}) {
@@ -76,7 +85,7 @@ function fillAddressFields(address, fieldIds) {
  * Initialize Leaflet Map with draggable marker and optional autocomplete
  */
 function initLeafletMap(containerId, onLocationSelected, options = {}) {
-    const defaultLocation = [37.9755, 23.7348]; // Athens
+    const defaultLocation = [38.2461, 21.7351]; // Patra (Plateia Georgiou)
     const map = L.map(containerId).setView(defaultLocation, 13);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

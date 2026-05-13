@@ -4,9 +4,11 @@ const bcrypt = require('bcrypt');
 
 // --- FAKE DATA ARRAYS ---
 const restaurantNames = ["The Salty Spitoon", "Krusty Krab", "Luigi's Pizza", "Burger Barn", "Sushi Central", "Taco Fiesta", "The Vegan Joint", "Steakhouse Supreme", "Noodle Ninja", "Breakfast Club"];
-const streets = ["Main St", "Oak Ave", "Pine Ln", "Maple Dr", "Elm St", "Cedar Blvd", "Washington St", "Lakeview Dr"];
+const streets = ["Γεροκωστοπούλου"];
 const categories = ["Burger", "Brunch", "Pizza", "Mexican", "Asian", "Σουβλάκια", "Ψητά Σχάρας"];
 const menuSections = ["Starters", "Main Courses", "Desserts", "Drinks"];
+const patrasLatitude = 38.2468;
+const patrasLongitude = 21.7347;
 
 // Map restaurant names to categories
 const restaurantCategories = {
@@ -67,7 +69,7 @@ async function seedDatabase() {
         }
 
         // 2. Seed Restaurants
-        const NUMBER_OF_RESTAURANTS = 10;
+        const NUMBER_OF_RESTAURANTS = 40;
         const defaultPasswordHash = await bcrypt.hash('password123', 10);
 
         for (let i = 0; i < NUMBER_OF_RESTAURANTS; i++) {
@@ -84,7 +86,7 @@ async function seedDatabase() {
 
             const [addrRes] = await pool.execute(
                 `INSERT INTO Address (street, street_number, zip_code, latitude, longitude) VALUES (?, ?, ?, ?, ?)`,
-                [randomItem(streets), Math.floor(randomNum(1, 999)).toString(), "12345", randomNum(37.0, 39.0), randomNum(-122.0, -120.0)]
+                [randomItem(streets), Math.floor(randomNum(1, 50)).toString(), "26221", patrasLatitude, patrasLongitude]
             );
             const addressId = addrRes.insertId;
 

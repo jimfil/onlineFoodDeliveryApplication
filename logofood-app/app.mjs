@@ -99,6 +99,8 @@ const hbs = exphbs.create({
     subtract: (a, b) => (parseFloat(a) - parseFloat(b)),
     // {{le a b}} — less or equal
     le: (a, b) => (parseFloat(a) <= parseFloat(b)),
+    // {{gt a b}} — greater than
+    gt: (a, b) => (parseFloat(a) > parseFloat(b)),
     // {{roundStars rating}} — round rating to nearest half star for display
     roundStars: (rating) => {
       if (rating == null || rating === 0) return 0;

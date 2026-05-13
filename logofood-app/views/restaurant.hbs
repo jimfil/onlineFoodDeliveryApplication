@@ -20,6 +20,14 @@
             </div>
             {{/eq}}
 
+            {{#if restaurant.outOfReach}}
+            <div class="alert alert-warning mb-4 py-3 border-0 rounded-4 shadow-sm">
+                <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                <span class="fw-bold">ΕΚΤΟΣ ΕΜΒΕΛΕΙΑΣ</span>
+                <div class="smaller">Η διεύθυνσή σας είναι πολύ μακριά για αυτό το εστιατόριο (μέγιστο 4 χλμ).</div>
+            </div>
+            {{/if}}
+
             <h2 class="fw-bold mb-2">{{restaurant.name}}</h2>
             {{#if restaurant.categories}}
             <div class="mb-3">
@@ -37,10 +45,13 @@
                     ⭐ {{roundStars restaurant.rating}}/5 ({{restaurant.rating_count}})
                     {{/if}}
                 </span>
-                <span class="badge bg-primary bg-opacity-10 text-primary p-2 px-3 rounded-pill fs-6">🕒
+                <span class="badge bg-primary bg-opacity-10 text-primary p-2 px-3 rounded-pill fs-6">🕒 Προετοιμασία:
                     {{restaurant.estimated_preparation_time}}'</span>
+                {{#if restaurant.deliveryMinutes}}
+                <span class="badge bg-info bg-opacity-10 text-dark p-2 px-3 rounded-pill fs-6">🛵 Παράδοση: ~{{restaurant.deliveryMinutes}}'</span>
+                {{/if}}
                 {{#if restaurant.min_order_value}}
-                <span class="badge bg-primary bg-opacity-10 text-primary p-2 px-3 rounded-pill fs-6">🛵 Ελάχιστη
+                <span class="badge bg-primary bg-opacity-10 text-primary p-2 px-3 rounded-pill fs-6">💰 Ελάχιστη
                     {{formatPrice restaurant.min_order_value}}</span>
                 {{/if}}
             </div>

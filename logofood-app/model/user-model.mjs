@@ -12,7 +12,7 @@ export async function getAddresses(userId) {
      FROM Address a
      JOIN Customer_Address ca ON a.id = ca.address_id
      WHERE ca.customer_id = ?
-     ORDER BY a.id DESC`,
+     ORDER BY a.updated_at DESC`,
     [userId]
   );
   return rows;

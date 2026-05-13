@@ -23,7 +23,7 @@
                     <i class="bi bi-exclamation-triangle-fill me-2"></i>
                     Δεν έχεις αποθηκευμένη διεύθυνση. Πρόσθεσε μία για να δεις τα εστιατόρια.
                 </div>
-                <form action="/browse" method="GET">
+                <form id="browseNoAddressForm" action="/browse" method="GET">
                     <div class="row g-2 mb-2">
                         <div class="col-md-5">
                             <input type="text" name="street" id="browseStreet" class="form-control"
@@ -36,6 +36,8 @@
                         <div class="col-md-2">
                             <input type="text" name="zipCode" id="browseZip" class="form-control" placeholder="Τ.Κ.">
                         </div>
+                        <input type="hidden" name="latitude" id="browseLatitude">
+                        <input type="hidden" name="longitude" id="browseLongitude">
                         <div class="col-md-3">
                             <button type="submit" class="btn btn-menu w-100 fw-bold">Αποθήκευση</button>
                         </div>
@@ -74,7 +76,7 @@
                             <div class="accordion-body p-0">
                                 <div class="list-group list-group-flush">
                                     {{#each addresses}}
-                                    <a href="/browse?street={{street}}&streetNumber={{street_number}}&zipCode={{zip_code}}"
+                                    <a href="/browse?street={{street}}&streetNumber={{street_number}}&zipCode={{zip_code}}{{#if latitude}}&latitude={{latitude}}{{/if}}{{#if longitude}}&longitude={{longitude}}{{/if}}"
                                         class="list-group-item list-group-item-action py-3">
                                         {{street}} {{street_number}}
                                     </a>
@@ -93,7 +95,7 @@
                                         + Αλλαγή διεύθυνσης
                                     </button>
                                     <div id="guestUpdateForm" class="d-none p-3 bg-light border-top">
-                                        <form action="/browse" method="GET">
+                                        <form id="browseGuestUpdateForm" action="/browse" method="GET">
                                             <div class="row g-2">
                                                 <div class="col-8">
                                                     <input type="text" name="street" id="updateStreet"
@@ -108,6 +110,8 @@
                                                     <input type="text" name="zipCode" id="updateZip"
                                                         class="form-control form-control-sm" placeholder="Τ.Κ.">
                                                 </div>
+                                                <input type="hidden" name="latitude" id="updateLatitude">
+                                                <input type="hidden" name="longitude" id="updateLongitude">
                                                 <div class="col-12 mt-2">
                                                     <button type="button"
                                                         class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold"
@@ -231,18 +235,31 @@
                         {{#if categories}}
                         <div class="mb-2 mt-2">
                             {{#each categories}}
-                            <span
-                                class="badge bg-primary-subtle text-primary border border-primary-subtle me-1 badge-m" style="margin-top: 1rem; margin-bottom: 1rem;">{{this}}</span>
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle me-1 badge-m"
+                                style="margin-top: 1rem; margin-bottom: 1rem;">{{this}}</span>
                             {{/each}}
                         </div>
                         {{/if}}
-                        <p class="card-text text-muted small mb-3">Ελ. Παρ.: {{formatPrice min_order_value}}. Χρόνος:
-                            {{estimated_preparation_time}}'</p>
+                        <p class="card-text text-muted big mb-3">Ελάχιστη κατανάλωση: {{formatPrice min_order_value}}.
+                        </p>
+                        {{#if outOfReach}}
+                        <div class="mb-3">
+                            <span class="badge bg-danger text-white">Εκτός εμβέλειας</span>
+                        </div>
+                        {{else}}
+                        {{#if deliveryMinutes}}
+                        <div class="mb-3">
+                            <span class="badge bg-info text-dark">Παράδοση: ~{{deliveryMinutes}}'</span>
+                        </div>
+                        {{/if}}
+                        {{/if}}
 
                         <div class="mt-auto">
                             <span
-                                class="btn {{#eq status 'CLOSED'}}btn-outline-secondary disabled{{else}}btn-menu{{/eq}} w-100 fw-bold py-2 rounded-pill">
-                                {{#eq status 'CLOSED'}}Μη Διαθέσιμο{{else}}Δες το Μενού{{/eq}}
+                                class="btn {{#if outOfReach}}btn-outline-secondary disabled{{else}}{{#eq status 'CLOSED'}}btn-outline-secondary disabled{{else}}btn-menu{{/eq}}{{/if}} w-100 fw-bold py-2 rounded-pill">
+                                {{#eq status 'CLOSED'}}Μη Διαθέσιμο{{else}}
+                                {{#if outOfReach}}Εκτός εμβέλειας{{else}}Δες το Μενού{{/if}}
+                                {{/eq}}
                             </span>
                         </div>
                     </div>
@@ -251,8 +268,30 @@
         </div>
         {{else}}
         <div class="col-12 text-center py-5">
-            <p class="text-muted">Δεν βρέθηκαν εστιατόρια στην περιοχή σας.</p>
+            <p class="text-muted">Δεν βρέθηκαν εστιατόρια στην περιοχή σας. Δοκιμάστε μια άλλη διεύθυνση!</p>
         </div>
         {{/each}}
     </div>
+
+    {{#if (gt pagination.totalPages 1)}}
+    <nav aria-label="Page navigation" class="mt-5">
+        <ul class="pagination justify-content-center">
+            <li class="page-item {{#unless pagination.hasPrev}}disabled{{/unless}}">
+                <a class="page-link" href="?page={{pagination.prevPage}}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo; Προηγούμενη</span>
+                </a>
+            </li>
+            {{#each pagination.pages}}
+            <li class="page-item {{#eq ../pagination.page this}}active{{/eq}}">
+                <a class="page-link" href="?page={{this}}">{{this}}</a>
+            </li>
+            {{/each}}
+            <li class="page-item {{#unless pagination.hasNext}}disabled{{/unless}}">
+                <a class="page-link" href="?page={{pagination.nextPage}}" aria-label="Next">
+                    <span aria-hidden="true">Επόμενη &raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    {{/if}}
 </main>

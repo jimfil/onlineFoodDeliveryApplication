@@ -19,7 +19,8 @@ CREATE TABLE Address (
   latitude DOUBLE,
   longitude DOUBLE,
   floor VARCHAR(50),
-  comments TEXT
+  comments TEXT,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE Restaurant (

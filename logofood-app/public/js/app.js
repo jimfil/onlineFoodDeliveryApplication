@@ -56,8 +56,14 @@ async function searchAddresses(query) {
     }
 }
 
+async function geocodeAddress(street, number, zip, city = 'Patra') {
+    const query = `${street} ${number}, ${zip}, ${city}, Greece`;
+    const results = await searchAddresses(query);
+    return results.length > 0 ? { lat: results[0].lat, lon: results[0].lon } : null;
+}
+
 function initLeafletMap(containerId, onLocationSelected, options = {}) {
-    const defaultLocation = [37.9755, 23.7348];
+    const defaultLocation = options.defaultLocation || [38.2461, 21.7351]; // Patra (Plateia Georgiou)
     const map = L.map(containerId).setView(defaultLocation, 13);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -138,6 +144,52 @@ function initLeafletMap(containerId, onLocationSelected, options = {}) {
     return { map, marker };
 }
 
+/**
+ * Automatically fetch coordinates when address fields are filled manually.
+ */
+function initAutoGeocode(streetId, numberId, zipId, latId, lonId, formId) {
+    const inputs = [streetId, numberId, zipId].map(id => document.getElementById(id)).filter(Boolean);
+    const runGeocode = async () => {
+        const street = document.getElementById(streetId)?.value;
+        const number = document.getElementById(numberId)?.value;
+        const zip = document.getElementById(zipId)?.value;
+        if (street && number) {
+            const coords = await geocodeAddress(street, number, zip);
+            if (coords) {
+                const latEl = document.getElementById(latId);
+                const lonEl = document.getElementById(lonId);
+                if (latEl) latEl.value = coords.lat;
+                if (lonEl) lonEl.value = coords.lon;
+            }
+            return coords;
+        }
+        return null;
+    };
+    inputs.forEach(input => input.addEventListener('blur', runGeocode));
+
+    if (formId) {
+        const form = document.getElementById(formId);
+        if (form) {
+            form.addEventListener('submit', async (e) => {
+                const latEl = document.getElementById(latId);
+                const lonEl = document.getElementById(lonId);
+                if (!latEl?.value || !lonEl?.value) {
+                    e.preventDefault();
+                    const btn = form.querySelector('button[type="submit"]');
+                    if (btn) btn.disabled = true;
+                    const coords = await runGeocode();
+                    if (coords) {
+                        form.submit();
+                    } else {
+                        if (btn) btn.disabled = false;
+                        alert('Παρακαλούμε επιλέξτε την ακριβή τοποθεσία στο χάρτη ή βεβαιωθείτε ότι η διεύθυνση είναι σωστή.');
+                    }
+                }
+            });
+        }
+    }
+}
+
 // ─── Hide/Show header on scroll ────────────────────────────────────────────────
 (function() {
     const header = document.querySelector('.custom-header');
@@ -168,6 +220,7 @@ function initLeafletMap(containerId, onLocationSelected, options = {}) {
 
 // ─── Cart Page Logic ────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+    initAutoGeocode('guestStreet', 'guestNumber', 'guestZip', 'cartLatitude', 'cartLongitude', 'checkoutForm');
     // Delete item from cart
     document.querySelectorAll('.btn-cart-delete').forEach(btn => {
         btn.addEventListener('click', async (e) => {
@@ -475,6 +528,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ─── Landing Page Logic ─────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+    initAutoGeocode('landingStreet', 'landingNumber', 'landingZip', 'landingLatitude', 'landingLongitude', 'landingAddressForm');
     // Toggle Landing Map
     const toggleLandingMapBtn = document.getElementById('toggleLandingMap');
     if (toggleLandingMapBtn) {
@@ -484,6 +538,13 @@ document.addEventListener('DOMContentLoaded', () => {
             container.classList.toggle('d-none');
             if (!container.classList.contains('d-none') && !window._landingMapInit) {
                 window._landingMapInit = true;
+                const setLandingCoordinates = (lat, lon) => {
+                    const latInput = document.getElementById('landingLatitude');
+                    const lonInput = document.getElementById('landingLongitude');
+                    if (latInput) latInput.value = lat;
+                    if (lonInput) lonInput.value = lon;
+                };
+
                 initLeafletMap('landingMap', async (lat, lon) => {
                     const addr = await reverseGeocode(lat, lon);
                     fillAddressFields(addr, {
@@ -491,6 +552,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         numberId: 'landingNumber',
                         zipId: 'landingZip'
                     });
+                    setLandingCoordinates(lat, lon);
                 }, {
                     searchInputId: 'landingAddressSearch',
                     resultsContainerId: 'landingAddressResults',
@@ -500,6 +562,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             numberId: 'landingNumber',
                             zipId: 'landingZip'
                         });
+                        setLandingCoordinates(selected.lat, selected.lon);
                     }
                 });
             }
@@ -509,6 +572,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ─── Browse Page Logic ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+    initAutoGeocode('browseStreet', 'browseNumber', 'browseZip', 'browseLatitude', 'browseLongitude', 'browseNoAddressForm');
+    initAutoGeocode('updateStreet', 'updateNumber', 'updateZip', 'updateLatitude', 'updateLongitude', 'browseGuestUpdateForm');
     // Toggle Update Map (for guests on browse page)
     const toggleUpdateMapBtn = document.getElementById('toggleUpdateMap');
     if (toggleUpdateMapBtn) {
@@ -518,6 +583,13 @@ document.addEventListener('DOMContentLoaded', () => {
             container.classList.toggle('d-none');
             if (!container.classList.contains('d-none') && !window._updateMapInit) {
                 window._updateMapInit = true;
+                const setUpdateCoordinates = (lat, lon) => {
+                    const latInput = document.getElementById('updateLatitude');
+                    const lonInput = document.getElementById('updateLongitude');
+                    if (latInput) latInput.value = lat;
+                    if (lonInput) lonInput.value = lon;
+                };
+
                 initLeafletMap('updateMap', async (lat, lon) => {
                     const addr = await reverseGeocode(lat, lon);
                     fillAddressFields(addr, {
@@ -525,6 +597,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         numberId: 'updateNumber',
                         zipId: 'updateZip'
                     });
+                    setUpdateCoordinates(lat, lon);
                 }, {
                     searchInputId: 'updateAddressSearch',
                     resultsContainerId: 'updateAddressResults',
@@ -534,6 +607,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             numberId: 'updateNumber',
                             zipId: 'updateZip'
                         });
+                        setUpdateCoordinates(selected.lat, selected.lon);
                     }
                 });
             }
@@ -549,6 +623,13 @@ document.addEventListener('DOMContentLoaded', () => {
             container.classList.toggle('d-none');
             if (!container.classList.contains('d-none') && !window._browseMapInit) {
                 window._browseMapInit = true;
+                const setBrowseCoordinates = (lat, lon) => {
+                    const latInput = document.getElementById('browseLatitude');
+                    const lonInput = document.getElementById('browseLongitude');
+                    if (latInput) latInput.value = lat;
+                    if (lonInput) lonInput.value = lon;
+                };
+
                 initLeafletMap('browseMap', async (lat, lon) => {
                     const addr = await reverseGeocode(lat, lon);
                     fillAddressFields(addr, {
@@ -556,7 +637,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         numberId: 'browseNumber',
                         zipId: 'browseZip'
                     });
+                    setBrowseCoordinates(lat, lon);
                 }, {
+                    defaultLocation: [38.2468, 21.7347],
                     searchInputId: 'browseAddressSearch',
                     resultsContainerId: 'browseAddressResults',
                     onAddressPicked: (selected) => {
@@ -565,6 +648,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             numberId: 'browseNumber',
                             zipId: 'browseZip'
                         });
+                        setBrowseCoordinates(selected.lat, selected.lon);
                     }
                 });
             }
@@ -578,6 +662,46 @@ document.addEventListener('DOMContentLoaded', () => {
             if (form) form.classList.toggle('d-none');
         });
     });
+
+    // Toggle Cart Map (for guests on cart page)
+    const toggleCartMapBtn = document.getElementById('toggleCartMap');
+    if (toggleCartMapBtn) {
+        toggleCartMapBtn.addEventListener('click', function() {
+            const container = document.getElementById('cartMapContainer');
+            if (!container) return;
+            container.classList.toggle('d-none');
+            if (!container.classList.contains('d-none') && !window._cartMapInit) {
+                window._cartMapInit = true;
+                const setCartCoordinates = (lat, lon) => {
+                    const latInput = document.getElementById('cartLatitude');
+                    const lonInput = document.getElementById('cartLongitude');
+                    if (latInput) latInput.value = lat;
+                    if (lonInput) lonInput.value = lon;
+                };
+
+                initLeafletMap('cartMap', async (lat, lon) => {
+                    const addr = await reverseGeocode(lat, lon);
+                    fillAddressFields(addr, {
+                        streetId: 'guestStreet',
+                        numberId: 'guestNumber',
+                        zipId: 'guestZip'
+                    });
+                    setCartCoordinates(lat, lon);
+                }, {
+                    searchInputId: 'cartAddressSearch',
+                    resultsContainerId: 'cartAddressResults',
+                    onAddressPicked: (selected) => {
+                        fillAddressFields(selected.address, {
+                            streetId: 'guestStreet',
+                            numberId: 'guestNumber',
+                            zipId: 'guestZip'
+                        });
+                        setCartCoordinates(selected.lat, selected.lon);
+                    }
+                });
+            }
+        });
+    }
 
     // Category selection & filtering
     let selectedCategory = 'all';
@@ -661,6 +785,8 @@ document.addEventListener('click', function(e) {
 
 // ─── Account Page Logic ─────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+    initAutoGeocode('accountStreet', 'accountNumber', 'accountZip', 'accountLatitude', 'accountLongitude', 'addAddressForm');
+    initAutoGeocode('editStreet', 'editNumber', 'editZip', 'editLatitude', 'editLongitude', 'editAddressForm');
     // 1. Edit Address Flow
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('.edit-address-btn');
@@ -680,6 +806,8 @@ document.addEventListener('DOMContentLoaded', () => {
             setVal('editZip', btn.dataset.zip || '');
             setVal('editFloor', btn.dataset.floor || '');
             setVal('editComments', btn.dataset.comments || '');
+            setVal('editLatitude', btn.dataset.lat || '');
+            setVal('editLongitude', btn.dataset.lon || '');
             
             const modalEl = document.getElementById('editAddressModal');
             if (modalEl && window.bootstrap) {
@@ -698,6 +826,13 @@ document.addEventListener('DOMContentLoaded', () => {
             container.classList.toggle('d-none');
             if (!container.classList.contains('d-none') && !window._accMapInit) {
                 window._accMapInit = true;
+                const setAccountCoordinates = (lat, lon) => {
+                    const latInput = document.getElementById('accountLatitude');
+                    const lonInput = document.getElementById('accountLongitude');
+                    if (latInput) latInput.value = lat;
+                    if (lonInput) lonInput.value = lon;
+                };
+
                 initLeafletMap('accountMap', async (lat, lon) => {
                     const addr = await reverseGeocode(lat, lon);
                     fillAddressFields(addr, {
@@ -705,6 +840,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         numberId: 'accountNumber',
                         zipId: 'accountZip'
                     });
+                    setAccountCoordinates(lat, lon);
                 }, {
                     searchInputId: 'accountAddressSearch',
                     resultsContainerId: 'accountAddressResults',
@@ -714,6 +850,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             numberId: 'accountNumber',
                             zipId: 'accountZip'
                         });
+                        setAccountCoordinates(selected.lat, selected.lon);
                     }
                 });
             }

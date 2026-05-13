@@ -41,6 +41,8 @@ export async function addAddress(req, res) {
 
   try {
     await userModel.addAddress(req.session.user.id, { street, streetNumber, zipCode, latitude, longitude, floor, comments });
+    // Update session to reflect the new address immediately
+    req.session.deliveryAddress = { street, streetNumber, zipCode, latitude, longitude };
     req.flash('success', 'Η διεύθυνση προστέθηκε.');
   } catch (err) {
     console.error('Add address error:', err);
@@ -56,6 +58,8 @@ export async function editAddress(req, res) {
 
   try {
     await userModel.updateAddress(req.params.id, req.session.user.id, { street, streetNumber, zipCode, floor, comments, latitude, longitude });
+    // Update session to reflect the changed address immediately
+    req.session.deliveryAddress = { street, streetNumber, zipCode, latitude, longitude };
     req.flash('success', 'Η διεύθυνση ενημερώθηκε.');
   } catch (err) {
     console.error('Edit address error:', err);

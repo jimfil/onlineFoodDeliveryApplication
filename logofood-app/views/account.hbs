@@ -70,7 +70,9 @@
                                                     data-number="{{street_number}}" 
                                                     data-zip="{{zip_code}}" 
                                                     data-floor="{{floor}}" 
-                                                    data-comments="{{comments}}">✏️</button>
+                                                    data-comments="{{comments}}"
+                                                    data-lat="{{latitude}}"
+                                                    data-lon="{{longitude}}">✏️</button>
                                             <form method="POST" action="/account/addresses/{{id}}/delete">
                                                 <button type="submit" class="btn btn-link text-danger p-0 btn-confirm" data-confirm="Διαγραφή διεύθυνσης;">🗑</button>
                                             </form>
@@ -87,7 +89,7 @@
                 </div>
 
                 <h5 class="fw-bold mb-3 h6">Προσθήκη Νέας Διεύθυνσης</h5>
-                <form method="POST" action="/account/addresses">
+                <form id="addAddressForm" method="POST" action="/account/addresses">
                     <div class="row g-3">
                         <div class="col-md-5">
                             <label for="street" class="form-label text-muted small fw-bold">Οδός</label>
@@ -101,6 +103,8 @@
                             <label for="zipCode" class="form-label text-muted small fw-bold">Τ.Κ.</label>
                             <input type="text" id="accountZip" name="zipCode" class="form-control" placeholder="10563">
                         </div>
+                        <input type="hidden" id="accountLatitude" name="latitude">
+                        <input type="hidden" id="accountLongitude" name="longitude">
                         <div class="col-12">
                             <button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold" id="toggleAccountMap">
                                 📍 Επιλογή στο χάρτη
@@ -170,6 +174,8 @@
                             <label class="form-label text-muted small fw-bold">Σχόλια Διανομέα</label>
                             <textarea id="editComments" name="comments" class="form-control" rows="2"></textarea>
                         </div>
+                        <input type="hidden" id="editLatitude" name="latitude">
+                        <input type="hidden" id="editLongitude" name="longitude">
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0">
