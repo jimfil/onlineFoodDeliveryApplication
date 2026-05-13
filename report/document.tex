@@ -1,0 +1,89 @@
+\documentclass[acmsmall,screen,nonacm]{acmart}
+\usepackage[greek,english]{babel}
+
+\babelfont[greek]{rm}{Noto Serif}
+\babelfont[greek]{sf}{Noto Sans}
+\sloppy
+\title{Εφαρμογή online παραγγελίας ποδιών (LogoFeet)}
+
+
+\author{Εμμανουήλ Παξιμαδάκης 1100972 \& Δημήτριος Φιλόπουλος 1101130}
+\affiliation{
+	\institution{\newline Τμήμα ΗΜ\&ΤΥ, Πανεπιστήμιο Πατρών}
+	\country{Ελλάδα}
+}
+\captionsetup[table]{position=bottom}
+
+\renewcommand{\shortauthors}{Ε.Π., Δ.Φ.}
+
+\begin{document}
+	
+	% --- ΠΕΡΙΛΗΨΗ ---
+	\begin{abstract}
+		\textbf{Περίληψη:} Η παρούσα εργασία παρουσιάζει την ανάπτυξη της web εφαρμογής LogoFeet στα πλαίσια του μαθήματος "Προγραμματισμός Διαδικτύου". Η εφαρμογή εξελίχθηκε από ένα αρχικό λειτουργικό πρωτότυπο (static HTML/CSS) σε μια πλήρη Full-Stack εφαρμογή που χρησιμοποιεί Node.js, Express και Handlebars, υποστηρίζοντας δυναμική διαχείριση δεδομένων και γεωχωρικές λειτουργίες.
+	\end{abstract}
+	
+	\maketitle
+	
+	\section{Εισαγωγή}
+	Σκοπός του project είναι η εξοικείωση με τις σύγχρονες τεχνολογίες διαδικτύου για τη δημιουργία μιας δυναμικής πλατφόρμας παραγγελιοληψίας. Η ανάπτυξη ακολούθησε μια σταδιακή προσέγγιση, ξεκινώντας από το σχεδιασμό της διεπαφής και καταλήγοντας στην υλοποίηση σύνθετης επιχειρησιακής λογικής στο backend.
+	
+	\section{Λειτουργικές Απαιτήσεις και Σενάρια Χρήσης}
+	Η εφαρμογή εστιάζει σε δύο κύρια σενάρια χρήσης:
+	\begin{itemize}
+		\item \textbf{Σενάριο Πελάτη:} Αναζήτηση εστιατορίων βάσει τοποθεσίας (ακτίνα 4χλμ), διαχείριση καλαθιού και ολοκλήρωση παραγγελίας (Guest/User Checkout).
+		\item \textbf{Σενάριο Εστιατορίου:} Διαχείριση καταλόγου προϊόντων, κατηγοριοποίηση και παρακολούθηση παραγγελιών μέσω ειδικού Dashboard.
+	\end{itemize}
+
+	\section{Αρχιτεκτονική Model-View-Controller (MVC)}
+	Για την οργάνωση του κώδικα υιοθετήθηκε το πρότυπο MVC:
+	\begin{itemize}
+		\item \textbf{Model:} Διαχείριση της βάσης δεδομένων και της επιχειρησιακής λογικής.
+		\item \textbf{View:} Δυναμικά templates με χρήση της μηχανής Handlebars (.hbs).
+		\item \textbf{Controller:} Express routers που συντονίζουν τα requests και τα responses.
+	\end{itemize}
+
+	\section{Τεχνολογίες Υλοποίησης}
+	
+	\subsection{Frontend (Διεπαφή Χρήστη)}
+	Το frontend αναπτύχθηκε με HTML5 και Vanilla CSS, ενώ χρησιμοποιήθηκε η Bootstrap για το responsive layout. Η διαδραστικότητα (χάρτες, δυναμική αναζήτηση) υλοποιήθηκε με Client-side JavaScript και τη βιβλιοθήκη Leaflet.js.
+	
+	\subsection{Backend (Εξυπηρετητής)}
+	Ο εξυπηρετητής βασίζεται στο Node.js και το framework Express. Χρησιμοποιήθηκαν middlewares για τη διαχείριση sessions, flash messages και αυθεντικοποίηση χρηστών.
+	
+	\subsection{Διαχείριση Δεδομένων και Μετάβαση}
+	Στο πρώτο στάδιο ανάπτυξης χρησιμοποιήθηκε η SQLite3 για την ταχεία δημιουργία πρωτοτύπου. Στην τελική έκδοση, η εφαρμογή μεταφέρθηκε σε cloud περιβάλλον (TiDB Cloud) με χρήση MySQL, διασφαλίζοντας κλιμακωσιμότητα και απομακρυσμένη πρόσβαση.
+	
+	\section{Ανάπτυξη και Εξέλιξη (Project Timeline)}
+	\begin{itemize}
+		\item \textbf{Εβδομάδα 7 (Ενδιάμεση Παρουσίαση):} Σχεδιασμός διεπαφής και λειτουργικό πρωτότυπο με τις βασικές σελίδες (Home, Browse).
+		\item \textbf{Εβδομάδα 13 (Τελική Παρουσίαση):} Ολοκλήρωση Full-Stack λειτουργικότητας, σύνδεση με βάση δεδομένων και υλοποίηση των σεναρίων χρήσης.
+	\end{itemize}
+	
+	\section{Ασφάλεια}
+	\begin{itemize}
+		\item Χρήση περιβάλλοντος \texttt{.env} για την προστασία των API keys και των credentials της βάσης.
+		\item Κρυπτογράφηση κωδικών πρόσβασης με τη βιβλιοθήκη Bcrypt.
+		\item Προστασία από SQL Injection μέσω του MySQL driver (placeholders).
+	\end{itemize}
+	
+	\section{Συμπεράσματα}
+	Η ενασχόληση με το project LogoFeet προσέφερε πολύτιμη εμπειρία σε όλο το φάσμα της ανάπτυξης διαδικτυακών εφαρμογών, από το σχεδιασμό της εμπειρίας χρήστη (UX) μέχρι την επίλυση σύνθετων προβλημάτων στο backend και τη διαχείριση cloud υποδομών.
+	
+	\section{Οδηγίες Εγκατάστασης}
+	\begin{enumerate}
+		\item \texttt{npm install} (εγκατάσταση εξαρτήσεων Node.js).
+		\item Αντιγραφή του \texttt{.env} για ρύθμιση της σύνδεσης TiDB.
+		\item \texttt{npm run dev} για εκκίνηση του development server.
+	\end{enumerate}
+	
+	\appendix
+
+	\section{Στιγμιότυπα Εφαρμογής}
+	\begin{figure}[h]
+		\centering
+		%\includegraphics[width=0.8\linewidth]{graphics/home.png}
+		\caption{Αρχική σελίδα με ενσωμάτωση χάρτη Leaflet.}
+	\end{figure}
+
+\end{document}
