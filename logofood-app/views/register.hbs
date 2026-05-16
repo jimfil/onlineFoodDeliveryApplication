@@ -5,7 +5,7 @@
             <div class="card border-0 shadow-sm p-4 rounded-4">
                 <h2 class="fw-bold mb-4 text-center">Δημιουργία Λογαριασμού</h2>
 
-                <form action="/register" method="POST">
+                <form action="/register" method="POST" id="registerForm">
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label for="firstName" class="form-label text-muted small fw-bold">Όνομα</label>
@@ -41,6 +41,9 @@
                                    placeholder="π.χ. 10563" value="{{userInput.zipCode}}">
                             {{#if errors.zipCode}}<div class="text-danger small mt-1">{{errors.zipCode}}</div>{{/if}}
                         </div>
+
+                        <input type="hidden" id="registerLatitude" name="latitude" value="{{userInput.latitude}}">
+                        <input type="hidden" id="registerLongitude" name="longitude" value="{{userInput.longitude}}">
 
                         <div class="col-12">
                             <button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold" id="toggleRegisterMap">

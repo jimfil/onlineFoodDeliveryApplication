@@ -70,7 +70,7 @@ export async function processRegister(req, res) {
   }
 
   const { email, password, firstName, lastName, contactPhone,
-          street, streetNumber, zipCode } = req.body;
+          street, streetNumber, zipCode, latitude, longitude } = req.body;
   try {
     const existing = await accountModel.findByEmail(email);
     if (existing) {
@@ -79,7 +79,7 @@ export async function processRegister(req, res) {
     }
     const newUser = await accountModel.registerCustomer({
       email, password, firstName, lastName, contactPhone,
-      street, streetNumber, zipCode
+      street, streetNumber, zipCode, latitude, longitude
     });
     req.session.user = {
       id:          newUser.id,

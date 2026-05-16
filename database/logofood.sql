@@ -103,6 +103,7 @@ CREATE TABLE Order_table (
   customer_id INT,
   restaurant_id INT,
   status ENUM('PENDING', 'PREPARING', 'READY', 'DELIVERING', 'COMPLETED', 'CANCELLED') DEFAULT 'PENDING',
+  delivery_address_text VARCHAR(255),
   FOREIGN KEY (delivery_address_id) REFERENCES Address(id) ON DELETE SET NULL ON UPDATE CASCADE,
   FOREIGN KEY (customer_id) REFERENCES Customer(id) ON DELETE SET NULL ON UPDATE CASCADE,
   FOREIGN KEY (restaurant_id) REFERENCES Restaurant(id) ON DELETE SET NULL ON UPDATE CASCADE

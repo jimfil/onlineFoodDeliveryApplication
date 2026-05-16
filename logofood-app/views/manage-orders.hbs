@@ -27,12 +27,12 @@
                                 <form method="POST" action="/manage/orders/{{id}}/status" class="d-flex gap-2">
                                     <select name="status" class="form-select form-select-sm rounded-pill border-secondary-subtle" onchange="this.form.submit()">
                                         <option value="" disabled selected>Αλλαγή...</option>
+                                        <option value="CANCELLED">CANCELLED</option>
                                         <option value="PENDING">PENDING</option>
                                         <option value="PREPARING">PREPARING</option>
                                         <option value="READY">READY</option>
                                         <option value="DELIVERING">DELIVERING</option>
                                         <option value="COMPLETED">COMPLETED</option>
-                                        <option value="CANCELLED">CANCELLED</option>
                                     </select>
                                 </form>
                             </div>

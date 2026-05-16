@@ -413,6 +413,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    initAutoGeocode('registerStreet', 'registerNumber', 'registerZip', 'registerLatitude', 'registerLongitude', 'registerForm');
+
     // Toggle Register Map
     const toggleRegisterMapBtn = document.getElementById('toggleRegisterMap');
     if (toggleRegisterMapBtn) {

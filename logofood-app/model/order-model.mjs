@@ -18,10 +18,15 @@ export async function createOrder(customerId, restaurantId, addressId, items) {
     conn = await pool.getConnection();
     await conn.beginTransaction();
 
+    const [addrRows] = await conn.execute(
+      `SELECT street, street_number FROM Address WHERE id = ?`, [addressId]
+    );
+    const addressText = addrRows.length > 0 ? `${addrRows[0].street} ${addrRows[0].street_number}` : 'Διεγράφη η διεύθυνση';
+
     const [orderResult] = await conn.execute(
-      `INSERT INTO Order_table (customer_id, restaurant_id, delivery_address_id, status)
-       VALUES (?, ?, ?, 'PENDING')`,
-      [customerId, restaurantId, addressId]
+      `INSERT INTO Order_table (customer_id, restaurant_id, delivery_address_id, status, delivery_address_text)
+       VALUES (?, ?, ?, 'PENDING', ?)`,
+      [customerId, restaurantId, addressId, addressText]
     );
     const orderId = orderResult.insertId;
 
@@ -46,10 +51,10 @@ export async function createOrder(customerId, restaurantId, addressId, items) {
 export async function getOrdersByCustomer(customerId) {
   const [rows] = await pool.execute(
     `SELECT o.id, o.created_at, o.status, r.name AS restaurantName,
-            a.street, a.street_number
+            a.street, a.street_number, o.delivery_address_text
      FROM Order_table o
      JOIN Restaurant r ON o.restaurant_id = r.id
-     JOIN Address a ON o.delivery_address_id = a.id
+     LEFT JOIN Address a ON o.delivery_address_id = a.id
      WHERE o.customer_id = ?
      ORDER BY o.created_at DESC`,
     [customerId]
@@ -63,10 +68,10 @@ export async function getOrdersByRestaurant(restaurantId) {
     `SELECT o.id, o.created_at, o.status, 
             COALESCE(c.first_name, 'Επισκέπτης') AS first_name, 
             COALESCE(c.last_name, '') AS last_name,
-            a.street, a.street_number
+            a.street, a.street_number, o.delivery_address_text
      FROM Order_table o
      LEFT JOIN Customer c ON o.customer_id = c.id
-     JOIN Address a ON o.delivery_address_id = a.id
+     LEFT JOIN Address a ON o.delivery_address_id = a.id
      WHERE o.restaurant_id = ?
      ORDER BY o.created_at DESC`,
     [restaurantId]
@@ -80,14 +85,14 @@ export async function getOrdersByRestaurant(restaurantId) {
  */
 export async function getOrdersByCustomerId(customerId) {
   const [rows] = await pool.execute(
-    `SELECT o.id AS order_id, o.created_at, o.status, o.rating,
+    `SELECT o.id AS order_id, o.created_at, o.status, o.rating, o.delivery_address_text,
             r.name AS restaurantName,
             a.street, a.street_number, a.floor, a.comments AS addressComments,
             oi.product_id, oi.quantity,
             p.name AS productName, p.price
      FROM Order_table o
      JOIN Restaurant r ON o.restaurant_id = r.id
-     JOIN Address a ON o.delivery_address_id = a.id
+     LEFT JOIN Address a ON o.delivery_address_id = a.id
      JOIN Order_Item oi ON o.id = oi.order_id
      JOIN Product p ON oi.product_id = p.id
      WHERE o.customer_id = ?
@@ -106,7 +111,7 @@ export async function getOrdersByCustomerId(customerId) {
         status: row.status,
         rating: row.rating,
         restaurantName: row.restaurantName,
-        address: `${row.street} ${row.street_number}`,
+        address: row.street ? `${row.street} ${row.street_number}` : (row.delivery_address_text || 'Η διεύθυνση διαγράφηκε'),
         floor: row.floor,
         comments: row.addressComments,
         items: [],
@@ -131,7 +136,7 @@ export async function getOrdersByCustomerId(customerId) {
  */
 export async function getOrdersByRestaurantDetailed(restaurantId) {
   const [rows] = await pool.execute(
-    `SELECT o.id AS order_id, o.created_at, o.status, 
+    `SELECT o.id AS order_id, o.created_at, o.status, o.delivery_address_text,
             COALESCE(c.first_name, 'Επισκέπτης') AS firstName, 
             COALESCE(c.last_name, '') AS lastName,
             COALESCE(c.contact_phone, 'N/A') AS phone,
@@ -140,7 +145,7 @@ export async function getOrdersByRestaurantDetailed(restaurantId) {
             p.name AS productName, p.price
      FROM Order_table o
      LEFT JOIN Customer c ON o.customer_id = c.id
-     JOIN Address a ON o.delivery_address_id = a.id
+     LEFT JOIN Address a ON o.delivery_address_id = a.id
      JOIN Order_Item oi ON o.id = oi.order_id
      JOIN Product p ON oi.product_id = p.id
      WHERE o.restaurant_id = ?
@@ -158,7 +163,7 @@ export async function getOrdersByRestaurantDetailed(restaurantId) {
         status: row.status,
         customerName: `${row.firstName} ${row.lastName}`.trim(),
         phone: row.phone,
-        address: `${row.street} ${row.street_number}`,
+        address: row.street ? `${row.street} ${row.street_number}` : (row.delivery_address_text || 'Η διεύθυνση διαγράφηκε'),
         floor: row.floor,
         comments: row.addressComments,
         items: [],
@@ -213,14 +218,14 @@ export async function getOrdersByIds(orderIds) {
   
   const placeholders = orderIds.map(() => '?').join(',');
   const [rows] = await pool.execute(
-    `SELECT o.id AS order_id, o.created_at, o.status, o.rating,
+    `SELECT o.id AS order_id, o.created_at, o.status, o.rating, o.delivery_address_text,
             r.name AS restaurantName,
             a.street, a.street_number, a.floor, a.comments AS addressComments,
             oi.product_id, oi.quantity,
             p.name AS productName, p.price
      FROM Order_table o
      JOIN Restaurant r ON o.restaurant_id = r.id
-     JOIN Address a ON o.delivery_address_id = a.id
+     LEFT JOIN Address a ON o.delivery_address_id = a.id
      JOIN Order_Item oi ON o.id = oi.order_id
      JOIN Product p ON oi.product_id = p.id
      WHERE o.id IN (${placeholders})
@@ -239,7 +244,7 @@ export async function getOrdersByIds(orderIds) {
         status: row.status,
         rating: row.rating,
         restaurantName: row.restaurantName,
-        address: `${row.street} ${row.street_number}`,
+        address: row.street ? `${row.street} ${row.street_number}` : (row.delivery_address_text || 'Η διεύθυνση διαγράφηκε'),
         floor: row.floor,
         comments: row.addressComments,
         items: [],
