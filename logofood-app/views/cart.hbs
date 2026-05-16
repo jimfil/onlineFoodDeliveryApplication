@@ -55,19 +55,22 @@
                         <div class="row g-3 mb-4 mt-2">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label text-muted small fw-bold">Όροφος/Διαμέρισμα (Απαραίτητο)</label>
+                                    <label class="form-label text-muted small fw-bold">Όροφος/Διαμέρισμα
+                                        (Απαραίτητο)</label>
                                     <input type="text" name="floor" id="selectedFloor" class="form-control"
                                         placeholder="π.χ. 3ος / Παπαδόπουλος" required>
                                 </div>
                                 <div>
                                     <label class="form-label text-muted small fw-bold">Τηλέφωνο (Απαραίτητο)</label>
-                                    <input type="tel" name="phone" id="selectedPhone" class="form-control"
-                                        placeholder="π.χ. 6912345678" value="{{customer.contact_phone}}" data-default-phone="{{customer.contact_phone}}" required>
+                                    <input type="tel" id="selectedPhone" class="form-control bg-light"
+                                        value="{{customer.contact_phone}}" disabled>
+                                    <input type="hidden" name="phone" value="{{customer.contact_phone}}">
                                 </div>
                             </div>
                             <div class="col-md-6 d-flex flex-column">
                                 <label class="form-label text-muted small fw-bold">Σχόλια Διανομέα (Προαιρετικό)</label>
-                                <textarea name="comments" id="selectedComments" class="form-control flex-grow-1 min-h-110"
+                                <textarea name="comments" id="selectedComments"
+                                    class="form-control flex-grow-1 min-h-110"
                                     placeholder="π.χ. Το κουδούνι δεν λειτουργεί..."></textarea>
                             </div>
                         </div>
@@ -102,8 +105,10 @@
                                     <input type="text" name="zipCode" id="guestZip" class="form-control"
                                         placeholder="Τ.Κ." value="{{deliveryAddress.zipCode}}">
                                 </div>
-                                <input type="hidden" name="latitude" id="cartLatitude" value="{{deliveryAddress.latitude}}">
-                                <input type="hidden" name="longitude" id="cartLongitude" value="{{deliveryAddress.longitude}}">
+                                <input type="hidden" name="latitude" id="cartLatitude"
+                                    value="{{deliveryAddress.latitude}}">
+                                <input type="hidden" name="longitude" id="cartLongitude"
+                                    value="{{deliveryAddress.longitude}}">
                                 <div class="col-12">
                                     <button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold"
                                         id="toggleCartMap">
@@ -122,7 +127,8 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label class="form-label text-muted small fw-bold">Όροφος/Διαμέρισμα (Απαραίτητο)</label>
+                                        <label class="form-label text-muted small fw-bold">Όροφος/Διαμέρισμα
+                                            (Απαραίτητο)</label>
                                         <input type="text" name="floor" class="form-control"
                                             placeholder="π.χ. 3ος / Παπαδόπουλος" required>
                                     </div>
@@ -159,14 +165,17 @@
                                 <span class="text-muted small">{{formatPrice price}}</span>
                             </div>
                             <div class="d-flex align-items-center gap-3">
-                                <div class="d-flex align-items-center bg-white border border-2 border-secondary rounded-pill px-2 py-2 shadow-sm line-height-1">
+                                <div
+                                    class="d-flex align-items-center bg-white border border-2 border-secondary rounded-pill px-2 py-2 shadow-sm line-height-1">
                                     <button
                                         class="btn btn-danger btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center btn-circle-xs btn-cart-qty"
-                                        data-product-id="{{productId}}" data-delta="-1">−</button>
+                                        data-product-id="{{productId}}" data-delta="-1" data-name="{{name}}"
+                                        data-price="{{price}}" data-restaurant-id="{{restaurantId}}">−</button>
                                     <span class="px-2 small fw-bold">{{quantity}}</span>
                                     <button
                                         class="btn btn-success btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center btn-circle-xs btn-cart-qty"
-                                        data-product-id="{{productId}}" data-delta="1">+</button>
+                                        data-product-id="{{productId}}" data-delta="1" data-name="{{name}}"
+                                        data-price="{{price}}" data-restaurant-id="{{restaurantId}}">+</button>
                                 </div>
                                 <span class="fw-bold">{{formatPrice (totalPrice price quantity)}}</span>
                                 <button class="btn btn-outline-danger btn-sm rounded-circle btn-cart-delete"
@@ -220,8 +229,27 @@
                         <span class="h5 fw-bold mb-0">Σύνολο Τιμής</span>
                         <span class="h4 fw-bold mb-0 text-danger">{{formatPrice (add total 1)}}</span>
                     </div>
-                    <button id="btnSubmitCart"
-                        class="btn btn-menu btn-lg w-100 fw-bold py-3 shadow-sm">Παραγγελία Τώρα!</button>
+                    {{#if minOrderValue}}
+                    {{#if (gt minOrderValue 0)}}
+                    <div class="mb-3">
+                        {{#if (gt minOrderValue total)}}
+                        <div class="alert alert-warning py-2 px-3 small rounded-3 mb-2">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                            Ελάχιστη παραγγελία: <strong>{{formatPrice minOrderValue}}</strong><br>
+                            Λείπουν <strong>{{formatPrice (subtract minOrderValue total)}}</strong> ακόμα.
+                        </div>
+                        {{else}}
+                        <div class="alert alert-success py-2 px-3 small rounded-3 mb-2">
+                            <i class="bi bi-check-circle-fill me-1"></i>
+                            Ελάχιστη παραγγελία: <strong>{{formatPrice minOrderValue}}</strong> ✓
+                        </div>
+                        {{/if}}
+                    </div>
+                    {{/if}}
+                    {{/if}}
+                    <button id="btnSubmitCart" class="btn btn-menu btn-lg w-100 fw-bold py-3 shadow-sm" {{#if
+                        minOrderValue}}{{#if (gt minOrderValue 0)}}{{#if (gt minOrderValue
+                        total)}}disabled{{/if}}{{/if}}{{/if}}>Παραγγελία Τώρα!</button>
                 </div>
             </div>
         </div>

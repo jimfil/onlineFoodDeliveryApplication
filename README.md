@@ -67,7 +67,7 @@ onlineFoodDeliveryApplication/
 
 ---
 
-## Pages (in-progress)
+## Pages
 
 | Page | File | Description |
 |------|------|-------------|
@@ -82,6 +82,13 @@ onlineFoodDeliveryApplication/
 
 ---
 
+
+---
+## Screenshots
+
+Below are mockup screenshots of the key pages.
+
+![Home page mockup]
 
 ---
 
@@ -118,84 +125,140 @@ onlineFoodDeliveryApplication/
 
 ## API Documentation
 
-### Authentication Endpoints
+### Internal Application Routes
 
-#### Register User
+All routes are served by the Express.js backend at `http://localhost:3000`.
+
+---
+
+#### General / Browsing
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| `GET` | `/` | Landing page |
+| `GET` | `/browse` | Browse restaurants by address/location |
+
+---
+
+#### Authentication
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| `GET` | `/login` | Show login form |
+| `POST` | `/login` | Process customer/restaurant login |
+| `GET` | `/register` | Show customer registration form |
+| `POST` | `/register` | Process customer registration |
+| `GET` | `/register-restaurant` | Show restaurant registration (Step 1) |
+| `POST` | `/register-restaurant/step1` | Process owner info (Step 1) |
+| `GET` | `/register-restaurant/step2` | Show restaurant details form (Step 2) |
+| `POST` | `/register-restaurant/step2` | Process restaurant details (Step 2) |
+| `GET` | `/logout` | Log out and destroy session |
+
+---
+
+#### User Account
+
+| Method | Route | Description | Auth Required |
+|--------|-------|-------------|---------------|
+| `GET` | `/account` | View account & saved addresses | ✅ Customer |
+| `POST` | `/account/profile` | Update profile info | ✅ Customer |
+| `POST` | `/account/addresses` | Add a new saved address | ✅ Customer |
+| `POST` | `/account/addresses/:id/edit` | Edit a saved address | ✅ Customer |
+| `POST` | `/account/addresses/:id/delete` | Delete a saved address | ✅ Customer |
+| `GET` | `/track-orders` | View order history & statuses | ✅ Login |
+| `POST` | `/orders/:id/rate` | Rate a completed order | ✅ Login |
+
+---
+
+#### Restaurant & Menu
+
+| Method | Route | Description | Auth Required |
+|--------|-------|-------------|---------------|
+| `GET` | `/restaurant/:id` | Public restaurant menu page | ❌ |
+| `GET` | `/manage` | Restaurant admin dashboard | ✅ Restaurant |
+| `POST` | `/manage/products` | Add a new menu item | ✅ Restaurant |
+| `POST` | `/manage/products/:id/delete` | Delete a menu item | ✅ Restaurant |
+| `POST` | `/manage/settings` | Update restaurant settings | ✅ Restaurant |
+| `POST` | `/manage/categories` | Update menu categories | ✅ Restaurant |
+| `POST` | `/manage/reorder` | Reorder menu items | ✅ Restaurant |
+| `GET` | `/manage/orders` | View incoming orders | ✅ Restaurant |
+| `POST` | `/manage/orders/:id/status` | Update order status | ✅ Restaurant |
+| `POST` | `/manage/status` | Toggle restaurant open/closed | ✅ Restaurant |
+| `POST` | `/manage/icon` | Upload/update restaurant icon | ✅ Restaurant |
+
+---
+
+#### Cart & Checkout
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| `GET` | `/cart` | View cart page |
+| `GET` | `/cart/count` | Get current cart item count |
+| `POST` | `/cart/add` | Add an item to the cart |
+| `POST` | `/cart/remove` | Decrement item quantity |
+| `POST` | `/cart/delete` | Remove item entirely from cart |
+| `POST` | `/cart/checkout` | Place an order (checkout) |
+| `POST` | `/cart/clear` | Clear all items from the cart |
+
+---
+
+### External APIs & Libraries
+
+These third-party services and libraries are integrated into the application:
+
+---
+
+#### Nominatim (OpenStreetMap Geocoding API)
+
+Used for address geocoding (address → coordinates) and reverse geocoding (coordinates → address). Calls are made client-side from `utils.js`.
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET https://nominatim.openstreetmap.org/search` | Forward geocoding — search an address string and return lat/lon |
+| `GET https://nominatim.openstreetmap.org/reverse` | Reverse geocoding — convert lat/lon to a human-readable address |
+
+**Example — Forward Geocode:**
 ```http
-POST /api/auth/register
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "password": "password123",
-  "firstName": "John",
-  "lastName": "Doe",
-  "contactPhone": "+30 123 456 7890"
-}
+GET https://nominatim.openstreetmap.org/search?format=jsonv2&q=Main+Street+1,Patra,Greece&countrycodes=gr&addressdetails=1&limit=5
 ```
 
-#### Login User
+**Example — Reverse Geocode:**
 ```http
-POST /api/auth/login
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "password": "password123"
-}
+GET https://nominatim.openstreetmap.org/reverse?format=json&lat=38.2461&lon=21.7351&addressdetails=1
 ```
 
-### User Management Endpoints
+> No API key required. Subject to [Nominatim Usage Policy](https://operations.osmfoundation.org/policies/nominatim/).
 
-All user endpoints require `Authorization: Bearer <token>` header.
+---
 
-#### Get User Profile
-```http
-GET /api/users/profile
-```
+#### Leaflet.js + OpenStreetMap Tiles
 
-#### Update User Profile
-```http
-PUT /api/users/profile
-Content-Type: application/json
+Used to render interactive maps for address selection on the browse, cart, and account pages.
 
-{
-  "firstName": "Jane",
-  "lastName": "Smith",
-  "contactPhone": "+30 987 654 3210"
-}
-```
+| Resource | URL |
+|----------|-----|
+| Leaflet CSS | `https://unpkg.com/leaflet@1.9.4/dist/leaflet.css` |
+| Leaflet JS | `https://unpkg.com/leaflet@1.9.4/dist/leaflet.js` |
+| Map Tiles | `https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png` |
 
-#### Get User Addresses
-```http
-GET /api/users/addresses
-```
+---
 
-#### Add Address
-```http
-POST /api/users/addresses
-Content-Type: application/json
+#### Bootstrap 5
 
-{
-  "street": "Main Street",
-  "streetNumber": "123",
-  "latitude": 37.7749,
-  "longitude": -122.4194
-}
-```
+Used for responsive layout, UI components, and icons throughout the application.
 
-#### Update Address
-```http
-PUT /api/users/addresses/:id
-Content-Type: application/json
+| Resource | URL |
+|----------|-----|
+| Bootstrap CSS | `https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css` |
+| Bootstrap JS | `https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js` |
+| Bootstrap Icons | `https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css` |
 
-{
-  "street": "Updated Street",
-  "streetNumber": "456"
-}
-```
+---
 
-#### Delete Address
-```http
-DELETE /api/users/addresses/:id
-```
+#### Google Fonts
+
+Used for the **Righteous** typeface in the LogoFood brand logo.
+
+| Resource | URL |
+|----------|-----|
+| Google Fonts API | `https://fonts.googleapis.com/css2?family=Righteous&display=swap` |

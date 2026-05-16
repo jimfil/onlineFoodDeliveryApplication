@@ -6,6 +6,7 @@
 import * as userModel from '../model/user-model.mjs';
 import * as restaurantModel from '../model/restaurant-model.mjs';
 import * as orderModel from '../model/order-model.mjs';
+import { getDistanceKm } from '../utils/geo-utils.mjs';
 
 /** GET /cart */
 export async function showCart(req, res) {
@@ -23,11 +24,19 @@ export async function showCart(req, res) {
     // Compute totals
     const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
+    // Fetch min order value for the restaurant in the cart
+    let minOrderValue = 0;
+    if (cart.length > 0) {
+      const restaurant = await restaurantModel.getRestaurantById(cart[0].restaurantId);
+      minOrderValue = restaurant ? parseFloat(restaurant.min_order_value) || 0 : 0;
+    }
+
     res.render('cart', {
       cart,
       addresses,
       customer,
       total,
+      minOrderValue,
       deliveryAddress: req.session.deliveryAddress || {}
     });
   } catch (err) {
@@ -109,12 +118,29 @@ export async function checkout(req, res) {
     return res.redirect('/cart');
   }
 
+  // Enforce minimum order value
+  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const restaurantId = cart[0].restaurantId;
+  const restaurant = await restaurantModel.getRestaurantById(restaurantId);
+  const minOrderValue = restaurant ? parseFloat(restaurant.min_order_value) || 0 : 0;
+  if (minOrderValue > 0 && total < minOrderValue) {
+    req.flash('error', `Η ελάχιστη παραγγελία για αυτό το εστιατόριο είναι ${minOrderValue.toFixed(2).replace('.', ',')}€. Προσθέστε περισσότερα προϊόντα.`);
+    return res.redirect('/cart');
+  }
+
   let addressId = req.body.addressId;
   let customerId = req.session.user ? req.session.user.id : null;
   const { floor, comments, phone } = req.body;
 
+
+
   try {
     const pool = (await import('../model/db.mjs')).default;
+
+    // Resolve delivery address lat/lon
+    let deliveryLat = null;
+    let deliveryLon = null;
+
     // If guest, create a temporary address
     if (!customerId) {
       let { street, streetNumber, zipCode } = req.body;
@@ -125,30 +151,53 @@ export async function checkout(req, res) {
         return res.redirect('/cart');
       }
 
+      // Use coordinates submitted from the guest form (set by Leaflet/Nominatim)
+      deliveryLat = req.body.latitude ? parseFloat(req.body.latitude) : null;
+      deliveryLon = req.body.longitude ? parseFloat(req.body.longitude) : null;
+
       const guestComments = comments ? `Τηλέφωνο: ${phone} | Σχόλια: ${comments}` : `Τηλέφωνο: ${phone}`;
 
       const [addrRes] = await pool.execute(
-        `INSERT INTO Address (street, street_number, zip_code, floor, comments) VALUES (?, ?, ?, ?, ?)`,
-        [street, streetNumber, zipCode || null, floor, guestComments]
+        `INSERT INTO Address (street, street_number, zip_code, floor, comments, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [street, streetNumber, zipCode || null, floor, guestComments, deliveryLat, deliveryLon]
       );
       addressId = addrRes.insertId;
     } else if (!addressId) {
       req.flash('error', 'Επιλέξτε διεύθυνση παράδοσης.');
       return res.redirect('/cart');
     } else {
-      // Update the existing address with the floor and comments (including phone) provided at checkout
-      const finalComments = comments;
+      // Logged-in user: read lat/lon from their saved address
+      const [addrRows] = await pool.execute(
+        `SELECT latitude, longitude FROM Address WHERE id = ?`, [addressId]
+      );
+      if (addrRows.length > 0) {
+        deliveryLat = addrRows[0].latitude ? parseFloat(addrRows[0].latitude) : null;
+        deliveryLon = addrRows[0].longitude ? parseFloat(addrRows[0].longitude) : null;
+      }
+
       await pool.execute(
         `UPDATE Address SET floor = ?, comments = ? WHERE id = ?`,
-        [floor || null, finalComments, addressId]
-      );
-      await pool.execute(
-        `UPDATE Customer SET phone = ? WHERE id = ?`,
-        [phone, customerId]
+        [floor || null, comments, addressId]
       );
     }
 
-    const restaurantId = cart[0].restaurantId;
+    // Distance validation: require coordinates and max 4km
+    if (!deliveryLat || !deliveryLon) {
+      req.flash('error', 'Η διεύθυνση παράδοσης δεν έχει γεωγραφικές συντεταγμένες. Παρακαλούμε επιλέξτε τη διεύθυνση στο χάρτη.');
+      return res.redirect('/cart');
+    }
+    const restLat = restaurant.latitude ? parseFloat(restaurant.latitude) : null;
+    const restLon = restaurant.longitude ? parseFloat(restaurant.longitude) : null;
+    if (!restLat || !restLon) {
+      req.flash('error', 'Δεν ήταν δυνατός ο έλεγχος απόστασης. Επικοινωνήστε με το εστιατόριο.');
+      return res.redirect('/cart');
+    }
+    const distKm = getDistanceKm(deliveryLat, deliveryLon, restLat, restLon);
+    if (distKm > 4) {
+      req.flash('error', `Η διεύθυνση παράδοσης είναι εκτός της περιοχής εξυπηρέτησης (${distKm.toFixed(1)} km). Το εστιατόριο εξυπηρετεί έως 4 km.`);
+      return res.redirect('/cart');
+    }
+
     const items = cart.map(i => ({ productId: i.productId, quantity: i.quantity, price: i.price }));
 
     const orderId = await orderModel.createOrder(customerId, restaurantId, addressId, items);

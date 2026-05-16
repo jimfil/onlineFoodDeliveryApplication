@@ -56,8 +56,8 @@ async function searchAddresses(query) {
     }
 }
 
-async function geocodeAddress(street, number, zip, city = 'Patra') {
-    const query = `${street} ${number}, ${zip}, ${city}, Greece`;
+async function geocodeAddress(street, number, zip) {
+    const query = `${street} ${number}, ${zip}, Greece`;
     const results = await searchAddresses(query);
     return results.length > 0 ? { lat: results[0].lat, lon: results[0].lon } : null;
 }
@@ -165,7 +165,15 @@ function initAutoGeocode(streetId, numberId, zipId, latId, lonId, formId) {
         }
         return null;
     };
-    inputs.forEach(input => input.addEventListener('blur', runGeocode));
+    inputs.forEach(input => {
+        input.addEventListener('blur', runGeocode);
+        input.addEventListener('input', () => {
+            const latEl = document.getElementById(latId);
+            const lonEl = document.getElementById(lonId);
+            if (latEl) latEl.value = '';
+            if (lonEl) lonEl.value = '';
+        });
+    });
 
     if (formId) {
         const form = document.getElementById(formId);
@@ -242,11 +250,14 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const productId = btn.dataset.productId;
             const delta = parseInt(btn.dataset.delta, 10);
+            const name = btn.dataset.name;
+            const price = parseFloat(btn.dataset.price);
+            const restaurantId = parseInt(btn.dataset.restaurantId, 10);
             const endpoint = delta > 0 ? '/cart/add' : '/cart/remove';
             await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productId })
+                body: JSON.stringify({ productId, name, price, restaurantId })
             });
             window.location.reload();
         });
