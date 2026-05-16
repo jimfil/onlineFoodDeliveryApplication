@@ -79,6 +79,18 @@
                         </div>
 
                         <div class="col-12">
+                            <label for="confirmPassword" class="form-label text-muted small fw-bold">Επιβεβαίωση Κωδικού</label>
+                            <div class="input-group">
+                                <input type="password" id="confirmPassword" name="confirmPassword" class="form-control rounded-start-custom"
+                                       placeholder="Επαναλάβετε τον κωδικό" required minlength="6">
+                                <button class="btn btn-outline-secondary border-secondary-subtle rounded-end-custom" type="button" id="toggleConfirmPassword">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            {{#if errors.confirmPassword}}<div class="text-danger small mt-1">{{errors.confirmPassword}}</div>{{/if}}
+                        </div>
+
+                        <div class="col-12">
                             <label for="contactPhone" class="form-label text-muted small fw-bold">Τηλέφωνο</label>
                             <input type="tel" id="contactPhone" name="contactPhone" class="form-control" 
                                    placeholder="69xxxxxxxx" value="{{userInput.contactPhone}}" required>

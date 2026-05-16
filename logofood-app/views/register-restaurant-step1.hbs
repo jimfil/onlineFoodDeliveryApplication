@@ -41,6 +41,18 @@
                             {{#if errors.password}}<div class="text-danger small mt-1">{{errors.password}}</div>{{/if}}
                         </div>
 
+                        <div class="col-12">
+                            <label for="confirmPassword" class="form-label text-muted small fw-bold">Επιβεβαίωση Κωδικού</label>
+                            <div class="input-group">
+                                <input type="password" id="confirmPassword" name="confirmPassword" class="form-control rounded-start-custom"
+                                       placeholder="Επαναλάβετε τον κωδικό" required minlength="6">
+                                <button class="btn btn-outline-secondary border-secondary-subtle rounded-end-custom" type="button" id="toggleConfirmPassword">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            {{#if errors.confirmPassword}}<div class="text-danger small mt-1">{{errors.confirmPassword}}</div>{{/if}}
+                        </div>
+
                         <div class="col-12 mt-4">
                             <button type="submit" class="btn btn-menu btn-lg w-100 fw-bold shadow-sm">Επόμενο Βήμα <i class="bi bi-arrow-right ms-2"></i></button>
                         </div>

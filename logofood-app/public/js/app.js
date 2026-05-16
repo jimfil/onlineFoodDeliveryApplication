@@ -413,6 +413,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Toggle Confirm Password Visibility
+    document.querySelectorAll('#toggleConfirmPassword').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const confirmInput = document.getElementById('confirmPassword');
+            if (!confirmInput) return;
+            const icon = this.querySelector('i');
+            if (confirmInput.type === 'password') {
+                confirmInput.type = 'text';
+                icon.classList.replace('bi-eye', 'bi-eye-slash');
+            } else {
+                confirmInput.type = 'password';
+                icon.classList.replace('bi-eye-slash', 'bi-eye');
+            }
+        });
+    });
+
+
     initAutoGeocode('registerStreet', 'registerNumber', 'registerZip', 'registerLatitude', 'registerLongitude', 'registerForm');
 
     // Toggle Register Map
