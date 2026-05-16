@@ -127,7 +127,25 @@ Below are mockup screenshots of the key pages.
 
 ### Internal Application Routes
 
-All routes are served by the Express.js backend at `http://localhost:3000`.
+All routes are served by the Express.js backend at `http://localhost:5000` (or the port specified in your `.env` file).
+
+### Swagger UI (Python)
+
+We also provide a Swagger UI documentation generated via a Python script using `flask-restx`. To run it:
+
+1. Navigate to the `python` directory:
+   ```bash
+   cd python
+   ```
+2. Install the required dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Run the Swagger server:
+   ```bash
+   python swagger_api.py
+   ```
+4. Open your browser and navigate to `http://localhost:5001/swagger/` (or the port specified as `SWAGGER_PORT` in your `.env` file).
 
 ---
 

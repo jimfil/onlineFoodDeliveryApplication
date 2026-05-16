@@ -85,7 +85,7 @@ export async function getOrdersByRestaurant(restaurantId) {
  */
 export async function getOrdersByCustomerId(customerId) {
   const [rows] = await pool.execute(
-    `SELECT o.id AS order_id, o.created_at, o.status, o.rating, o.delivery_address_text,
+    `SELECT o.id AS order_id, o.created_at, o.completed_at, o.status, o.rating, o.delivery_address_text,
             r.name AS restaurantName,
             a.street, a.street_number, a.floor, a.comments AS addressComments,
             oi.product_id, oi.quantity,
@@ -108,6 +108,7 @@ export async function getOrdersByCustomerId(customerId) {
       ordersMap.set(row.order_id, {
         id: row.order_id,
         created_at: row.created_at,
+        completed_at: row.completed_at,
         status: row.status,
         rating: row.rating,
         restaurantName: row.restaurantName,
@@ -136,7 +137,7 @@ export async function getOrdersByCustomerId(customerId) {
  */
 export async function getOrdersByRestaurantDetailed(restaurantId) {
   const [rows] = await pool.execute(
-    `SELECT o.id AS order_id, o.created_at, o.status, o.delivery_address_text,
+    `SELECT o.id AS order_id, o.created_at, o.completed_at, o.status, o.delivery_address_text,
             COALESCE(c.first_name, 'Επισκέπτης') AS firstName, 
             COALESCE(c.last_name, '') AS lastName,
             COALESCE(c.contact_phone, 'N/A') AS phone,
@@ -160,6 +161,7 @@ export async function getOrdersByRestaurantDetailed(restaurantId) {
       ordersMap.set(row.order_id, {
         id: row.order_id,
         created_at: row.created_at,
+        completed_at: row.completed_at,
         status: row.status,
         customerName: `${row.firstName} ${row.lastName}`.trim(),
         phone: row.phone,
@@ -185,12 +187,17 @@ export async function getOrdersByRestaurantDetailed(restaurantId) {
 /** Update order status if the restaurant owns it. */
 export async function updateOrderStatus(orderId, restaurantUserId, status) {
   // Verify ownership first
-  const [rows] = await pool.execute(
-    `UPDATE Order_table 
-     SET status = ? 
-     WHERE id = ? AND restaurant_id = ?`,
-    [status, orderId, restaurantUserId]
-  );
+  let query = `UPDATE Order_table SET status = ?`;
+  let params = [status];
+  
+  if (status === 'COMPLETED') {
+    query += `, completed_at = NOW()`;
+  }
+  
+  query += ` WHERE id = ? AND restaurant_id = ?`;
+  params.push(orderId, restaurantUserId);
+
+  const [rows] = await pool.execute(query, params);
   return rows.affectedRows > 0;
 }
 
