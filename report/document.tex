@@ -5,7 +5,7 @@
 \babelfont[greek]{rm}{Noto Serif}
 \babelfont[greek]{sf}{Noto Sans}
 \sloppy
-\title{Εφαρμογή online παραγγελίας ποδιών (LogoFeet)}
+\title{Εφαρμογή online παραγγελίας ποδιών (LogoFood)}
 
 
 \author{Εμμανουήλ Παξιμαδάκης 1100972 \& Δημήτριος Φιλόπουλος 1101130}
@@ -175,7 +175,13 @@
 		\item \textbf{Σύνδεση (Login):} Κατά τη σύνδεση, το σύστημα αναζητά τον χρήστη στη βάση δεδομένων με βάση το email του. Αν βρεθεί, γίνεται σύγκριση του εισαγόμενου κωδικού με τον κρυπτογραφημένο κωδικό (hash) που είναι αποθηκευμένος στη βάση, χρησιμοποιώντας τη βιβλιοθήκη \texttt{bcrypt}.
 		\item \textbf{Διατήρηση Συνεδρίας:} Μετά την επιτυχή ταυτοποίηση, τα βασικά στοιχεία του χρήστη (ID, email, τύπος λογαριασμού) αποθηκεύονται στο αντικείμενο \texttt{req.session}. Έτσι, ο χρήστης παραμένει συνδεδεμένος κατά την πλοήγησή του στην εφαρμογή.
 		\item \textbf{Διαβαθμισμένη Πρόσβαση (Authorization):} Η προστασία των ευαίσθητων περιοχών της εφαρμογής επιτυγχάνεται μέσω custom middleware συναρτήσεων (όπως \texttt{requireLogin} και \texttt{requireRestaurant}). Αυτές οι συναρτήσεις παρεμβάλλονται πριν την εκτέλεση της κύριας λογικής του controller και ελέγχουν αν ο χρήστης είναι συνδεδεμένος και αν διαθέτει τον κατάλληλο ρόλο. Σε περίπτωση που ένας μη εξουσιοδοτημένος χρήστης προσπαθήσει να αποκτήσει πρόσβαση (π.χ. ένας πελάτης που προσπαθεί να μπει στο Restaurant Dashboard ή ένας επισκέπτης που προσπαθεί να δει το ιστορικό παραγγελιών), το σύστημα τον ανακατευθύνει αυτόματα στη σελίδα σύνδεσης ή εμφανίζει κατάλληλο μήνυμα σφάλματος.
-	
+	\end{itemize}
+
+	\section{Διαδικασία δημιουργίας και Ανάπτυξη σε Περιβάλλον Παραγωγής (Deployment)}
+	Για την ανάπτυξη του project χρησιμοποιήθηκε το σύστημα ελέγχου εκδόσεων Git, με το Repository να φιλοξενείται στην πλατφόρμα του \texttt{GitHub} (\url{https://github.com/jimfil/onlineFoodDeliveryApplication}). Η χρήση του GitHub ήταν καθοριστική για την οργάνωση του κώδικα, καθώς επέτρεψε την παρακολούθηση των αλλαγών και την ασφαλή αποθήκευση του project στο cloud. Επιπλέον, διευκόλυνε τη συνεργασία και τον πειραματισμό με νέες λειτουργίες χωρίς τον κίνδυνο απώλειας κώδικα.
+
+	Η εφαρμογή έχει αναπτυχθεί επιτυχώς στο υπολογιστικό νέφος (Cloud) μέσω της πλατφόρμας \texttt{Render}. Για την ανάπτυξη, η πλατφόρμα Render συνδέθηκε απευθείας με το Repository του project στο GitHub, εξασφαλίζοντας αυτόματη ενημέρωση (CI/CD) σε κάθε νέο commit. Αυτή η διασύνδεση απλοποίησε σημαντικά τη διαδικασία, καθώς κάθε αλλαγή που γίνεται push στο GitHub μεταφέρεται αυτόματα στο περιβάλλον παραγωγής.
+
 	\section{Τεκμηρίωση API και Δρομολόγηση (Routes)}
 	Για την καλύτερη κατανόηση και τεκμηρίωση των λειτουργιών του συστήματος, δημιουργήθηκε ένα διαδραστικό περιβάλλον τεκμηρίωσης μέσω της βιβλιοθήκης \texttt{flask-restx} σε περιβάλλον Python (Swagger UI). Τα δρομολόγια της εφαρμογής χωρίζονται στις εξής βασικές κατηγορίες:
 
@@ -233,22 +239,123 @@
 	Προστέθηκε η στήλη \texttt{delivery\_address\_text} στον πίνακα \texttt{Order\_table}. Κατά τη δημιουργία της παραγγελίας, η πλήρης διεύθυνση αποθηκεύεται ως κείμενο απευθείας στην παραγγελία. Έτσι, ακόμα και αν ο χρήστης διαγράψει ή τροποποιήσει τη διεύθυνσή του στο μέλλον, το ιστορικό της παραγγελίας παραμένει αναλλοίωτο και ακριβές.
 
 	\section{Συμπεράσματα}
-	Η ενασχόληση με το project LogoFeet προσέφερε πολύτιμη εμπειρία σε όλο το φάσμα της ανάπτυξης διαδικτυακών εφαρμογών, από το σχεδιασμό της εμπειρίας χρήστη (UX) μέχρι την επίλυση σύνθετων προβλημάτων στο backend και τη διαχείριση cloud υποδομών.
+	Η ενασχόληση με το project LogoFood προσέφερε πολύτιμη εμπειρία σε όλο το φάσμα της ανάπτυξης διαδικτυακών εφαρμογών, από το σχεδιασμό της εμπειρίας χρήστη (UX) μέχρι την επίλυση σύνθετων προβλημάτων στο backend και τη διαχείριση cloud υποδομών.
 	
-	\section{Οδηγίες Εγκατάστασης}
+	\section{Οδηγίες Εγκατάστασης και Εκκίνησης}
 	\begin{enumerate}
-		\item \texttt{npm install} (εγκατάσταση εξαρτήσεων Node.js).
-		\item Αντιγραφή του \texttt{.env} για ρύθμιση της σύνδεσης TiDB.
-		\item \texttt{npm run dev} για εκκίνηση του development server.
+		\item \textbf{Εφαρμογή (Node.js):}
+		\begin{itemize}
+			\item Μεταβείτε στον φάκελο \texttt{logofood-app}.
+			\item Εκτελέστε \texttt{npm install} για την εγκατάσταση των εξαρτήσεων.
+			\item Δημιουργήστε αρχείο \texttt{.env} με τις απαραίτητες ρυθμίσεις για τη βάση δεδομένων.
+			\item Εκτελέστε \texttt{npm start} για την εκκίνηση του server.
+		\end{itemize}
+		\item \textbf{Τεκμηρίωση API (Python):}
+		\begin{itemize}
+			\item Μεταβείτε στον φάκελο \texttt{python}.
+			\item Εκτελέστε \texttt{pip install -r requirements.txt} (αν απαιτείται).
+			\item Εκτελέστε \texttt{python swagger\_api.py} για την εκκίνηση του Swagger UI.
+		\end{itemize}
 	\end{enumerate}
+	
+	\section{Σύνδεσμοι Έργου}
+	\begin{itemize}
+		\item \textbf{GitHub:} \url{https://github.com/jimfil/onlineFoodDeliveryApplication}
+		\item \textbf{Ιστοσελίδα στο Render:} \url{https://onlinefooddeliveryapplication.onrender.com}
+	\end{itemize}
 	
 	\appendix
 
 	\section{Στιγμιότυπα Εφαρμογής}
-	\begin{figure}[h]
+
+	\begin{figure}[H]
 		\centering
-		%\includegraphics[width=0.8\linewidth]{graphics/home.png}
-		\caption{Αρχική σελίδα με ενσωμάτωση χάρτη Leaflet.}
+		\includegraphics[width=0.9\linewidth]{images/indexPage.png}
+		\caption{Αρχική σελίδα (Landing Page) της εφαρμογής.}
+	\end{figure}
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/loginPage.png}
+		\caption{Σελίδα σύνδεσης χρηστών.}
+	\end{figure}
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/registerPage.png}
+		\caption{Σελίδα εγγραφής νέου πελάτη.}
+	\end{figure}
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/browsePage.png}
+		\caption{Σελίδα αναζήτησης εστιατορίων με φίλτρα κατηγοριών.}
+	\end{figure}
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/restaurantPage.png}
+		\caption{Σελίδα εστιατορίου με μενού προϊόντων.}
+	\end{figure}
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/cartPage.png}
+		\caption{Σελίδα καλαθιού αγορών και ολοκλήρωσης παραγγελίας.}
+	\end{figure}
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/trackingOrderPage.png}
+		\caption{Σελίδα παρακολούθησης παραγγελίας σε εξέλιξη.}
+	\end{figure}
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/TrackordersPostcompetionAndSubmitionPage.png}
+		\caption{Σελίδα παρακολούθησης παραγγελίας μετά την ολοκλήρωση και υποβολή αξιολόγησης.}
+	\end{figure}
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/restarauntManagePage.png}
+		\caption{Dashboard διαχείρισης εστιατορίου — Προφίλ.}
+	\end{figure}
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/menuManagementPage.png}
+		\caption{Dashboard διαχείρισης εστιατορίου — Διαχείριση μενού.}
+	\end{figure}
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/restaurantOrdersPage.png}
+		\caption{Σελίδα διαχείρισης παραγγελιών εστιατορίου.}
+	\end{figure}
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/registerRestaurantpart1.png}
+		\caption{Εγγραφή εστιατορίου — Βήμα 1: Στοιχεία ιδιοκτήτη.}
+	\end{figure}
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/registerRestaurantpart2.png}
+		\caption{Εγγραφή εστιατορίου — Βήμα 2: Στοιχεία επιχείρησης.}
+	\end{figure}
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/usermanagementpage.png}
+		\caption{Σελίδα διαχείρισης λογαριασμού χρήστη.}
+	\end{figure}
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.9\linewidth]{images/addressEditManagement.png}
+		\caption{Διαχείριση και επεξεργασία αποθηκευμένων διευθύνσεων.}
 	\end{figure}
 
 \end{document}
