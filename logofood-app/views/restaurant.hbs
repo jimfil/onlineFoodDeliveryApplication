@@ -46,7 +46,8 @@
                     {{/if}}
                 </span>
                 {{#if restaurant.deliveryMinutes}}
-                <span class="badge bg-info bg-opacity-10 text-dark p-2 px-3 rounded-pill fs-6">🛵 Παράδοση: {{restaurant.deliveryMinutes}}'</span>
+                <span class="badge bg-info bg-opacity-10 text-dark p-2 px-3 rounded-pill fs-6">🛵 Παράδοση:
+                    {{restaurant.deliveryMinutes}}'</span>
                 {{/if}}
                 {{#if restaurant.min_order_value}}
                 <span class="badge bg-primary bg-opacity-10 text-primary p-2 px-3 rounded-pill fs-6">💰 Ελάχιστη
@@ -60,10 +61,18 @@
 <main class="container mb-5">
     <h3 class="h4 fw-bold mb-4">Επιλογές Μενού</h3>
 
+    <div class="category-nav mb-4 d-flex gap-2 flex-wrap">
+        {{#each categories}}
+        {{#if products.length}}
+        <a href="#category-{{@index}}" class="btn btn-outline-primary btn-sm rounded-pill px-3">{{categoryName}}</a>
+        {{/if}}
+        {{/each}}
+    </div>
+
     <div class="row g-4">
         {{#each categories}}
         {{#if products.length}}
-        <div class="col-12 mt-5 mb-2">
+        <div class="col-12 mt-5 mb-2" id="category-{{@index}}">
             <h4 class="h5 fw-bold text-primary border-start border-4 border-primary ps-3">{{categoryName}}</h4>
         </div>
         {{#each products}}
@@ -83,28 +92,33 @@
                                 <span class="fw-bold text-danger small">{{formatPrice price}}</span>
                             </div>
                             <p class="card-text text-muted smaller mb-3">{{description}}</p>
-                            <div class="mt-auto text-end d-flex align-items-center justify-content-end min-h-40" id="actions-{{id}}">
+                            <div class="mt-auto text-end d-flex align-items-center justify-content-end min-h-40"
+                                id="actions-{{id}}">
                                 {{#if (eq ../../restaurant.status 'CLOSED')}}
-                                    <button class="btn btn-outline-secondary btn-sm px-3 fw-bold rounded-pill disabled">
-                                        Μη Διαθέσιμο
-                                    </button>
+                                <button class="btn btn-outline-secondary btn-sm px-3 fw-bold rounded-pill disabled">
+                                    Μη Διαθέσιμο
+                                </button>
                                 {{else}}
-                                    {{#if (getItemQty ../../cart id)}}
-                                        <div class="d-flex align-items-center justify-content-end gap-2 bg-white border border-2 border-secondary rounded-pill px-2 py-2 d-inline-flex shadow-sm line-height-1">
-                                        <button
-                                            class="btn btn-danger btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center btn-circle-xs btn-restaurant-qty"
-                                            data-product-id="{{id}}" data-delta="-1" data-name="{{name}}" data-price="{{price}}" data-restaurant-id="{{../../restaurant.id}}">−</button>
-                                        <span class="px-2 small fw-bold" id="qty-{{id}}">{{getItemQty ../../cart id}}</span>
-                                        <button
-                                            class="btn btn-success btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center btn-circle-xs btn-restaurant-qty"
-                                            data-product-id="{{id}}" data-delta="1" data-name="{{name}}" data-price="{{price}}" data-restaurant-id="{{../../restaurant.id}}">+</button>
-                                    </div>
-                                    {{else}}
-                                    <button class="btn btn-menu btn-sm px-3 fw-bold rounded-pill btn-restaurant-qty"
-                                        data-product-id="{{id}}" data-delta="1" data-name="{{name}}" data-price="{{price}}" data-restaurant-id="{{../../restaurant.id}}">
-                                        + Προσθήκη
-                                    </button>
-                                    {{/if}}
+                                {{#if (getItemQty ../../cart id)}}
+                                <div
+                                    class="d-flex align-items-center justify-content-end gap-2 bg-white border border-2 border-secondary rounded-pill px-2 py-2 d-inline-flex shadow-sm line-height-1">
+                                    <button
+                                        class="btn btn-danger btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center btn-circle-xs btn-restaurant-qty"
+                                        data-product-id="{{id}}" data-delta="-1" data-name="{{name}}"
+                                        data-price="{{price}}" data-restaurant-id="{{../../restaurant.id}}">−</button>
+                                    <span class="px-2 small fw-bold" id="qty-{{id}}">{{getItemQty ../../cart id}}</span>
+                                    <button
+                                        class="btn btn-success btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center btn-circle-xs btn-restaurant-qty"
+                                        data-product-id="{{id}}" data-delta="1" data-name="{{name}}"
+                                        data-price="{{price}}" data-restaurant-id="{{../../restaurant.id}}">+</button>
+                                </div>
+                                {{else}}
+                                <button class="btn btn-menu btn-sm px-3 fw-bold rounded-pill btn-restaurant-qty"
+                                    data-product-id="{{id}}" data-delta="1" data-name="{{name}}" data-price="{{price}}"
+                                    data-restaurant-id="{{../../restaurant.id}}">
+                                    + Προσθήκη
+                                </button>
+                                {{/if}}
                                 {{/if}}
                             </div>
                         </div>

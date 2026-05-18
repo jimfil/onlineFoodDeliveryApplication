@@ -5,6 +5,8 @@
 import * as userModel from '../model/user-model.mjs';
 import * as orderModel from '../model/order-model.mjs';
 import { validationResult } from 'express-validator';
+import appEvents from '../utils/events.mjs';
+
 
 /** GET /account */
 export async function showAccount(req, res) {
@@ -191,12 +193,23 @@ export async function streamNotifications(req, res) {
     }
   };
 
-  // Send initial payload immediately, then poll every 8 seconds.
+  // Send initial payload immediately
   await sendPayload();
-  const interval = setInterval(sendPayload, 8000);
+
+  // Keep-alive heartbeat every 30 seconds
+  const keepAliveInterval = setInterval(() => {
+    res.write(`: keep-alive\n\n`);
+  }, 30000);
+
+  // Listen for order changes
+  const onOrderChanged = () => {
+    sendPayload();
+  };
+  appEvents.on('order:changed', onOrderChanged);
 
   req.on('close', () => {
-    clearInterval(interval);
+    clearInterval(keepAliveInterval);
+    appEvents.off('order:changed', onOrderChanged);
   });
 }
 

@@ -988,70 +988,68 @@ document.addEventListener('DOMContentLoaded', () => {
     // Category selection & filtering
     let selectedCategory = 'all';
 
-    function filterRestaurants() {
+    function applyFilters() {
         const searchInput = document.getElementById('searchRestaurant');
-        const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
-        const wrappers = document.querySelectorAll('.restaurant-card-wrapper');
-        let visibleCount = 0;
-
-        wrappers.forEach(wrapper => {
-            const nameEl = wrapper.querySelector('.card-title');
-            if (!nameEl) return;
-            const name = nameEl.textContent.toLowerCase();
-            const categories = wrapper.getAttribute('data-categories').toLowerCase().split(',');
-            
-            const matchesQuery = name.includes(query) || categories.some(cat => cat.includes(query));
-            const matchesCategory = selectedCategory === 'all' || categories.includes(selectedCategory.toLowerCase());
-            
-            if (matchesQuery && matchesCategory) {
-                wrapper.style.display = '';
-                visibleCount++;
-            } else {
-                wrapper.style.display = 'none';
-            }
-        });
-
-        // Handle no results message
-        const restaurantList = document.getElementById('restaurantList');
-        let noResults = document.getElementById('noResultsMessage');
-        if (visibleCount === 0 && wrappers.length > 0 && restaurantList) {
-            if (!noResults) {
-                noResults = document.createElement('div');
-                noResults.id = 'noResultsMessage';
-                noResults.className = 'col-12 text-center py-5';
-                noResults.innerHTML = '<p class="text-muted">Δεν βρέθηκαν εστιατόρια που να ταιριάζουν με τα κριτήρια σας.</p>';
-                restaurantList.appendChild(noResults);
-            }
-        } else if (noResults) {
-            noResults.remove();
+        const query = searchInput ? searchInput.value.trim() : '';
+        
+        const url = new URL(window.location.href);
+        // reset to page 1 on filter change
+        url.searchParams.delete('page');
+        
+        if (selectedCategory && selectedCategory !== 'all') {
+            url.searchParams.set('category', selectedCategory);
+        } else {
+            url.searchParams.delete('category');
         }
+        
+        if (query) {
+            url.searchParams.set('search', query);
+        } else {
+            url.searchParams.delete('search');
+        }
+        
+        window.location.href = url.toString();
     }
 
     document.querySelectorAll('.btn-select-category').forEach(btn => {
         btn.addEventListener('click', function() {
             if (this.classList.contains('active')) {
                 if (selectedCategory !== 'all') {
-                    document.querySelectorAll('.btn-select-category').forEach(b => b.classList.remove('active'));
-                    const allBtn = document.querySelector('.btn-select-category[data-category="all"]');
-                    if (allBtn) allBtn.classList.add('active');
                     selectedCategory = 'all';
+                    applyFilters();
                 }
             } else {
-                document.querySelectorAll('.btn-select-category').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
                 selectedCategory = this.getAttribute('data-category');
+                applyFilters();
             }
-            filterRestaurants();
         });
     });
 
     const searchRestaurant = document.getElementById('searchRestaurant');
     if (searchRestaurant) {
-        searchRestaurant.addEventListener('input', filterRestaurants);
+        searchRestaurant.addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                applyFilters();
+            }
+        });
     }
     document.querySelectorAll('.btn-filter-restaurants').forEach(btn => {
-        btn.addEventListener('click', filterRestaurants);
+        btn.addEventListener('click', applyFilters);
     });
+
+    // Horizontal scroll for categories
+    const scrollLeftBtn = document.getElementById('scrollLeftBtn');
+    const scrollRightBtn = document.getElementById('scrollRightBtn');
+    const categoryScroll = document.querySelector('.category-scroll');
+    
+    if (scrollLeftBtn && scrollRightBtn && categoryScroll) {
+        scrollLeftBtn.addEventListener('click', () => {
+            categoryScroll.scrollBy({ left: -200, behavior: 'smooth' });
+        });
+        scrollRightBtn.addEventListener('click', () => {
+            categoryScroll.scrollBy({ left: 200, behavior: 'smooth' });
+        });
+    }
 });
 
 // ─── Generic Handlers ───────────────────────────────────────────────────────

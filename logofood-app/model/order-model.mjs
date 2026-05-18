@@ -3,6 +3,7 @@
  * Order DB queries (ESM).
  */
 import pool from './db.mjs';
+import appEvents from '../utils/events.mjs';
 
 /**
  * Create a new order with its items.
@@ -38,6 +39,7 @@ export async function createOrder(customerId, restaurantId, addressId, items) {
     }
 
     await conn.commit();
+    appEvents.emit('order:changed');
     return orderId;
   } catch (err) {
     if (conn) await conn.rollback();
@@ -198,7 +200,11 @@ export async function updateOrderStatus(orderId, restaurantUserId, status) {
   params.push(orderId, restaurantUserId);
 
   const [rows] = await pool.execute(query, params);
-  return rows.affectedRows > 0;
+  const success = rows.affectedRows > 0;
+  if (success) {
+    appEvents.emit('order:changed');
+  }
+  return success;
 }
 
 /** Count pending orders for a customer. */

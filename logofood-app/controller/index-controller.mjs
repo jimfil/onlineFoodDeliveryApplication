@@ -25,7 +25,7 @@ export async function showBrowse(req, res) {
   }
   try {
     const errors = validationResult(req);
-    const { street, streetNumber, zipCode, latitude, longitude } = req.query;
+    const { street, streetNumber, zipCode, latitude, longitude, category, search } = req.query;
 
     // 1. If address in query, validate and save to session
     if (street || streetNumber || zipCode || latitude || longitude) {
@@ -85,11 +85,15 @@ export async function showBrowse(req, res) {
         lat: deliveryCoords.lat,
         lon: deliveryCoords.lon,
         limit,
-        offset
+        offset,
+        category,
+        search
       });
       totalCount = await restaurantModel.getRestaurantsCount({
         lat: deliveryCoords.lat,
-        lon: deliveryCoords.lon
+        lon: deliveryCoords.lon,
+        category,
+        search
       });
     }
 
@@ -161,7 +165,9 @@ export async function showBrowse(req, res) {
       hasAddress,
       addresses,
       noAddress: !hasAddress,
-      pagination
+      pagination,
+      activeCategory: category || 'all',
+      searchQuery: search || ''
     });
   } catch (err) {
     console.error('Browse error:', err);
