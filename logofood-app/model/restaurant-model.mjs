@@ -27,15 +27,6 @@ export async function getAllRestaurants({ lat, lon, limit = 20, offset = 0, cate
      LEFT JOIN Restaurant_Category rc ON r.id = rc.restaurant_id
      LEFT JOIN Category c ON rc.category_id = c.id`;
 
-  let whereClauses = [];
-  if (search) {
-    whereClauses.push(`r.name LIKE ?`);
-    params.push(`%${search}%`);
-  }
-  if (whereClauses.length > 0) {
-    query += ` WHERE ` + whereClauses.join(' AND ');
-  }
-
   query += `
      GROUP BY r.id, r.name, r.rating, r.rating_count, r.status, r.estimated_preparation_time,
               r.contact_phone, r.operating_hours, r.image_url, r.min_order_value,
@@ -48,6 +39,10 @@ export async function getAllRestaurants({ lat, lon, limit = 20, offset = 0, cate
   if (category && category !== 'all') {
     havingClauses.push(`FIND_IN_SET(?, categories) > 0`);
     params.push(category);
+  }
+  if (search) {
+    havingClauses.push(`(r.name COLLATE utf8mb4_general_ci LIKE ? OR categories COLLATE utf8mb4_general_ci LIKE ?)`);
+    params.push(`%${search}%`, `%${search}%`);
   }
 
   if (havingClauses.length > 0) {
@@ -67,7 +62,7 @@ export async function getAllRestaurants({ lat, lon, limit = 20, offset = 0, cate
 /** Get total count of restaurants within 4km. */
 export async function getRestaurantsCount({ lat, lon, category = null, search = null } = {}) {
   let query = `SELECT COUNT(*) as total FROM (
-    SELECT r.id, GROUP_CONCAT(c.name SEPARATOR ',') AS categories`;
+    SELECT r.id, r.name, GROUP_CONCAT(c.name SEPARATOR ',') AS categories`;
 
   const params = [];
   if (lat != null && lon != null) {
@@ -81,17 +76,8 @@ export async function getRestaurantsCount({ lat, lon, category = null, search = 
     LEFT JOIN Restaurant_Category rc ON r.id = rc.restaurant_id
     LEFT JOIN Category c ON rc.category_id = c.id`;
 
-  let whereClauses = [];
-  if (search) {
-    whereClauses.push(`r.name LIKE ?`);
-    params.push(`%${search}%`);
-  }
-  if (whereClauses.length > 0) {
-    query += ` WHERE ` + whereClauses.join(' AND ');
-  }
-
   query += `
-    GROUP BY r.id, a.latitude, a.longitude`;
+    GROUP BY r.id, r.name, a.latitude, a.longitude`;
 
   let havingClauses = [];
   if (lat != null && lon != null) {
@@ -100,6 +86,10 @@ export async function getRestaurantsCount({ lat, lon, category = null, search = 
   if (category && category !== 'all') {
     havingClauses.push(`FIND_IN_SET(?, categories) > 0`);
     params.push(category);
+  }
+  if (search) {
+    havingClauses.push(`(r.name COLLATE utf8mb4_general_ci LIKE ? OR categories COLLATE utf8mb4_general_ci LIKE ?)`);
+    params.push(`%${search}%`, `%${search}%`);
   }
 
   if (havingClauses.length > 0) {

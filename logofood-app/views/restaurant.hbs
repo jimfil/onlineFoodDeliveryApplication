@@ -131,3 +131,30 @@
         {{/each}}
     </div>
 </main>
+
+{{!-- Floating bottom cart bar --}}
+<div id="floatingCartBar" class="d-none position-fixed bottom-0 start-50 translate-middle-x mb-4 w-100 px-3" style="max-width: 500px; z-index: 1050;">
+    <a href="/cart" class="text-decoration-none">
+        <div class="card border-0 shadow-lg rounded-pill overflow-hidden text-white" style="background: linear-gradient(135deg, var(--secondary), #b3d87c);">
+            <div class="py-3 px-4 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-white bg-opacity-25 rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                        <i class="bi bi-cart-fill fs-5"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold lh-1 text-white" id="floatingCartText">Έχεις <span id="floatingCartCount">0</span> προϊόντα</div>
+                        <small class="text-white-50" style="font-size: 0.75rem;">Από το κατάστημα {{restaurant.name}}</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2 text-white">
+                    <span class="fw-bold fs-5" id="floatingCartTotal">0,00€</span>
+                    <i class="bi bi-arrow-right-short fs-4"></i>
+                </div>
+            </div>
+        </div>
+    </a>
+</div>
+
+<script>
+    window.initialCart = {{{json cart}}};
+</script>

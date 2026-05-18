@@ -578,6 +578,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ─── Restaurant Page Logic ──────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+    function updateFloatingCartBar(cart) {
+        const bar = document.getElementById('floatingCartBar');
+        if (!bar) return;
+
+        const totalCount = cart.reduce((s, i) => s + i.quantity, 0);
+        const totalPrice = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+
+        if (totalCount > 0) {
+            const countEl = document.getElementById('floatingCartCount');
+            const totalEl = document.getElementById('floatingCartTotal');
+            const textEl = document.getElementById('floatingCartText');
+
+            if (countEl) countEl.textContent = totalCount;
+            if (totalEl) {
+                totalEl.textContent = totalPrice.toFixed(2).replace('.', ',') + '€';
+            }
+            if (textEl) {
+                const itemWord = totalCount === 1 ? 'προϊόν' : 'προϊόντα';
+                textEl.innerHTML = `Έχεις <span id="floatingCartCount" class="fw-bold">${totalCount}</span> ${itemWord}`;
+            }
+            bar.classList.remove('d-none');
+        } else {
+            bar.classList.add('d-none');
+        }
+    }
+
+    if (window.initialCart) {
+        updateFloatingCartBar(window.initialCart);
+    }
+
     // Restaurant change quantity
     document.addEventListener('click', async (e) => {
         const btn = e.target.closest('.btn-restaurant-qty');
@@ -622,6 +652,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 }
             }
+
+            // Update floating cart bar!
+            updateFloatingCartBar(data.cart);
         } else {
             const data = await res.json();
             // Handle multi-restaurant conflict
