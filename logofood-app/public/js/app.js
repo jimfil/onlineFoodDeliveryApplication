@@ -106,6 +106,7 @@ async function refreshTrackOrdersPage() {
         const oldMain = document.querySelector('main');
         if (newMain && oldMain) {
             oldMain.replaceWith(newMain);
+            initRating(newMain);
         }
     } catch (err) {
         console.error('Track orders refresh failed:', err);
@@ -126,6 +127,65 @@ async function refreshManageOrdersPage() {
     } catch (err) {
         console.error('Manage orders refresh failed:', err);
     }
+}
+
+function initRating(container = document) {
+    const ratingForms = container.querySelectorAll('.rating-form');
+    ratingForms.forEach(form => {
+        const stars = form.querySelectorAll('.star-btn');
+        const input = form.querySelector('input[type="hidden"]');
+        const submitBtn = form.querySelector('button[type="submit"]');
+
+        stars.forEach(star => {
+            star.addEventListener('mouseover', () => {
+                const val = parseInt(star.dataset.value);
+                stars.forEach(s => {
+                    const sVal = parseInt(s.dataset.value);
+                    if (sVal <= val) {
+                        s.classList.replace('bi-star', 'bi-star-fill');
+                        s.classList.add('text-warning');
+                    } else {
+                        s.classList.replace('bi-star-fill', 'bi-star');
+                        s.classList.remove('text-warning');
+                    }
+                });
+            });
+
+            star.addEventListener('click', () => {
+                const val = star.dataset.value;
+                input.value = val;
+                submitBtn.classList.remove('d-none');
+                // Persist the selection
+                stars.forEach(s => {
+                    const sVal = parseInt(s.dataset.value);
+                    if (sVal <= parseInt(val)) {
+                        s.classList.replace('bi-star', 'bi-star-fill');
+                        s.classList.add('text-warning');
+                        s.setAttribute('data-selected', 'true');
+                    } else {
+                        s.classList.replace('bi-star-fill', 'bi-star');
+                        s.classList.remove('text-warning');
+                        s.removeAttribute('data-selected');
+                    }
+                });
+            });
+        });
+
+        const starContainer = form.querySelector('.rating-stars');
+        if (starContainer) {
+            starContainer.addEventListener('mouseleave', () => {
+                stars.forEach(s => {
+                    if (s.hasAttribute('data-selected')) {
+                        s.classList.replace('bi-star', 'bi-star-fill');
+                        s.classList.add('text-warning');
+                    } else {
+                        s.classList.replace('bi-star-fill', 'bi-star');
+                        s.classList.remove('text-warning');
+                    }
+                });
+            });
+        }
+    });
 }
 
 function processNotificationPayload(data) {
@@ -1080,60 +1140,5 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 3. Star Rating Logic
-    const ratingForms = document.querySelectorAll('.rating-form');
-    ratingForms.forEach(form => {
-        const stars = form.querySelectorAll('.star-btn');
-        const input = form.querySelector('input[type="hidden"]');
-        const submitBtn = form.querySelector('button[type="submit"]');
-
-        stars.forEach(star => {
-            star.addEventListener('mouseover', () => {
-                const val = parseInt(star.dataset.value);
-                stars.forEach(s => {
-                    const sVal = parseInt(s.dataset.value);
-                    if (sVal <= val) {
-                        s.classList.replace('bi-star', 'bi-star-fill');
-                        s.classList.add('text-warning');
-                    } else {
-                        s.classList.replace('bi-star-fill', 'bi-star');
-                        s.classList.remove('text-warning');
-                    }
-                });
-            });
-
-            star.addEventListener('click', () => {
-                const val = star.dataset.value;
-                input.value = val;
-                submitBtn.classList.remove('d-none');
-                // Persist the selection
-                stars.forEach(s => {
-                    const sVal = parseInt(s.dataset.value);
-                    if (sVal <= parseInt(val)) {
-                        s.classList.replace('bi-star', 'bi-star-fill');
-                        s.classList.add('text-warning');
-                        s.setAttribute('data-selected', 'true');
-                    } else {
-                        s.classList.replace('bi-star-fill', 'bi-star');
-                        s.classList.remove('text-warning');
-                        s.removeAttribute('data-selected');
-                    }
-                });
-            });
-        });
-
-        const starContainer = form.querySelector('.rating-stars');
-        if (starContainer) {
-            starContainer.addEventListener('mouseleave', () => {
-                stars.forEach(s => {
-                    if (s.hasAttribute('data-selected')) {
-                        s.classList.replace('bi-star', 'bi-star-fill');
-                        s.classList.add('text-warning');
-                    } else {
-                        s.classList.replace('bi-star-fill', 'bi-star');
-                        s.classList.remove('text-warning');
-                    }
-                });
-            });
-        }
-    });
+    initRating();
 });
