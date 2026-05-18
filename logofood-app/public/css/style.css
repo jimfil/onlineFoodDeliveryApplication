@@ -206,6 +206,24 @@ textarea {
 .restaurant-card {
     background: linear-gradient(to bottom, #ffffff, #f8f6ff);
     border: 1px solid rgba(124, 87, 199, 0.05) !important;
+    display: flex;
+    flex-direction: column;
+}
+
+.restaurant-card > a {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.restaurant-card .card-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.restaurant-card .card-body > .mt-auto {
+    margin-top: auto;
 }
 
 /* Restaurant Status Styling */
@@ -243,7 +261,7 @@ textarea {
 .restaurant-card-photo-wrapper,
 .menu-item-photo-wrapper {
     position: relative;
-    height: 120px;
+    height: 240px;
     overflow: hidden;
 }
 
@@ -259,6 +277,27 @@ textarea {
 .restaurant-card-photo-wrapper {
     border-top-left-radius: 1rem;
     border-top-right-radius: 1rem;
+}
+
+.restaurant-card .card-body {
+    padding: 1.5rem;
+}
+
+.restaurant-card .card-body > * + * {
+    margin-top: 1rem;
+}
+
+.restaurant-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.restaurant-card-meta-separator {
+    color: #6c757d;
+    font-weight: 600;
 }
 
 .menu-item-photo-wrapper {

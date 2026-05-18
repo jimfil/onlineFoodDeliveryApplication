@@ -13,8 +13,8 @@ const port = process.env.PORT || '3000';
 
 // Initialize DB categories before starting the server
 initializeCategories().then(() => {
-  const server = app.listen(port, '0.0.0.0', () => {
-    console.log(`LogoFood SSR running at http://0.0.0.0:${port}`);
+  const server = app.listen(port, 'localhost', () => {
+    console.log(`LogoFood SSR running at http://localhost:${port}`);
   });
 
   process.on('SIGTERM', () => {

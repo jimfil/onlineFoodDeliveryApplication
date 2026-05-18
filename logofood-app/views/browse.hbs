@@ -233,24 +233,32 @@
                             </div>
                         </h4>
                         {{#if categories}}
-                        <div class="mb-2 mt-2">
-                            {{#each categories}}
-                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle me-1 badge-m">{{this}}</span>
-                            {{/each}}
+                        <div class="restaurant-card-top-meta mb-2 d-flex flex-wrap align-items-center gap-2">
+                            <div class="restaurant-card-category-list">
+                                {{#each categories}}
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle me-1 badge-m">{{this}}</span>
+                                {{/each}}
+                                <span class="restaurant-card-meta-separator">·</span>
+                            </div>
+                            {{#if deliveryMinutes}}
+                            <div class="card-text text-muted restaurant-card-meta">
+                                <span>{{deliveryMinutes}}'</span>
+                                <span class="restaurant-card-meta-separator">·</span>
+                                <span>Ελάχιστη: {{formatPrice min_order_value}}</span>
+                            </div>
+                            {{/if}}
                         </div>
-                        {{/if}}
-                        <p class="card-text text-muted big mb-3">Ελάχιστη κατανάλωση: {{formatPrice min_order_value}}.
+                        {{else if deliveryMinutes}}
+                        <p class="card-text text-muted mb-2 restaurant-card-meta">
+                            <span>{{deliveryMinutes}}'</span>
+                            <span class="restaurant-card-meta-separator">·</span>
+                            <span>Ελάχιστη: {{formatPrice min_order_value}}</span>
                         </p>
+                        {{/if}}
                         {{#if outOfReach}}
-                        <div class="mb-3">
+                        <div class="mb-1">
                             <span class="badge bg-danger text-white">Εκτός εμβέλειας</span>
                         </div>
-                        {{else}}
-                        {{#if deliveryMinutes}}
-                        <div class="mb-3">
-                            <span class="badge bg-info text-dark">Παράδοση: ~{{deliveryMinutes}}'</span>
-                        </div>
-                        {{/if}}
                         {{/if}}
 
                         <div class="mt-auto">
