@@ -92,8 +92,10 @@
 
                         <div class="col-12">
                             <label for="contactPhone" class="form-label text-muted small fw-bold">Τηλέφωνο</label>
-                            <input type="tel" id="contactPhone" name="contactPhone" class="form-control" 
-                                   placeholder="69xxxxxxxx" value="{{userInput.contactPhone}}" required>
+                            <input type="tel" id="contactPhone" name="contactPhone" class="form-control"
+                                   placeholder="69xxxxxxxx" value="{{userInput.contactPhone}}" required
+                                   pattern="[0-9]{10}"
+                                   title="Πληκτρολογήστε 10 ψηφία. π.χ. 2610323926 ή 6912345678">
                             {{#if errors.contactPhone}}<div class="text-danger small mt-1">{{errors.contactPhone}}</div>{{/if}}
                         </div>
 

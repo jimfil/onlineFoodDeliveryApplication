@@ -16,7 +16,7 @@ const customerValidation = [
     if (value !== req.body.password) throw new Error('Οι κωδικοί δεν ταιριάζουν');
     return true;
   }),
-  body('contactPhone').trim().matches(/^[26]\d{9}$/).withMessage('Εισάγετε ένα έγκυρο τηλέφωνο επικοινωνίας (π.χ. 69... ή 210...)')
+  body('contactPhone').trim().matches(/^\d{10}$/).withMessage('Εισάγετε ένα έγκυρο τηλέφωνο 10 ψηφίων')
 ];
 
 const restaurantStep1Validation = [
@@ -33,7 +33,7 @@ const restaurantStep1Validation = [
 const restaurantStep2Validation = [
   body('businessName').trim().escape().notEmpty().withMessage('Η επωνυμία επιχείρησης είναι υποχρεωτική'),
   body('afm').trim().isLength({ min: 9, max: 9 }).withMessage('Το ΑΦΜ πρέπει να έχει 9 ψηφία').isNumeric().withMessage('Το ΑΦΜ πρέπει να περιέχει μόνο αριθμούς'),
-  body('phone').trim().matches(/^[26]\d{9}$/).withMessage('Εισάγετε ένα έγκυρο τηλέφωνο επικοινωνίας'),
+  body('phone').trim().matches(/^\d{10}$/).withMessage('Εισάγετε ένα έγκυρο τηλέφωνο 10 ψηφίων'),
   body('estimatedPreparationTime').trim().isNumeric().withMessage('Ο χρόνος προετοιμασίας πρέπει να είναι αριθμός'),
   body('minOrderValue').optional().isFloat({ min: 0 }).withMessage('Η ελάχιστη παραγγελία πρέπει να είναι θετικός αριθμός'),
   body('openingTime').notEmpty().withMessage('Η ώρα έναρξης είναι υποχρεωτική'),

@@ -131,8 +131,7 @@ export async function checkout(req, res) {
   let addressId = req.body.addressId;
   let customerId = req.session.user ? req.session.user.id : null;
   const { floor, comments, phone } = req.body;
-
-
+  const phoneRegex = /^\d{10}$/;
 
   try {
     const pool = (await import('../model/db.mjs')).default;
@@ -148,6 +147,11 @@ export async function checkout(req, res) {
 
       if (!street || !streetNumber || !floor || !phone) {
         req.flash('error', 'Συμπληρώστε την οδό, τον αριθμό, τον όροφο και το τηλέφωνο για την παράδοση.');
+        return res.redirect('/cart');
+      }
+
+      if (!phoneRegex.test(phone)) {
+        req.flash('error', 'Το τηλέφωνο πρέπει να είναι 10 ψηφία.');
         return res.redirect('/cart');
       }
 

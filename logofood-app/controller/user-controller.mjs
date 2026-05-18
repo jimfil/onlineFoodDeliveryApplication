@@ -4,6 +4,7 @@
  */
 import * as userModel from '../model/user-model.mjs';
 import * as orderModel from '../model/order-model.mjs';
+import { validationResult } from 'express-validator';
 
 /** GET /account */
 export async function showAccount(req, res) {
@@ -19,6 +20,12 @@ export async function showAccount(req, res) {
 
 /** POST /account/profile */
 export async function updateProfile(req, res) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.flash('error', errors.array()[0].msg);
+    return res.redirect('/account');
+  }
+
   const { firstName, lastName, contactPhone } = req.body;
   try {
     await userModel.updateProfile(req.session.user.id, { firstName, lastName, contactPhone });

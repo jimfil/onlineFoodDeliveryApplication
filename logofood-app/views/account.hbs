@@ -32,8 +32,9 @@
                         </div>
                         <div class="col-md-4">
                             <label for="contactPhone" class="form-label text-muted small fw-bold">Τηλέφωνο</label>
-                            <input type="tel" id="contactPhone" name="contactPhone" class="form-control" 
-                                   value="{{user.contactPhone}}" required>
+                            <input type="tel" id="contactPhone" name="contactPhone" class="form-control"
+                                   value="{{user.contactPhone}}" required pattern="[0-9]{10}" minlength="10" maxlength="10"
+                                   title="Πληκτρολογήστε 10 ψηφία χωρίς κενά ή σύμβολα, π.χ. 2101234567">
                         </div>
                         <div class="col-12 mt-3 text-end">
                             <button type="submit" class="btn btn-menu fw-bold px-4">Αποθήκευση</button>
