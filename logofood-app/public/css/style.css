@@ -628,3 +628,9 @@ footer p {
     font-size: 0.5rem;
     padding: 0.2em 0.4em;
 }
+
+/* Space for track-orders link in header */
+.custom-header a[href="/track-orders"] {
+    margin-left: 8px;
+    margin-right: 8px !important;
+}

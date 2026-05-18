@@ -17,6 +17,173 @@ async function refreshCartBadge() {
 // Run on every page load
 refreshCartBadge();
 
+const notificationState = {
+    role: null,
+    pendingOrderCount: null,
+    orderStatusById: {},
+    initialized: false
+};
+
+function createNotificationElement() {
+    let container = document.getElementById('liveNotificationContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'liveNotificationContainer';
+        container.className = 'position-fixed top-0 end-0 p-3';
+        container.style.zIndex = '1100';
+        document.body.appendChild(container);
+    }
+    return container;
+}
+
+function showLiveNotification(message, variant = 'info') {
+    const container = createNotificationElement();
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${variant} alert-dismissible fade show shadow-sm`;
+    alert.style.minWidth = '280px';
+    alert.style.maxWidth = '360px';
+    alert.innerHTML = `
+        <div>${message}</div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    container.appendChild(alert);
+    setTimeout(() => {
+        alert.classList.remove('show');
+        alert.classList.add('hide');
+        setTimeout(() => alert.remove(), 300);
+    }, 6000);
+}
+
+function updateTrackOrdersBadge(hasPending) {
+    document.querySelectorAll('a[href="/track-orders"]').forEach(link => {
+        const badge = link.querySelector('.badge-tiny');
+        if (hasPending) {
+            if (!badge) {
+                const dot = document.createElement('span');
+                dot.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger badge-tiny';
+                dot.innerHTML = '&nbsp;';
+                link.appendChild(dot);
+            }
+        } else if (badge) {
+            badge.remove();
+        }
+    });
+}
+
+function showRestaurantNewOrderBanner() {
+    if (document.getElementById('restaurantNewOrderAlert')) return;
+    const main = document.querySelector('main');
+    if (!main) return;
+    if (main.querySelector('a.alert-link[href="/manage/orders"]')) return;
+
+    const banner = document.createElement('div');
+    banner.id = 'restaurantNewOrderAlert';
+    banner.className = 'alert alert-warning alert-dismissible fade show mb-4';
+    banner.role = 'alert';
+    banner.innerHTML = `
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        Έχετε νέες εκκρεμείς παραγγελίες! <a href="/manage/orders" class="alert-link">Δείτε τις παραγγελίες</a>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+
+    main.insertBefore(banner, main.firstChild);
+}
+
+function buildOrderMap(orders) {
+    return orders.reduce((map, order) => {
+        map[order.id] = order.status;
+        return map;
+    }, {});
+}
+
+async function refreshTrackOrdersPage() {
+    if (window.location.pathname !== '/track-orders') return;
+    try {
+        const html = await fetch('/track-orders', { cache: 'no-store' }).then(r => r.text());
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newMain = doc.querySelector('main');
+        const oldMain = document.querySelector('main');
+        if (newMain && oldMain) {
+            oldMain.replaceWith(newMain);
+        }
+    } catch (err) {
+        console.error('Track orders refresh failed:', err);
+    }
+}
+
+async function refreshManageOrdersPage() {
+    if (window.location.pathname !== '/manage/orders') return;
+    try {
+        const html = await fetch('/manage/orders', { cache: 'no-store' }).then(r => r.text());
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newMain = doc.querySelector('main');
+        const oldMain = document.querySelector('main');
+        if (newMain && oldMain) {
+            oldMain.replaceWith(newMain);
+        }
+    } catch (err) {
+        console.error('Manage orders refresh failed:', err);
+    }
+}
+
+async function refreshNotifications() {
+    try {
+        const response = await fetch('/api/notifications', { cache: 'no-store' });
+        if (!response.ok) return;
+        const data = await response.json();
+
+        if (notificationState.role === null) {
+            notificationState.role = data.role;
+        }
+
+        updateTrackOrdersBadge(data.hasPendingOrders);
+
+        if (data.role === 'CUSTOMER' || data.role === 'GUEST') {
+            const currentMap = buildOrderMap(data.orders || []);
+            const changedOrders = [];
+            Object.entries(currentMap).forEach(([orderId, status]) => {
+                if (notificationState.orderStatusById[orderId] && notificationState.orderStatusById[orderId] !== status) {
+                    changedOrders.push({ orderId, status });
+                }
+            });
+
+            if (notificationState.initialized && changedOrders.length > 0) {
+                changedOrders.forEach(({ orderId, status }) => {
+                    showLiveNotification(`Η κατάσταση της παραγγελίας #${orderId} άλλαξε σε ${status}.`, 'success');
+                });
+                await refreshTrackOrdersPage();
+            }
+
+            notificationState.orderStatusById = currentMap;
+        }
+
+        if (data.role === 'RESTAURANT') {
+            const currentCount = data.pendingOrderCount || 0;
+            if (notificationState.pendingOrderCount !== null && currentCount > notificationState.pendingOrderCount) {
+                if (window.location.pathname.startsWith('/manage')) {
+                    showRestaurantNewOrderBanner();
+                } else {
+                    showLiveNotification('Νέα παραγγελία έφτασε στο εστιατόριό σας!', 'success');
+                }
+                if (window.location.pathname === '/manage/orders') {
+                    await refreshManageOrdersPage();
+                }
+            }
+            notificationState.pendingOrderCount = currentCount;
+        }
+
+        notificationState.initialized = true;
+    } catch (error) {
+        console.error('Notification poll failed:', error);
+    } finally {
+        setTimeout(refreshNotifications, 8000);
+    }
+}
+
+refreshNotifications();
+
 // ─── Leaflet map helper (from existing utils.js) ──────────────────────────────
 function extractAddressParts(address = {}) {
     return {

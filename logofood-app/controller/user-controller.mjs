@@ -103,6 +103,55 @@ export async function renderTrackOrders(req, res) {
   }
 }
 
+/** GET /api/notifications */
+export async function getNotifications(req, res) {
+  try {
+    const payload = {
+      role: 'GUEST',
+      hasPendingOrders: false,
+      pendingOrderCount: 0,
+      orders: []
+    };
+
+    if (req.session.user) {
+      if (req.session.user.accountType === 'CUSTOMER') {
+        payload.role = 'CUSTOMER';
+        const orders = await orderModel.getOrdersByCustomerId(req.session.user.id);
+        payload.orders = orders.map(order => ({
+          id: order.id,
+          status: order.status,
+          restaurantName: order.restaurantName,
+          created_at: order.created_at,
+          completed_at: order.completed_at
+        }));
+        payload.pendingOrderCount = orders.filter(order => order.status === 'PENDING').length;
+        payload.hasPendingOrders = payload.pendingOrderCount > 0;
+      } else if (req.session.user.accountType === 'RESTAURANT') {
+        payload.role = 'RESTAURANT';
+        payload.pendingOrderCount = await orderModel.countPendingOrdersForRestaurant(req.session.user.id);
+        payload.hasPendingOrders = payload.pendingOrderCount > 0;
+      }
+    } else if (req.session.guestOrderIds && req.session.guestOrderIds.length > 0) {
+      payload.role = 'GUEST';
+      const orders = await orderModel.getOrdersByIds(req.session.guestOrderIds);
+      payload.orders = orders.map(order => ({
+        id: order.id,
+        status: order.status,
+        restaurantName: order.restaurantName,
+        created_at: order.created_at,
+        completed_at: order.completed_at
+      }));
+      payload.pendingOrderCount = await orderModel.countPendingOrdersForGuest(req.session.guestOrderIds);
+      payload.hasPendingOrders = payload.pendingOrderCount > 0;
+    }
+
+    res.json(payload);
+  } catch (err) {
+    console.error('Notifications error:', err);
+    res.status(500).json({ error: 'Αποτυχία λήψης ειδοποιήσεων.' });
+  }
+}
+
 /** POST /orders/:id/rate */
 export async function rateOrder(req, res) {
   const { id } = req.params;

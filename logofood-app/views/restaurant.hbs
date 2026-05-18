@@ -45,10 +45,8 @@
                     ⭐ {{roundStars restaurant.rating}}/5 ({{restaurant.rating_count}})
                     {{/if}}
                 </span>
-                <span class="badge bg-primary bg-opacity-10 text-primary p-2 px-3 rounded-pill fs-6">🕒 Προετοιμασία:
-                    {{restaurant.estimated_preparation_time}}'</span>
                 {{#if restaurant.deliveryMinutes}}
-                <span class="badge bg-info bg-opacity-10 text-dark p-2 px-3 rounded-pill fs-6">🛵 Παράδοση: ~{{restaurant.deliveryMinutes}}'</span>
+                <span class="badge bg-info bg-opacity-10 text-dark p-2 px-3 rounded-pill fs-6">🛵 Παράδοση: {{restaurant.deliveryMinutes}}'</span>
                 {{/if}}
                 {{#if restaurant.min_order_value}}
                 <span class="badge bg-primary bg-opacity-10 text-primary p-2 px-3 rounded-pill fs-6">💰 Ελάχιστη

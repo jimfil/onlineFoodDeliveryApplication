@@ -201,22 +201,43 @@ export async function updateOrderStatus(orderId, restaurantUserId, status) {
   return rows.affectedRows > 0;
 }
 
-/** Check if customer has any pending orders. */
-export async function hasPendingOrdersForCustomer(customerId) {
+/** Count pending orders for a customer. */
+export async function countPendingOrdersForCustomer(customerId) {
   const [rows] = await pool.execute(
     `SELECT COUNT(*) AS count FROM Order_table WHERE customer_id = ? AND status = 'PENDING'`,
     [customerId]
   );
-  return rows[0].count > 0;
+  return rows[0].count;
 }
 
-/** Check if restaurant has any pending orders. */
-export async function hasPendingOrdersForRestaurant(restaurantId) {
+/** Count pending orders for a restaurant. */
+export async function countPendingOrdersForRestaurant(restaurantId) {
   const [rows] = await pool.execute(
     `SELECT COUNT(*) AS count FROM Order_table WHERE restaurant_id = ? AND status = 'PENDING'`,
     [restaurantId]
   );
-  return rows[0].count > 0;
+  return rows[0].count;
+}
+
+/** Count pending orders for guest IDs. */
+export async function countPendingOrdersForGuest(orderIds) {
+  if (!orderIds || orderIds.length === 0) return 0;
+  const placeholders = orderIds.map(() => '?').join(',');
+  const [rows] = await pool.execute(
+    `SELECT COUNT(*) AS count FROM Order_table WHERE id IN (${placeholders}) AND status = 'PENDING'`,
+    orderIds
+  );
+  return rows[0].count;
+}
+
+/** Check if customer has any pending orders. */
+export async function hasPendingOrdersForCustomer(customerId) {
+  return (await countPendingOrdersForCustomer(customerId)) > 0;
+}
+
+/** Check if restaurant has any pending orders. */
+export async function hasPendingOrdersForRestaurant(restaurantId) {
+  return (await countPendingOrdersForRestaurant(restaurantId)) > 0;
 }
 
 /** Get full order details for specific order IDs (for guests). */

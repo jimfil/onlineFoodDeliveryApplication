@@ -155,7 +155,7 @@ export async function checkout(req, res) {
       deliveryLat = req.body.latitude ? parseFloat(req.body.latitude) : null;
       deliveryLon = req.body.longitude ? parseFloat(req.body.longitude) : null;
 
-      const guestComments = comments ? `Τηλέφωνο: ${phone} | Σχόλια: ${comments}` : `Τηλέφωνο: ${phone}`;
+      const guestComments = comments ? `${comments}| Τηλέφωνο: ${phone}` : `Τηλέφωνο: ${phone}`;
 
       const [addrRes] = await pool.execute(
         `INSERT INTO Address (street, street_number, zip_code, floor, comments, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?)`,
