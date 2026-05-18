@@ -751,38 +751,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ─── Manage Restaurant Page Logic ───────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-    // Tab Switching Logic
-    function switchManageTab(tabId) {
-        // Hide all sections
-        ['profile', 'menu', 'icon'].forEach(id => {
-            const section = document.getElementById('section-' + id);
-            if (section) section.classList.add('d-none');
-            const nav = document.getElementById('nav-' + id);
-            if (nav) nav.classList.remove('active');
+    // Tab Switching Logic (only on main management dashboard page)
+    if (document.getElementById('section-profile')) {
+        function switchManageTab(tabId) {
+            // Hide all sections
+            ['profile', 'menu', 'icon'].forEach(id => {
+                const section = document.getElementById('section-' + id);
+                if (section) section.classList.add('d-none');
+                const nav = document.getElementById('nav-' + id);
+                if (nav) nav.classList.remove('active');
+            });
+
+            // Show target section and set active
+            const targetSection = document.getElementById('section-' + tabId);
+            if (targetSection) targetSection.classList.remove('d-none');
+            const targetNav = document.getElementById('nav-' + tabId);
+            if (targetNav) targetNav.classList.add('active');
+            
+            // Save state
+            sessionStorage.setItem('manageRestaurantActiveTab', tabId);
+        }
+
+        // Attach click events to nav tab buttons
+        document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchManageTab(btn.dataset.tab);
+            });
         });
 
-        // Show target section and set active
-        const targetSection = document.getElementById('section-' + tabId);
-        if (targetSection) targetSection.classList.remove('d-none');
-        const targetNav = document.getElementById('nav-' + tabId);
-        if (targetNav) targetNav.classList.add('active');
-        
-        // Save state
-        sessionStorage.setItem('manageRestaurantActiveTab', tabId);
-    }
-
-    // Attach click events to nav tab buttons
-    document.querySelectorAll('.nav-tab-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            switchManageTab(btn.dataset.tab);
-        });
-    });
-
-    // Restore active tab on load
-    const activeTab = sessionStorage.getItem('manageRestaurantActiveTab');
-    if (activeTab && document.getElementById('nav-' + activeTab)) {
-        switchManageTab(activeTab);
+        // Restore active tab on load
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlTab = urlParams.get('tab');
+        if (urlTab && document.getElementById('nav-' + urlTab)) {
+            switchManageTab(urlTab);
+        } else {
+            const activeTab = sessionStorage.getItem('manageRestaurantActiveTab');
+            if (activeTab && document.getElementById('nav-' + activeTab)) {
+                switchManageTab(activeTab);
+            }
+        }
     }
 
     // New Category Toggle

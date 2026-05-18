@@ -176,8 +176,9 @@ export async function updateCategories(req, res) {
 /** GET /manage/orders — restaurant order management page */
 export async function showManageOrders(req, res) {
   try {
+    const restaurant = await restaurantModel.getRestaurantByUserId(req.session.user.id);
     const orders = await orderModel.getOrdersByRestaurantDetailed(req.session.user.id);
-    res.render('manage-orders', { orders });
+    res.render('manage-orders', { orders, restaurant });
   } catch (err) {
     console.error('Manage orders error:', err);
     res.render('error', { message: 'Αδυναμία φόρτωσης παραγγελιών.' });
