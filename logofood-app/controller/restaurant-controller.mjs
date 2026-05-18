@@ -108,6 +108,22 @@ export async function deleteProduct(req, res) {
   res.redirect('/manage');
 }
 
+/** POST /manage/products/:id/edit — edit a product */
+export async function editProduct(req, res) {
+  const productId = req.params.id;
+  const { name, price, description, categoryId, newCategoryName, imageUrl } = req.body;
+  try {
+    await restaurantModel.updateProduct(req.session.user.id, productId, {
+      name, price, description, categoryId, newCategoryName, imageUrl
+    });
+    req.flash('success', 'Το προϊόν ενημερώθηκε.');
+  } catch (err) {
+    console.error('Edit product error:', err);
+    req.flash('error', 'Σφάλμα επεξεργασίας προϊόντος: ' + err.message);
+  }
+  res.redirect('/manage');
+}
+
 export async function updateSettings(req, res) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {

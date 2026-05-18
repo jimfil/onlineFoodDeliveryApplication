@@ -7,7 +7,7 @@
 // ─── Cart badge ───────────────────────────────────────────────────────────────
 async function refreshCartBadge() {
     try {
-        const res  = await fetch('/cart/count');
+        const res = await fetch('/cart/count');
         const data = await res.json();
         const badge = document.getElementById('cartBadge');
         if (badge) badge.textContent = data.count;
@@ -273,7 +273,7 @@ initNotificationStream();
 function extractAddressParts(address = {}) {
     return {
         street: address.road || address.pedestrian || address.footway ||
-                address.residential || address.path || '',
+            address.residential || address.path || '',
         number: address.house_number || address.housenumber || '',
         zipCode: (address.postcode || '').replace(/\s+/g, '')
     };
@@ -281,7 +281,7 @@ function extractAddressParts(address = {}) {
 
 async function reverseGeocode(lat, lon) {
     try {
-        const res  = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`);
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`);
         const data = await res.json();
         return data.address;
     } catch (err) {
@@ -293,7 +293,7 @@ async function reverseGeocode(lat, lon) {
 async function searchAddresses(query) {
     if (!query || query.trim().length < 3) return [];
     try {
-        const res  = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(query)}&countrycodes=gr&addressdetails=1&limit=5`);
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(query)}&countrycodes=gr&addressdetails=1&limit=5`);
         const data = await res.json();
         return data.map(item => ({
             displayName: item.display_name,
@@ -336,7 +336,7 @@ function initLeafletMap(containerId, onLocationSelected, options = {}) {
             map.setView([latitude, longitude], 16);
             marker.setLatLng([latitude, longitude]);
             await notify(latitude, longitude);
-        }, () => {});
+        }, () => { });
     }
 
     marker.on('dragend', async () => {
@@ -451,7 +451,7 @@ function initAutoGeocode(streetId, numberId, zipId, latId, lonId, formId) {
 }
 
 // ─── Hide/Show header on scroll ────────────────────────────────────────────────
-(function() {
+(function () {
     const header = document.querySelector('.custom-header');
     if (!header) return;
 
@@ -462,16 +462,16 @@ function initAutoGeocode(streetId, numberId, zipId, latId, lonId, formId) {
         if (scrollDelay) return;
         scrollDelay = setTimeout(() => {
             const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
-            
+
             // Scrolling down: hide header
             if (currentScroll > lastScrollTop && currentScroll > 60) {
                 header.classList.add('header-hidden');
-            } 
+            }
             // Scrolling up: show header
             else if (currentScroll < lastScrollTop) {
                 header.classList.remove('header-hidden');
             }
-            
+
             lastScrollTop = currentScroll;
             scrollDelay = null;
         }, 50);
@@ -612,7 +612,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', async (e) => {
         const btn = e.target.closest('.btn-restaurant-qty');
         if (!btn) return;
-        
+
         const productId = btn.dataset.productId;
         const delta = parseInt(btn.dataset.delta, 10);
         const name = btn.dataset.name;
@@ -684,7 +684,7 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
     // Toggle Password Visibility (used in register, login, etc)
     document.querySelectorAll('#togglePassword').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             const passwordInput = document.getElementById('password');
             if (!passwordInput) return;
             const icon = this.querySelector('i');
@@ -700,7 +700,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Toggle Confirm Password Visibility
     document.querySelectorAll('#toggleConfirmPassword').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             const confirmInput = document.getElementById('confirmPassword');
             if (!confirmInput) return;
             const icon = this.querySelector('i');
@@ -720,7 +720,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Toggle Register Map
     const toggleRegisterMapBtn = document.getElementById('toggleRegisterMap');
     if (toggleRegisterMapBtn) {
-        toggleRegisterMapBtn.addEventListener('click', function() {
+        toggleRegisterMapBtn.addEventListener('click', function () {
             const container = document.getElementById('registerMapContainer');
             if (!container) return;
             container.classList.toggle('d-none');
@@ -767,7 +767,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (targetSection) targetSection.classList.remove('d-none');
             const targetNav = document.getElementById('nav-' + tabId);
             if (targetNav) targetNav.classList.add('active');
-            
+
             // Save state
             sessionStorage.setItem('manageRestaurantActiveTab', tabId);
         }
@@ -802,10 +802,76 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Product Edit Logic
+    const productForm = document.getElementById('productForm');
+    const productFormTitle = document.getElementById('productFormTitle');
+    const productIdInput = document.getElementById('productIdInput');
+    const productSubmitBtn = document.getElementById('productSubmitBtn');
+    const productSubmitIcon = document.getElementById('productSubmitIcon');
+    const productSubmitText = document.getElementById('productSubmitText');
+    const productCancelBtn = document.getElementById('productCancelBtn');
+
+    if (productForm && productFormTitle && productSubmitBtn && productCancelBtn) {
+        // Field inputs
+        const nameInput = productForm.querySelector('input[name="name"]');
+        const categorySelect = document.getElementById('categorySelect');
+        const priceInput = productForm.querySelector('input[name="price"]');
+        const descriptionInput = productForm.querySelector('textarea[name="description"]');
+        const imageUrlInput = productForm.querySelector('input[name="imageUrl"]');
+        const newCategoryWrapper = document.getElementById('newCategoryWrapper');
+
+        // Edit button click handler
+        document.querySelectorAll('.btn-edit-product').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const { id, name, price, categoryId, description, imageUrl } = btn.dataset;
+
+                // Update form state to Edit Mode
+                productForm.action = `/manage/products/${id}/edit`;
+                productIdInput.value = id;
+                productFormTitle.textContent = 'Επεξεργασία Προϊόντος';
+
+                // Set fields
+                nameInput.value = name || '';
+                priceInput.value = price || '';
+                descriptionInput.value = description || '';
+                imageUrlInput.value = imageUrl || '';
+
+                // Select category
+                categorySelect.value = categoryId || '';
+                if (newCategoryWrapper) newCategoryWrapper.classList.add('d-none');
+
+                // Update submit/cancel buttons
+                productSubmitIcon.className = 'bi bi-save me-2';
+                productSubmitText.textContent = 'Αποθήκευση';
+                productCancelBtn.classList.remove('d-none');
+
+                // Scroll form into view smoothly
+                productForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+        });
+
+        // Cancel button click handler
+        productCancelBtn.addEventListener('click', () => {
+            // Reset form state to Add Mode
+            productForm.action = '/manage/products';
+            productIdInput.value = '';
+            productFormTitle.textContent = 'Προσθήκη Προϊόντος';
+
+            // Reset fields
+            productForm.reset();
+            if (newCategoryWrapper) newCategoryWrapper.classList.add('d-none');
+
+            // Reset buttons
+            productSubmitIcon.className = 'bi bi-plus-lg me-2';
+            productSubmitText.textContent = 'Προσθήκη στο Μενού';
+            productCancelBtn.classList.add('d-none');
+        });
+    }
+
     // Menu Table Search
     const menuSearch = document.getElementById('menuSearch');
     if (menuSearch) {
-        menuSearch.addEventListener('input', function(e) {
+        menuSearch.addEventListener('input', function (e) {
             const query = e.target.value.toLowerCase();
             document.querySelectorAll('.product-row').forEach(row => {
                 const nameEl = row.querySelector('.product-name');
@@ -834,7 +900,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const type = btn.dataset.type;
             const id = btn.dataset.id;
             const direction = parseInt(btn.dataset.dir, 10);
-            
+
             const res = await fetch('/manage/reorder', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -900,7 +966,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Toggle Update Map (for guests on browse page)
     const toggleUpdateMapBtn = document.getElementById('toggleUpdateMap');
     if (toggleUpdateMapBtn) {
-        toggleUpdateMapBtn.addEventListener('click', function() {
+        toggleUpdateMapBtn.addEventListener('click', function () {
             const container = document.getElementById('updateMapContainer');
             if (!container) return;
             container.classList.toggle('d-none');
@@ -940,7 +1006,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Toggle Browse Map
     const toggleBrowseMapBtn = document.getElementById('toggleBrowseMap');
     if (toggleBrowseMapBtn) {
-        toggleBrowseMapBtn.addEventListener('click', function() {
+        toggleBrowseMapBtn.addEventListener('click', function () {
             const container = document.getElementById('browseMapContainer');
             if (!container) return;
             container.classList.toggle('d-none');
@@ -989,7 +1055,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Toggle Cart Map (for guests on cart page)
     const toggleCartMapBtn = document.getElementById('toggleCartMap');
     if (toggleCartMapBtn) {
-        toggleCartMapBtn.addEventListener('click', function() {
+        toggleCartMapBtn.addEventListener('click', function () {
             const container = document.getElementById('cartMapContainer');
             if (!container) return;
             container.classList.toggle('d-none');
@@ -1032,28 +1098,28 @@ document.addEventListener('DOMContentLoaded', () => {
     function applyFilters() {
         const searchInput = document.getElementById('searchRestaurant');
         const query = searchInput ? searchInput.value.trim() : '';
-        
+
         const url = new URL(window.location.href);
         // reset to page 1 on filter change
         url.searchParams.delete('page');
-        
+
         if (selectedCategory && selectedCategory !== 'all') {
             url.searchParams.set('category', selectedCategory);
         } else {
             url.searchParams.delete('category');
         }
-        
+
         if (query) {
             url.searchParams.set('search', query);
         } else {
             url.searchParams.delete('search');
         }
-        
+
         window.location.href = url.toString();
     }
 
     document.querySelectorAll('.btn-select-category').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             if (this.classList.contains('active')) {
                 if (selectedCategory !== 'all') {
                     selectedCategory = 'all';
@@ -1068,7 +1134,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const searchRestaurant = document.getElementById('searchRestaurant');
     if (searchRestaurant) {
-        searchRestaurant.addEventListener('keyup', function(e) {
+        searchRestaurant.addEventListener('keyup', function (e) {
             if (e.key === 'Enter') {
                 applyFilters();
             }
@@ -1082,7 +1148,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const scrollLeftBtn = document.getElementById('scrollLeftBtn');
     const scrollRightBtn = document.getElementById('scrollRightBtn');
     const categoryScroll = document.querySelector('.category-scroll');
-    
+
     if (scrollLeftBtn && scrollRightBtn && categoryScroll) {
         scrollLeftBtn.addEventListener('click', () => {
             categoryScroll.scrollBy({ left: -200, behavior: 'smooth' });
@@ -1094,7 +1160,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ─── Generic Handlers ───────────────────────────────────────────────────────
-document.addEventListener('click', function(e) {
+document.addEventListener('click', function (e) {
     const confirmBtn = e.target.closest('.btn-confirm');
     if (confirmBtn) {
         const msg = confirmBtn.getAttribute('data-confirm') || 'Είστε σίγουροι;';
@@ -1109,19 +1175,19 @@ document.addEventListener('DOMContentLoaded', () => {
     initAutoGeocode('accountStreet', 'accountNumber', 'accountZip', 'accountLatitude', 'accountLongitude', 'addAddressForm');
     initAutoGeocode('editStreet', 'editNumber', 'editZip', 'editLatitude', 'editLongitude', 'editAddressForm');
     // 1. Edit Address Flow
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         const btn = e.target.closest('.edit-address-btn');
         if (btn) {
             const id = btn.dataset.id;
             const form = document.getElementById('editAddressForm');
             if (!form) return;
             form.action = `/account/addresses/${id}/edit`;
-            
+
             const setVal = (id, val) => {
                 const el = document.getElementById(id);
                 if (el) el.value = val;
             };
-            
+
             setVal('editStreet', btn.dataset.street || '');
             setVal('editNumber', btn.dataset.number || '');
             setVal('editZip', btn.dataset.zip || '');
@@ -1129,7 +1195,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setVal('editComments', btn.dataset.comments || '');
             setVal('editLatitude', btn.dataset.lat || '');
             setVal('editLongitude', btn.dataset.lon || '');
-            
+
             const modalEl = document.getElementById('editAddressModal');
             if (modalEl && window.bootstrap) {
                 const modal = new bootstrap.Modal(modalEl);
@@ -1141,7 +1207,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. Map Toggle
     const toggleAccountMapBtn = document.getElementById('toggleAccountMap');
     if (toggleAccountMapBtn) {
-        toggleAccountMapBtn.addEventListener('click', function() {
+        toggleAccountMapBtn.addEventListener('click', function () {
             const container = document.getElementById('accountMapContainer');
             if (!container) return;
             container.classList.toggle('d-none');

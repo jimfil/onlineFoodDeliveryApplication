@@ -16,6 +16,7 @@ const settingsValidation = [
 router.get ('/manage',                        requireLogin, requireRestaurant, controller.showManage);
 router.post('/manage/products',               requireLogin, requireRestaurant, controller.addProduct);
 router.post('/manage/products/:id/delete',    requireLogin, requireRestaurant, controller.deleteProduct);
+router.post('/manage/products/:id/edit',      requireLogin, requireRestaurant, controller.editProduct);
 router.post('/manage/settings',               requireLogin, requireRestaurant, settingsValidation, controller.updateSettings);
 router.post('/manage/categories',             requireLogin, requireRestaurant, controller.updateCategories);
 router.post('/manage/reorder',                requireLogin, requireRestaurant, controller.reorder);

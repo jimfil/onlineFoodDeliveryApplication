@@ -180,11 +180,12 @@
                 </div>
 
                 <div class="row g-4">
-                    {{!-- Add Product Column --}}
+                    {{!-- Add/Edit Product Column --}}
                     <div class="col-lg-4">
                         <div class="glass-card">
-                            <h5 class="fw-bold mb-4 text-primary">Προσθήκη Προϊόντος</h5>
-                            <form method="POST" action="/manage/products">
+                            <h5 class="fw-bold mb-4 text-primary" id="productFormTitle">Προσθήκη Προϊόντος</h5>
+                            <form method="POST" action="/manage/products" id="productForm">
+                                <input type="hidden" name="productId" id="productIdInput">
                                 <div class="mb-3">
                                     <label class="form-label">Όνομα Προϊόντος</label>
                                     <input type="text" name="name" class="form-control"
@@ -223,8 +224,13 @@
                                     <input type="url" name="imageUrl" class="form-control" placeholder="https://...">
                                 </div>
 
-                                <button type="submit" class="btn btn-dashboard-submit w-100">
-                                    <i class="bi bi-plus-lg me-2"></i>Προσθήκη στο Μενού
+                                <button type="submit" class="btn btn-dashboard-submit w-100" id="productSubmitBtn">
+                                    <i class="bi bi-plus-lg me-2" id="productSubmitIcon"></i><span
+                                        id="productSubmitText">Προσθήκη στο Μενού</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary w-100 mt-2 d-none"
+                                    id="productCancelBtn">
+                                    Ακύρωση
                                 </button>
                             </form>
                         </div>
@@ -282,13 +288,24 @@
                                                 </div>
                                             </td>
                                             <td class="text-end">
-                                                <form method="POST" action="/manage/products/{{id}}/delete">
-                                                    <button type="submit"
-                                                        class="btn btn-light btn-sm rounded-circle p-1 d-flex align-items-center justify-content-center border shadow-sm text-danger btn-circle-sm"
-                                                        onclick="return confirm('Διαγραφή;')">
-                                                        <i class="bi bi-trash3-fill small"></i>
+                                                <div class="d-flex align-items-center justify-content-end gap-2">
+                                                    <button type="button"
+                                                        class="btn btn-light btn-sm rounded-circle p-1 d-flex align-items-center justify-content-center border shadow-sm text-primary btn-circle-sm btn-edit-product"
+                                                        data-id="{{id}}" data-name="{{name}}" data-price="{{price}}"
+                                                        data-category-id="{{category_id}}"
+                                                        data-description="{{description}}"
+                                                        data-image-url="{{image_url}}" title="Επεξεργασία">
+                                                        <i class="bi bi-pencil-fill small"></i>
                                                     </button>
-                                                </form>
+                                                    <form method="POST" action="/manage/products/{{id}}/delete"
+                                                        class="m-0">
+                                                        <button type="submit"
+                                                            class="btn btn-light btn-sm rounded-circle p-1 d-flex align-items-center justify-content-center border shadow-sm text-danger btn-circle-sm"
+                                                            onclick="return confirm('Διαγραφή;')">
+                                                            <i class="bi bi-trash3-fill small"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             </td>
                                         </tr>
                                         {{/each}}

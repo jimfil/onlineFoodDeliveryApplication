@@ -253,6 +253,64 @@ export async function deleteProduct(restaurantId, productId) {
     if (conn) conn.release();
   }
 }
+
+/** Update a product for a restaurant. Handles new category creation and updating mapping. */
+export async function updateProduct(restaurantId, productId, { name, price, description, categoryId, newCategoryName, imageUrl }) {
+  const [existing] = await pool.execute(
+    'SELECT id FROM Product WHERE id = ? AND restaurant_id = ?',
+    [productId, restaurantId]
+  );
+  if (existing.length === 0) throw new Error('Product not found or access denied');
+
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    await conn.beginTransaction();
+
+    let finalCategoryId = (categoryId === 'NEW' || !categoryId) ? null : categoryId;
+    if (!finalCategoryId && newCategoryName) {
+      const [existingCat] = await conn.execute(
+        'SELECT id FROM Product_Category WHERE name = ? AND restaurant_id = ?',
+        [newCategoryName, restaurantId]
+      );
+      if (existingCat.length > 0) {
+        finalCategoryId = existingCat[0].id;
+      } else {
+        const [catResult] = await conn.execute(
+          'INSERT INTO Product_Category (name, restaurant_id) VALUES (?, ?)',
+          [newCategoryName, restaurantId]
+        );
+        finalCategoryId = catResult.insertId;
+      }
+    }
+
+    // Update Product details
+    await conn.execute(
+      'UPDATE Product SET name = ?, price = ?, description = ?, image_url = ? WHERE id = ?',
+      [name, price, description || null, imageUrl || null, productId]
+    );
+
+    // Update mapping
+    await conn.execute(
+      'DELETE FROM Product_Category_Mapping WHERE product_id = ?',
+      [productId]
+    );
+
+    if (finalCategoryId) {
+      await conn.execute(
+        'INSERT INTO Product_Category_Mapping (product_id, category_id) VALUES (?, ?)',
+        [productId, finalCategoryId]
+      );
+    }
+
+    await conn.commit();
+  } catch (err) {
+    if (conn) await conn.rollback();
+    throw err;
+  } finally {
+    if (conn) conn.release();
+  }
+}
 /** Get a restaurant by its owner's account id. */
 export async function getRestaurantByUserId(userId) {
   const [rows] = await pool.execute(
