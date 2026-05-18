@@ -12,9 +12,9 @@ export async function getAllRestaurants({ lat, lon, limit = 20, offset = 0, cate
            r.contact_phone, r.operating_hours, r.image_url, r.min_order_value,
            a.latitude AS latitude, a.longitude AS longitude,
            GROUP_CONCAT(c.name SEPARATOR ',') AS categories`;
-  
+
   const params = [];
-  
+
   if (lat != null && lon != null) {
     query += `,
            (6371 * acos(cos(radians(?)) * cos(radians(a.latitude)) * cos(radians(a.longitude) - radians(?)) + sin(radians(?)) * sin(radians(a.latitude)))) AS distanceKm`;
@@ -68,7 +68,7 @@ export async function getAllRestaurants({ lat, lon, limit = 20, offset = 0, cate
 export async function getRestaurantsCount({ lat, lon, category = null, search = null } = {}) {
   let query = `SELECT COUNT(*) as total FROM (
     SELECT r.id, GROUP_CONCAT(c.name SEPARATOR ',') AS categories`;
-  
+
   const params = [];
   if (lat != null && lon != null) {
     query += `, (6371 * acos(cos(radians(?)) * cos(radians(a.latitude)) * cos(radians(a.longitude) - radians(?)) + sin(radians(?)) * sin(radians(a.latitude)))) AS distanceKm`;
