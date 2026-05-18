@@ -128,61 +128,86 @@ async function refreshManageOrdersPage() {
     }
 }
 
+function processNotificationPayload(data) {
+    if (notificationState.role === null) {
+        notificationState.role = data.role;
+    }
+
+    updateTrackOrdersBadge(data.hasPendingOrders);
+
+    if (data.role === 'CUSTOMER' || data.role === 'GUEST') {
+        const currentMap = buildOrderMap(data.orders || []);
+        const changedOrders = [];
+        Object.entries(currentMap).forEach(([orderId, status]) => {
+            if (notificationState.orderStatusById[orderId] && notificationState.orderStatusById[orderId] !== status) {
+                changedOrders.push({ orderId, status });
+            }
+        });
+
+        if (notificationState.initialized && changedOrders.length > 0) {
+            changedOrders.forEach(({ orderId, status }) => {
+                showLiveNotification(`Η κατάσταση της παραγγελίας #${orderId} άλλαξε σε ${status}.`, 'success');
+            });
+            refreshTrackOrdersPage();
+        }
+
+        notificationState.orderStatusById = currentMap;
+    }
+
+    if (data.role === 'RESTAURANT') {
+        const currentCount = data.pendingOrderCount || 0;
+        if (notificationState.pendingOrderCount !== null && currentCount > notificationState.pendingOrderCount) {
+            if (window.location.pathname.startsWith('/manage')) {
+                showRestaurantNewOrderBanner();
+            } else {
+                showLiveNotification('Νέα παραγγελία έφτασε στο εστιατόριό σας!', 'success');
+            }
+            if (window.location.pathname === '/manage/orders') {
+                refreshManageOrdersPage();
+            }
+        }
+        notificationState.pendingOrderCount = currentCount;
+    }
+
+    notificationState.initialized = true;
+}
+
 async function refreshNotifications() {
     try {
         const response = await fetch('/api/notifications', { cache: 'no-store' });
         if (!response.ok) return;
         const data = await response.json();
-
-        if (notificationState.role === null) {
-            notificationState.role = data.role;
-        }
-
-        updateTrackOrdersBadge(data.hasPendingOrders);
-
-        if (data.role === 'CUSTOMER' || data.role === 'GUEST') {
-            const currentMap = buildOrderMap(data.orders || []);
-            const changedOrders = [];
-            Object.entries(currentMap).forEach(([orderId, status]) => {
-                if (notificationState.orderStatusById[orderId] && notificationState.orderStatusById[orderId] !== status) {
-                    changedOrders.push({ orderId, status });
-                }
-            });
-
-            if (notificationState.initialized && changedOrders.length > 0) {
-                changedOrders.forEach(({ orderId, status }) => {
-                    showLiveNotification(`Η κατάσταση της παραγγελίας #${orderId} άλλαξε σε ${status}.`, 'success');
-                });
-                await refreshTrackOrdersPage();
-            }
-
-            notificationState.orderStatusById = currentMap;
-        }
-
-        if (data.role === 'RESTAURANT') {
-            const currentCount = data.pendingOrderCount || 0;
-            if (notificationState.pendingOrderCount !== null && currentCount > notificationState.pendingOrderCount) {
-                if (window.location.pathname.startsWith('/manage')) {
-                    showRestaurantNewOrderBanner();
-                } else {
-                    showLiveNotification('Νέα παραγγελία έφτασε στο εστιατόριό σας!', 'success');
-                }
-                if (window.location.pathname === '/manage/orders') {
-                    await refreshManageOrdersPage();
-                }
-            }
-            notificationState.pendingOrderCount = currentCount;
-        }
-
-        notificationState.initialized = true;
+        processNotificationPayload(data);
     } catch (error) {
-        console.error('Notification poll failed:', error);
-    } finally {
-        setTimeout(refreshNotifications, 8000);
+        console.error('Notification fallback poll failed:', error);
     }
 }
 
-refreshNotifications();
+function initNotificationStream() {
+    if (!window.EventSource) {
+        console.warn('EventSource not supported, falling back to polling.');
+        refreshNotifications();
+        setInterval(refreshNotifications, 8000);
+        return;
+    }
+
+    const source = new EventSource('/api/notifications/stream');
+
+    source.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data);
+            processNotificationPayload(data);
+        } catch (err) {
+            console.error('Invalid notification event data:', err);
+        }
+    };
+
+    source.onerror = (err) => {
+        console.error('Notification stream error:', err);
+    };
+}
+
+initNotificationStream();
 
 // ─── Leaflet map helper (from existing utils.js) ──────────────────────────────
 function extractAddressParts(address = {}) {

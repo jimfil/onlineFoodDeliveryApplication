@@ -229,7 +229,7 @@ textarea {
 /* Restaurant Status Styling */
 .restaurant-closed {
     filter: grayscale(0.8) opacity(0.8);
-    transition: filter 0.5s ease, opacity 0.5s ease;
+    transition: transform 0.5 ease, filter 0.5s ease, opacity 0.5s ease;
 }
 
 .restaurant-closed:hover {

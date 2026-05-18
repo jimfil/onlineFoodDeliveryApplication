@@ -110,37 +110,18 @@ export async function renderTrackOrders(req, res) {
   }
 }
 
-/** GET /api/notifications */
-export async function getNotifications(req, res) {
-  try {
-    const payload = {
-      role: 'GUEST',
-      hasPendingOrders: false,
-      pendingOrderCount: 0,
-      orders: []
-    };
+async function buildNotificationsPayload(req) {
+  const payload = {
+    role: 'GUEST',
+    hasPendingOrders: false,
+    pendingOrderCount: 0,
+    orders: []
+  };
 
-    if (req.session.user) {
-      if (req.session.user.accountType === 'CUSTOMER') {
-        payload.role = 'CUSTOMER';
-        const orders = await orderModel.getOrdersByCustomerId(req.session.user.id);
-        payload.orders = orders.map(order => ({
-          id: order.id,
-          status: order.status,
-          restaurantName: order.restaurantName,
-          created_at: order.created_at,
-          completed_at: order.completed_at
-        }));
-        payload.pendingOrderCount = orders.filter(order => order.status === 'PENDING').length;
-        payload.hasPendingOrders = payload.pendingOrderCount > 0;
-      } else if (req.session.user.accountType === 'RESTAURANT') {
-        payload.role = 'RESTAURANT';
-        payload.pendingOrderCount = await orderModel.countPendingOrdersForRestaurant(req.session.user.id);
-        payload.hasPendingOrders = payload.pendingOrderCount > 0;
-      }
-    } else if (req.session.guestOrderIds && req.session.guestOrderIds.length > 0) {
-      payload.role = 'GUEST';
-      const orders = await orderModel.getOrdersByIds(req.session.guestOrderIds);
+  if (req.session.user) {
+    if (req.session.user.accountType === 'CUSTOMER') {
+      payload.role = 'CUSTOMER';
+      const orders = await orderModel.getOrdersByCustomerId(req.session.user.id);
       payload.orders = orders.map(order => ({
         id: order.id,
         status: order.status,
@@ -148,15 +129,75 @@ export async function getNotifications(req, res) {
         created_at: order.created_at,
         completed_at: order.completed_at
       }));
-      payload.pendingOrderCount = await orderModel.countPendingOrdersForGuest(req.session.guestOrderIds);
+      payload.pendingOrderCount = orders.filter(order => order.status === 'PENDING').length;
+      payload.hasPendingOrders = payload.pendingOrderCount > 0;
+    } else if (req.session.user.accountType === 'RESTAURANT') {
+      payload.role = 'RESTAURANT';
+      payload.pendingOrderCount = await orderModel.countPendingOrdersForRestaurant(req.session.user.id);
       payload.hasPendingOrders = payload.pendingOrderCount > 0;
     }
+  } else if (req.session.guestOrderIds && req.session.guestOrderIds.length > 0) {
+    payload.role = 'GUEST';
+    const orders = await orderModel.getOrdersByIds(req.session.guestOrderIds);
+    payload.orders = orders.map(order => ({
+      id: order.id,
+      status: order.status,
+      restaurantName: order.restaurantName,
+      created_at: order.created_at,
+      completed_at: order.completed_at
+    }));
+    payload.pendingOrderCount = await orderModel.countPendingOrdersForGuest(req.session.guestOrderIds);
+    payload.hasPendingOrders = payload.pendingOrderCount > 0;
+  }
 
+  return payload;
+}
+
+/** GET /api/notifications */
+export async function getNotifications(req, res) {
+  try {
+    const payload = await buildNotificationsPayload(req);
     res.json(payload);
   } catch (err) {
     console.error('Notifications error:', err);
     res.status(500).json({ error: 'Αποτυχία λήψης ειδοποιήσεων.' });
   }
+}
+
+/** GET /api/notifications/stream */
+export async function streamNotifications(req, res) {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  if (typeof res.flushHeaders === 'function') {
+    res.flushHeaders();
+  }
+
+  let lastPayloadJson = '';
+  const sendPayload = async () => {
+    try {
+      const payload = await buildNotificationsPayload(req);
+      const payloadJson = JSON.stringify(payload);
+      if (payloadJson !== lastPayloadJson) {
+        lastPayloadJson = payloadJson;
+        res.write(`data: ${payloadJson}\n\n`);
+      } else {
+        res.write(`: keep-alive\n\n`);
+      }
+    } catch (err) {
+      console.error('Notifications stream error:', err);
+      res.write(`: error\n\n`);
+    }
+  };
+
+  // Send initial payload immediately, then poll every 8 seconds.
+  await sendPayload();
+  const interval = setInterval(sendPayload, 8000);
+
+  req.on('close', () => {
+    clearInterval(interval);
+  });
 }
 
 /** POST /orders/:id/rate */

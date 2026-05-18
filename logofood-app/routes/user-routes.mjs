@@ -18,6 +18,7 @@ router.post('/account/addresses',          requireLogin, requireCustomer, contro
 router.post('/account/addresses/:id/delete', requireLogin, requireCustomer, controller.deleteAddress);
 router.post('/account/addresses/:id/edit',   requireLogin, requireCustomer, controller.editAddress);
 router.get ('/api/notifications',         controller.getNotifications);
+router.get ('/api/notifications/stream',    controller.streamNotifications);
 router.get ('/track-orders',                controller.renderTrackOrders);
 router.post('/orders/:id/rate',              controller.rateOrder);
 
