@@ -804,46 +804,48 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    initAutoGeocode('updateStreet', 'updateNumber', 'updateZip', 'updateLatitude', 'updateLongitude', 'updateAddressForm');
+    if (document.getElementById('updateAddressForm')) {
+        initAutoGeocode('updateStreet', 'updateNumber', 'updateZip', 'updateLatitude', 'updateLongitude', 'updateAddressForm');
 
-    // Toggle Update Map
-    const toggleUpdateMapBtn = document.getElementById('toggleUpdateMap');
-    if (toggleUpdateMapBtn) {
-        toggleUpdateMapBtn.addEventListener('click', function () {
-            const container = document.getElementById('updateMapContainer');
-            if (!container) return;
-            container.classList.toggle('d-none');
-            if (!container.classList.contains('d-none') && !window._updMapInit) {
-                window._updMapInit = true;
-                const setUpdateCoordinates = (lat, lon) => {
-                    const latInput = document.getElementById('updateLatitude');
-                    const lonInput = document.getElementById('updateLongitude');
-                    if (latInput) latInput.value = lat;
-                    if (lonInput) lonInput.value = lon;
-                };
+        // Toggle Update Map
+        const toggleUpdateMapBtn = document.getElementById('toggleUpdateMap');
+        if (toggleUpdateMapBtn) {
+            toggleUpdateMapBtn.addEventListener('click', function () {
+                const container = document.getElementById('updateMapContainer');
+                if (!container) return;
+                container.classList.toggle('d-none');
+                if (!container.classList.contains('d-none') && !window._updMapInit) {
+                    window._updMapInit = true;
+                    const setUpdateCoordinates = (lat, lon) => {
+                        const latInput = document.getElementById('updateLatitude');
+                        const lonInput = document.getElementById('updateLongitude');
+                        if (latInput) latInput.value = lat;
+                        if (lonInput) lonInput.value = lon;
+                    };
 
-                initLeafletMap('updateMap', async (lat, lon) => {
-                    const addr = await reverseGeocode(lat, lon);
-                    fillAddressFields(addr, {
-                        streetId: 'updateStreet',
-                        numberId: 'updateNumber',
-                        zipId: 'updateZip'
-                    });
-                    setUpdateCoordinates(lat, lon);
-                }, {
-                    searchInputId: 'updateAddressSearch',
-                    resultsContainerId: 'updateAddressResults',
-                    onAddressPicked: (selected) => {
-                        fillAddressFields(selected.address, {
+                    initLeafletMap('updateMap', async (lat, lon) => {
+                        const addr = await reverseGeocode(lat, lon);
+                        fillAddressFields(addr, {
                             streetId: 'updateStreet',
                             numberId: 'updateNumber',
                             zipId: 'updateZip'
                         });
-                        setUpdateCoordinates(selected.lat, selected.lon);
-                    }
-                });
-            }
-        });
+                        setUpdateCoordinates(lat, lon);
+                    }, {
+                        searchInputId: 'updateAddressSearch',
+                        resultsContainerId: 'updateAddressResults',
+                        onAddressPicked: (selected) => {
+                            fillAddressFields(selected.address, {
+                                streetId: 'updateStreet',
+                                numberId: 'updateNumber',
+                                zipId: 'updateZip'
+                            });
+                            setUpdateCoordinates(selected.lat, selected.lon);
+                        }
+                    });
+                }
+            });
+        }
     }
 
     // New Category Toggle
@@ -1015,45 +1017,47 @@ document.addEventListener('DOMContentLoaded', () => {
 // ─── Browse Page Logic ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     initAutoGeocode('browseStreet', 'browseNumber', 'browseZip', 'browseLatitude', 'browseLongitude', 'browseNoAddressForm');
-    initAutoGeocode('updateStreet', 'updateNumber', 'updateZip', 'updateLatitude', 'updateLongitude', 'browseGuestUpdateForm');
-    // Toggle Update Map (for guests on browse page)
-    const toggleUpdateMapBtn = document.getElementById('toggleUpdateMap');
-    if (toggleUpdateMapBtn) {
-        toggleUpdateMapBtn.addEventListener('click', function () {
-            const container = document.getElementById('updateMapContainer');
-            if (!container) return;
-            container.classList.toggle('d-none');
-            if (!container.classList.contains('d-none') && !window._updateMapInit) {
-                window._updateMapInit = true;
-                const setUpdateCoordinates = (lat, lon) => {
-                    const latInput = document.getElementById('updateLatitude');
-                    const lonInput = document.getElementById('updateLongitude');
-                    if (latInput) latInput.value = lat;
-                    if (lonInput) lonInput.value = lon;
-                };
+    if (document.getElementById('browseGuestUpdateForm')) {
+        initAutoGeocode('updateStreet', 'updateNumber', 'updateZip', 'updateLatitude', 'updateLongitude', 'browseGuestUpdateForm');
+        // Toggle Update Map (for guests on browse page)
+        const toggleUpdateMapBtn = document.getElementById('toggleUpdateMap');
+        if (toggleUpdateMapBtn) {
+            toggleUpdateMapBtn.addEventListener('click', function () {
+                const container = document.getElementById('updateMapContainer');
+                if (!container) return;
+                container.classList.toggle('d-none');
+                if (!container.classList.contains('d-none') && !window._updateMapInit) {
+                    window._updateMapInit = true;
+                    const setUpdateCoordinates = (lat, lon) => {
+                        const latInput = document.getElementById('updateLatitude');
+                        const lonInput = document.getElementById('updateLongitude');
+                        if (latInput) latInput.value = lat;
+                        if (lonInput) lonInput.value = lon;
+                    };
 
-                initLeafletMap('updateMap', async (lat, lon) => {
-                    const addr = await reverseGeocode(lat, lon);
-                    fillAddressFields(addr, {
-                        streetId: 'updateStreet',
-                        numberId: 'updateNumber',
-                        zipId: 'updateZip'
-                    });
-                    setUpdateCoordinates(lat, lon);
-                }, {
-                    searchInputId: 'updateAddressSearch',
-                    resultsContainerId: 'updateAddressResults',
-                    onAddressPicked: (selected) => {
-                        fillAddressFields(selected.address, {
+                    initLeafletMap('updateMap', async (lat, lon) => {
+                        const addr = await reverseGeocode(lat, lon);
+                        fillAddressFields(addr, {
                             streetId: 'updateStreet',
                             numberId: 'updateNumber',
                             zipId: 'updateZip'
                         });
-                        setUpdateCoordinates(selected.lat, selected.lon);
-                    }
-                });
-            }
-        });
+                        setUpdateCoordinates(lat, lon);
+                    }, {
+                        searchInputId: 'updateAddressSearch',
+                        resultsContainerId: 'updateAddressResults',
+                        onAddressPicked: (selected) => {
+                            fillAddressFields(selected.address, {
+                                streetId: 'updateStreet',
+                                numberId: 'updateNumber',
+                                zipId: 'updateZip'
+                            });
+                            setUpdateCoordinates(selected.lat, selected.lon);
+                        }
+                    });
+                }
+            });
+        }
     }
 
     // Toggle Browse Map
@@ -1105,45 +1109,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Toggle Cart Map (for guests on cart page)
-    const toggleCartMapBtn = document.getElementById('toggleCartMap');
-    if (toggleCartMapBtn) {
-        toggleCartMapBtn.addEventListener('click', function () {
-            const container = document.getElementById('cartMapContainer');
-            if (!container) return;
-            container.classList.toggle('d-none');
-            if (!container.classList.contains('d-none') && !window._cartMapInit) {
-                window._cartMapInit = true;
-                const setCartCoordinates = (lat, lon) => {
-                    const latInput = document.getElementById('cartLatitude');
-                    const lonInput = document.getElementById('cartLongitude');
-                    if (latInput) latInput.value = lat;
-                    if (lonInput) lonInput.value = lon;
-                };
-
-                initLeafletMap('cartMap', async (lat, lon) => {
-                    const addr = await reverseGeocode(lat, lon);
-                    fillAddressFields(addr, {
-                        streetId: 'guestStreet',
-                        numberId: 'guestNumber',
-                        zipId: 'guestZip'
-                    });
-                    setCartCoordinates(lat, lon);
-                }, {
-                    searchInputId: 'cartAddressSearch',
-                    resultsContainerId: 'cartAddressResults',
-                    onAddressPicked: (selected) => {
-                        fillAddressFields(selected.address, {
-                            streetId: 'guestStreet',
-                            numberId: 'guestNumber',
-                            zipId: 'guestZip'
-                        });
-                        setCartCoordinates(selected.lat, selected.lon);
-                    }
-                });
-            }
-        });
-    }
 
     // Category selection & filtering
     let selectedCategory = 'all';
