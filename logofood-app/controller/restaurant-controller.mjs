@@ -4,6 +4,7 @@
  */
 import * as restaurantModel from '../model/restaurant-model.mjs';
 import * as orderModel from '../model/order-model.mjs';
+import * as accountModel from '../model/account-model.mjs';
 import { validationResult } from 'express-validator';
 import { getDistanceKm } from '../utils/geo-utils.mjs';
 
@@ -160,6 +161,27 @@ export async function updateSettings(req, res) {
   res.redirect('/manage');
 }
 
+/** POST /manage/address - update restaurant location */
+export async function updateAddress(req, res) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.flash('error', errors.array()[0].msg);
+    return res.redirect('/manage');
+  }
+
+  const { street, streetNumber, zipCode, latitude, longitude } = req.body;
+  try {
+    let cleanZip = zipCode;
+    if (cleanZip) cleanZip = cleanZip.replace(/\s+/g, '');
+    await restaurantModel.updateRestaurantAddress(req.session.user.id, { street, streetNumber, zipCode: cleanZip, latitude, longitude });
+    req.flash('success', 'Η διεύθυνση του εστιατορίου ενημερώθηκε επιτυχώς.');
+  } catch (err) {
+    console.error('Update address error:', err);
+    req.flash('error', 'Σφάλμα κατά την ενημέρωση της διεύθυνσης.');
+  }
+  res.redirect('/manage');
+}
+
 /** POST /manage/reorder — reorder category or product */
 export async function reorder(req, res) {
   const { type, id, direction } = req.body;
@@ -243,4 +265,19 @@ export async function updateIcon(req, res) {
     req.flash('error', 'Σφάλμα κατά την ενημέρωση του εικονιδίου.');
   }
   res.redirect('/manage');
+}
+
+/** POST /manage/delete */
+export async function deleteRestaurant(req, res) {
+  try {
+    await accountModel.deleteAccount(req.session.user.id, 'RESTAURANT');
+    req.session.destroy(err => {
+      if (err) console.error('Session destruction error:', err);
+      res.redirect('/?deleted=true');
+    });
+  } catch (err) {
+    console.error('Delete restaurant error:', err);
+    req.flash('error', 'Σφάλμα διαγραφής λογαριασμού.');
+    res.redirect('/manage');
+  }
 }

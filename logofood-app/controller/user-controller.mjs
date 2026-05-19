@@ -4,6 +4,7 @@
  */
 import * as userModel from '../model/user-model.mjs';
 import * as orderModel from '../model/order-model.mjs';
+import * as accountModel from '../model/account-model.mjs';
 import { validationResult } from 'express-validator';
 import appEvents from '../utils/events.mjs';
 
@@ -43,8 +44,29 @@ export async function updateProfile(req, res) {
   res.redirect('/account');
 }
 
+/** POST /account/delete */
+export async function deleteAccount(req, res) {
+  try {
+    await accountModel.deleteAccount(req.session.user.id, 'CUSTOMER');
+    req.session.destroy(err => {
+      if (err) console.error('Session destruction error:', err);
+      res.redirect('/?deleted=true');
+    });
+  } catch (err) {
+    console.error('Delete account error:', err);
+    req.flash('error', 'Σφάλμα διαγραφής λογαριασμού.');
+    res.redirect('/account');
+  }
+}
+
 /** POST /account/addresses */
 export async function addAddress(req, res) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.flash('error', errors.array()[0].msg);
+    return res.redirect('/account');
+  }
+
   let { street, streetNumber, zipCode, latitude, longitude, floor, comments } = req.body;
   if (zipCode) zipCode = zipCode.replace(/\s+/g, '');
 
@@ -62,6 +84,12 @@ export async function addAddress(req, res) {
 
 /** POST /account/addresses/:id/edit */
 export async function editAddress(req, res) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.flash('error', errors.array()[0].msg);
+    return res.redirect('/account');
+  }
+
   let { street, streetNumber, zipCode, floor, comments, latitude, longitude } = req.body;
   if (zipCode) zipCode = zipCode.replace(/\s+/g, '');
 

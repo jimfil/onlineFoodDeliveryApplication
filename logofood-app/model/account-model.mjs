@@ -97,7 +97,7 @@ export async function registerRestaurant({ email, password, businessName,
                                            firstNameOwner, lastNameOwner, phone, afm, 
                                            estimatedPreparationTime, operatingHours,
                                            street, streetNumber, zipCode, latitude, longitude,
-                                           minOrderValue }) {
+                                           minOrderValue, categories }) {
   const hashed = await hashPassword(password);
   let conn;
   try {
@@ -129,8 +129,67 @@ export async function registerRestaurant({ email, password, businessName,
       [id, businessName, phone || null, firstNameOwner, lastNameOwner, afm || null, estimatedPreparationTime || "20", operatingHours || null, addressId, minOrderValue || 0]
     );
 
+    // 4. Create Restaurant Categories
+    if (categories) {
+      const categoryIds = Array.isArray(categories) ? categories : [categories];
+      const filteredIds = categoryIds.filter(cid => cid && cid.trim() !== '').slice(0, 2);
+      for (const cid of filteredIds) {
+        await conn.execute(
+          'INSERT INTO Restaurant_Category (restaurant_id, category_id) VALUES (?, ?)',
+          [id, cid]
+        );
+      }
+    }
+
     await conn.commit();
     return { id, email, businessName, firstNameOwner, lastNameOwner, accountType: 'RESTAURANT' };
+  } catch (err) {
+    if (conn) await conn.rollback();
+    throw err;
+  } finally {
+    if (conn) conn.release();
+  }
+}
+
+/**
+ * Delete an account and its associated profile.
+ * Cleans up orphaned Address records.
+ */
+export async function deleteAccount(accountId, accountType) {
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    await conn.beginTransaction();
+
+    let addressIdsToDelete = [];
+
+    // Gather address IDs to delete so they aren't left orphaned
+    if (accountType === 'CUSTOMER') {
+      const [rows] = await conn.execute(
+        'SELECT address_id FROM Customer_Address WHERE customer_id = ?',
+        [accountId]
+      );
+      addressIdsToDelete = rows.map(r => r.address_id);
+    } else if (accountType === 'RESTAURANT') {
+      const [rows] = await conn.execute(
+        'SELECT address_id FROM Restaurant WHERE id = ?',
+        [accountId]
+      );
+      if (rows[0] && rows[0].address_id) {
+        addressIdsToDelete.push(rows[0].address_id);
+      }
+    }
+
+    // Delete the account (ON DELETE CASCADE will handle Customer/Restaurant, Products, etc.)
+    await conn.execute('DELETE FROM Account WHERE id = ?', [accountId]);
+
+    // Clean up orphaned addresses
+    for (const addrId of addressIdsToDelete) {
+      // Ignore errors if the address is referenced somewhere else (e.g., Order_table)
+      await conn.execute('DELETE FROM Address WHERE id = ?', [addrId]).catch(() => {});
+    }
+
+    await conn.commit();
   } catch (err) {
     if (conn) await conn.rollback();
     throw err;

@@ -45,6 +45,27 @@
                             {{#if errors.minOrderValue}}<div class="text-danger small mt-1">{{errors.minOrderValue}}</div>{{/if}}
                         </div>
 
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold">1η Κατηγορία (Απαραίτητο)</label>
+                            <select name="categories" class="form-select" required>
+                                <option value="">-- Επιλέξτε κατηγορία --</option>
+                                {{#each availableRestaurantCategories}}
+                                <option value="{{id}}" {{#if (eq id (getAt ../userInput.categories 0))}}selected{{/if}}>{{name}}</option>
+                                {{/each}}
+                            </select>
+                            {{#if errors.categories}}<div class="text-danger small mt-1">{{errors.categories}}</div>{{/if}}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold">2η Κατηγορία (Προαιρετικό)</label>
+                            <select name="categories" class="form-select">
+                                <option value="">-- Επιλέξτε κατηγορία --</option>
+                                {{#each availableRestaurantCategories}}
+                                <option value="{{id}}" {{#if (eq id (getAt ../userInput.categories 1))}}selected{{/if}}>{{name}}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+
                         <div class="col-md-3">
                             <label for="openingTime" class="form-label text-muted small fw-bold">Ώρα Έναρξης</label>
                             <input type="time" id="openingTime" name="openingTime" class="form-control" 

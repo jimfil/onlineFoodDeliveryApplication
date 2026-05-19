@@ -21,7 +21,7 @@
                         restaurant.rating}}{{restaurant.rating}}{{else}}0{{/if}}</span>
                     <div class="text-success small">
                         {{#repeat 5}}
-                        <i class="bi {{starIcon ../restaurant.rating @index}}"></i>
+                        <i class="bi {{starIcon ../restaurant.rating this}}"></i>
                         {{/repeat}}
                     </div>
                     <span class="text-muted small">({{restaurant.rating_count}} κριτικές)</span>
@@ -143,6 +143,64 @@
                         </div>
                     </div>
                 </div>
+
+
+                {{!-- Address Card --}}
+                <div class="row g-4 mb-4">
+                    <div class="col-12">
+                        <div class="glass-card">
+                            <h5 class="fw-bold mb-4">Αλλαγή Διεύθυνσης Εστιατορίου</h5>
+                            <form action="/manage/address" method="POST" id="updateAddressForm">
+                                <div class="row g-3">
+                                    <div class="col-md-5">
+                                        <label class="form-label text-muted small fw-bold">Οδός</label>
+                                        <input type="text" id="updateStreet" name="street" class="form-control" placeholder="π.χ. Ερμού" required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label text-muted small fw-bold">Αριθμός</label>
+                                        <input type="text" id="updateNumber" name="streetNumber" class="form-control" placeholder="π.χ. 12" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label text-muted small fw-bold">Τ.Κ.</label>
+                                        <input type="text" id="updateZip" name="zipCode" class="form-control" placeholder="10563">
+                                    </div>
+                                    <input type="hidden" id="updateLatitude" name="latitude">
+                                    <input type="hidden" id="updateLongitude" name="longitude">
+                                    <div class="col-12">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary w-100 mb-2 fw-bold" id="toggleUpdateMap">
+                                            📍 Επιλογή στο χάρτη
+                                        </button>
+                                        <div id="updateMapContainer" class="d-none mt-3">
+                                            <div class="mb-3 position-relative">
+                                                <label for="updateAddressSearch" class="form-label">Αναζήτηση διεύθυνσης</label>
+                                                <input type="text" id="updateAddressSearch" class="form-control" placeholder="π.χ. Ερμού 12" autocomplete="off">
+                                                <div id="updateAddressResults" class="list-group mt-2 d-none"></div>
+                                            </div>
+                                            <div id="updateMap" class="map-container-lg"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 mt-4 text-end">
+                                        <button type="submit" class="btn btn-dashboard-submit px-4">Ενημέρωση Διεύθυνσης</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                {{!-- Danger Zone Card --}}
+                <div class="row g-4 mb-4">
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm p-4 rounded-4">
+                            <h5 class="fw-bold text-danger mb-3">Διαγραφή Εστιατορίου</h5>
+                            <p class="text-muted small">Αν διαγράψετε το εστιατόριό σας, όλα τα προϊόντα, οι κατηγορίες και τα στοιχεία σας θα χαθούν. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.</p>
+                            <form action="/manage/delete" method="POST" onsubmit="return confirm('Είστε σίγουροι; Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.');">
+                                <button type="submit" class="btn btn-outline-danger btn-sm px-4 fw-bold rounded-pill">Διαγραφή Εστιατορίου</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             <!-- Menu Management Section -->
