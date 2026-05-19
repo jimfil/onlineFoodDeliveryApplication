@@ -16,7 +16,9 @@ const customerValidation = [
     if (value !== req.body.password) throw new Error('Οι κωδικοί δεν ταιριάζουν');
     return true;
   }),
-  body('contactPhone').trim().matches(/^\d{10}$/).withMessage('Εισάγετε ένα έγκυρο τηλέφωνο 10 ψηφίων')
+  body('contactPhone').trim().matches(/^\d{10}$/).withMessage('Εισάγετε ένα έγκυρο τηλέφωνο 10 ψηφίων'),
+  body('latitude').notEmpty().withMessage('Απαιτείται επιλογή διεύθυνσης από τον χάρτη').isFloat({ min: -90, max: 90 }).withMessage('Λανθασμένο γεωγραφικό πλάτος'),
+  body('longitude').notEmpty().withMessage('Απαιτείται επιλογή διεύθυνσης από τον χάρτη').isFloat({ min: -180, max: 180 }).withMessage('Λανθασμένο γεωγραφικό μήκος')
 ];
 
 const restaurantStep1Validation = [
@@ -40,7 +42,14 @@ const restaurantStep2Validation = [
   body('closingTime').notEmpty().withMessage('Η ώρα λήξης είναι υποχρεωτική'),
   body('street').trim().escape().notEmpty().withMessage('Η οδός είναι υποχρεωτική'),
   body('streetNumber').trim().isNumeric().withMessage('Ο αριθμός πρέπει να είναι αριθμητικός'),
-  body('zipCode').customSanitizer(value => value.replace(/\s+/g, '')).isNumeric().withMessage('Ο Τ.Κ. πρέπει να είναι αριθμητικός')
+  body('zipCode').customSanitizer(value => value.replace(/\s+/g, '')).isNumeric().withMessage('Ο Τ.Κ. πρέπει να είναι αριθμητικός'),
+  body('latitude').notEmpty().withMessage('Απαιτείται επιλογή διεύθυνσης από τον χάρτη').isFloat({ min: -90, max: 90 }).withMessage('Λανθασμένο γεωγραφικό πλάτος'),
+  body('longitude').notEmpty().withMessage('Απαιτείται επιλογή διεύθυνσης από τον χάρτη').isFloat({ min: -180, max: 180 }).withMessage('Λανθασμένο γεωγραφικό μήκος'),
+  body('categories').custom((value) => {
+    const cats = Array.isArray(value) ? value : (value ? [value] : []);
+    if (cats.filter(Boolean).length === 0) throw new Error('Απαιτείται τουλάχιστον μία κατηγορία');
+    return true;
+  })
 ];
 
 router.get ('/login',                        controller.showLogin);

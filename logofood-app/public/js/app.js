@@ -804,6 +804,48 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    initAutoGeocode('updateStreet', 'updateNumber', 'updateZip', 'updateLatitude', 'updateLongitude', 'updateAddressForm');
+
+    // Toggle Update Map
+    const toggleUpdateMapBtn = document.getElementById('toggleUpdateMap');
+    if (toggleUpdateMapBtn) {
+        toggleUpdateMapBtn.addEventListener('click', function () {
+            const container = document.getElementById('updateMapContainer');
+            if (!container) return;
+            container.classList.toggle('d-none');
+            if (!container.classList.contains('d-none') && !window._updMapInit) {
+                window._updMapInit = true;
+                const setUpdateCoordinates = (lat, lon) => {
+                    const latInput = document.getElementById('updateLatitude');
+                    const lonInput = document.getElementById('updateLongitude');
+                    if (latInput) latInput.value = lat;
+                    if (lonInput) lonInput.value = lon;
+                };
+
+                initLeafletMap('updateMap', async (lat, lon) => {
+                    const addr = await reverseGeocode(lat, lon);
+                    fillAddressFields(addr, {
+                        streetId: 'updateStreet',
+                        numberId: 'updateNumber',
+                        zipId: 'updateZip'
+                    });
+                    setUpdateCoordinates(lat, lon);
+                }, {
+                    searchInputId: 'updateAddressSearch',
+                    resultsContainerId: 'updateAddressResults',
+                    onAddressPicked: (selected) => {
+                        fillAddressFields(selected.address, {
+                            streetId: 'updateStreet',
+                            numberId: 'updateNumber',
+                            zipId: 'updateZip'
+                        });
+                        setUpdateCoordinates(selected.lat, selected.lon);
+                    }
+                });
+            }
+        });
+    }
+
     // New Category Toggle
     const categorySelect = document.getElementById('categorySelect');
     const newCategoryWrapper = document.getElementById('newCategoryWrapper');

@@ -3,6 +3,7 @@
  * Login, register, logout handlers.
  */
 import * as accountModel from '../model/account-model.mjs';
+import * as restaurantModel from '../model/restaurant-model.mjs';
 import { validationResult } from 'express-validator';
 
 /** GET /login */
@@ -143,7 +144,8 @@ export async function showRegisterRestaurantStep2(req, res) {
     return res.redirect('/register-restaurant');
   }
   const userInput = req.body || {};
-  res.render('register-restaurant-step2', { userInput });
+  const availableRestaurantCategories = await restaurantModel.getAllRestaurantCategories();
+  res.render('register-restaurant-step2', { userInput, availableRestaurantCategories });
 }
 
 /** POST /register-restaurant/step2 */
@@ -162,7 +164,7 @@ export async function processRegisterRestaurantStep2(req, res) {
   }
 
   const step1 = req.session.restaurantRegStep1;
-  const { businessName, phone, afm, estimatedPreparationTime, minOrderValue, openingTime, closingTime, street, streetNumber, zipCode, latitude, longitude } = req.body;
+  const { businessName, phone, afm, estimatedPreparationTime, minOrderValue, openingTime, closingTime, street, streetNumber, zipCode, latitude, longitude, categories } = req.body;
   
   const operatingHours = `${openingTime}-${closingTime}`;
 
@@ -182,7 +184,8 @@ export async function processRegisterRestaurantStep2(req, res) {
       streetNumber,
       zipCode,
       latitude,
-      longitude
+      longitude,
+      categories
     });
 
     // Clear registration session

@@ -8,8 +8,8 @@ const browseValidation = [
   query('street').trim().escape().notEmpty().withMessage('Η οδός είναι υποχρεωτική'),
   query('streetNumber').trim().escape().notEmpty().withMessage('Ο αριθμός είναι υποχρεωτικός'),
   query('zipCode').optional({ checkFalsy: true }).trim().isNumeric().withMessage('Ο Τ.Κ. πρέπει να είναι αριθμητικός'),
-  query('latitude').optional({ checkFalsy: true }).isFloat({ min: -90, max: 90 }).withMessage('Λανθασμένο γεωγραφικό πλάτος'),
-  query('longitude').optional({ checkFalsy: true }).isFloat({ min: -180, max: 180 }).withMessage('Λανθασμένο γεωγραφικό μήκος')
+  query('latitude').notEmpty().withMessage('Απαιτείται επιλογή διεύθυνσης από τον χάρτη').isFloat({ min: -90, max: 90 }).withMessage('Λανθασμένο γεωγραφικό πλάτος'),
+  query('longitude').notEmpty().withMessage('Απαιτείται επιλογή διεύθυνσης από τον χάρτη').isFloat({ min: -180, max: 180 }).withMessage('Λανθασμένο γεωγραφικό μήκος')
 ];
 
 router.get('/', controller.showLanding);

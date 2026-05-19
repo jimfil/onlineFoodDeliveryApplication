@@ -398,6 +398,17 @@ export async function updateRestaurantSettings(userId, { name, estimatedPreparat
   );
 }
 
+/** Update restaurant address. */
+export async function updateRestaurantAddress(restaurantId, { street, streetNumber, zipCode, latitude, longitude }) {
+  const [rows] = await pool.execute('SELECT address_id FROM Restaurant WHERE id = ?', [restaurantId]);
+  if (!rows[0] || !rows[0].address_id) throw new Error('Restaurant address not found');
+  
+  await pool.execute(
+    'UPDATE Address SET street = ?, street_number = ?, zip_code = ?, latitude = COALESCE(?, latitude), longitude = COALESCE(?, longitude) WHERE id = ?',
+    [street, streetNumber, zipCode || '', latitude || null, longitude || null, rows[0].address_id]
+  );
+}
+
 /** Toggle restaurant status between OPEN and CLOSED. */
 export async function toggleRestaurantStatus(userId) {
   const [rows] = await pool.execute(

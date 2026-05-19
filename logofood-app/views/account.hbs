@@ -137,7 +137,13 @@
             {{!-- Security Card --}}
             <div class="card border-0 shadow-sm p-4 mb-4 rounded-4">
                 <h4 class="fw-bold mb-3">Ασφάλεια</h4>
-                <div class="text-muted small mb-0">Η αλλαγή κωδικού είναι προσωρινά μη διαθέσιμη.</div>
+                <div class="text-muted small mb-3">Η αλλαγή κωδικού είναι προσωρινά μη διαθέσιμη.</div>
+                
+                <h5 class="fw-bold text-danger mt-4 border-top pt-3">Διαγραφή Λογαριασμού</h5>
+                <p class="text-muted small">Αν διαγράψετε τον λογαριασμό σας, όλα τα στοιχεία και οι διευθύνσεις σας θα χαθούν. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.</p>
+                <form action="/account/delete" method="POST" onsubmit="return confirm('Είστε σίγουροι; Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.');">
+                    <button type="submit" class="btn btn-outline-danger btn-sm px-4 fw-bold rounded-pill">Διαγραφή Λογαριασμού</button>
+                </form>
             </div>
 
         </div>
