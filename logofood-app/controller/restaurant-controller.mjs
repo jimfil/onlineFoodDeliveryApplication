@@ -38,7 +38,7 @@ export async function showRestaurant(req, res) {
 
     // 3. Calculate delivery time
     const prepMinutes = Number.parseInt(restaurant.estimated_preparation_time, 10) || 0;
-    const travelMinutes = Math.max(2, Math.round(distanceKm / 18 * 60));
+    const travelMinutes = Math.max(5, Math.round(distanceKm / 18 * 60));
     restaurant.deliveryMinutes = prepMinutes + travelMinutes;
 
     const categories = await restaurantModel.getRestaurantMenu(req.params.id);
