@@ -5,7 +5,7 @@
         <div class="col-md-10">
             <h1 class="display-5 fw-bold mb-1"
                 style="background: linear-gradient(180deg, #4f0163, #cd03ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;padding-bottom: 5px;">
-                Είτε αλοιφή είτε σως, LogoFood τα έχει όλα
+                Είτε αλοιφή είτε σως, LogoFood έχει τα πάντα
             </h1>
             <p class="text-muted lead">Ανακάλυψε τις καλύτερες γεύσεις της πόλης σου.</p>
         </div>
@@ -159,8 +159,7 @@
             <div class="d-flex gap-2">
                 <input type="text" id="searchRestaurant"
                     class="form-control form-control-lg rounded-pill shadow-sm px-4"
-                    placeholder="Αναζήτηση για εστιατόριο ή κουζίνα..."
-                    value="{{searchQuery}}">
+                    placeholder="Αναζήτηση για εστιατόριο ή κουζίνα...">
                 <button class="btn btn-menu btn-lg px-4 rounded-pill shadow-sm btn-filter-restaurants">Go</button>
             </div>
         </div>
@@ -169,31 +168,21 @@
 
 {{!-- Category Buttons --}}
 <section class="container mb-5 {{#if noAddress}}d-none{{/if}}" id="categorySection">
-    <div class="d-flex align-items-center position-relative">
-        <button class="btn btn-light btn-sm rounded-circle shadow-sm me-2" id="scrollLeftBtn" style="width: 36px; height: 36px;">
-            <i class="bi bi-chevron-left"></i>
-        </button>
-        
-        <div class="category-scroll d-flex flex-grow-1">
-            <div class="category-btn {{#eq activeCategory 'all'}}active{{/eq}} btn-select-category" data-category="all">
-                <span class="category-emoji">🍴</span>
-                <span class="category-name">Όλα</span>
-            </div>
-            {{#each categories}}
-            <div class="category-btn {{#eq @root.activeCategory name}}active{{/eq}} btn-select-category" data-category="{{name}}">
-                {{#if image_url}}
-                <img src="{{image_url}}" class="category-img" alt="{{name}}">
-                {{else}}
-                <span class="category-emoji">{{emoji}}</span>
-                {{/if}}
-                <span class="category-name">{{name}}</span>
-            </div>
-            {{/each}}
+    <div class="category-scroll d-flex">
+        <div class="category-btn active btn-select-category" data-category="all">
+            <span class="category-emoji">🍴</span>
+            <span class="category-name">Όλα</span>
         </div>
-
-        <button class="btn btn-light btn-sm rounded-circle shadow-sm ms-2" id="scrollRightBtn" style="width: 36px; height: 36px;">
-            <i class="bi bi-chevron-right"></i>
-        </button>
+        {{#each categories}}
+        <div class="category-btn btn-select-category" data-category="{{name}}">
+            {{#if image_url}}
+            <img src="{{image_url}}" class="category-img" alt="{{name}}">
+            {{else}}
+            <span class="category-emoji">{{emoji}}</span>
+            {{/if}}
+            <span class="category-name">{{name}}</span>
+        </div>
+        {{/each}}
     </div>
 </section>
 
@@ -295,17 +284,17 @@
     <nav aria-label="Page navigation" class="mt-5">
         <ul class="pagination justify-content-center">
             <li class="page-item {{#unless pagination.hasPrev}}disabled{{/unless}}">
-                <a class="page-link" href="?page={{pagination.prevPage}}&category={{@root.activeCategory}}&search={{@root.searchQuery}}" aria-label="Previous">
+                <a class="page-link" href="?page={{pagination.prevPage}}" aria-label="Previous">
                     <span aria-hidden="true">&laquo; Προηγούμενη</span>
                 </a>
             </li>
             {{#each pagination.pages}}
             <li class="page-item {{#eq ../pagination.page this}}active{{/eq}}">
-                <a class="page-link" href="?page={{this}}&category={{@root.activeCategory}}&search={{@root.searchQuery}}">{{this}}</a>
+                <a class="page-link" href="?page={{this}}">{{this}}</a>
             </li>
             {{/each}}
             <li class="page-item {{#unless pagination.hasNext}}disabled{{/unless}}">
-                <a class="page-link" href="?page={{pagination.nextPage}}&category={{@root.activeCategory}}&search={{@root.searchQuery}}" aria-label="Next">
+                <a class="page-link" href="?page={{pagination.nextPage}}" aria-label="Next">
                     <span aria-hidden="true">Επόμενη &raquo;</span>
                 </a>
             </li>

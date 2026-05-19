@@ -53,28 +53,6 @@ textarea {
     background: #8bb55a !important;
 }
 
-.btn-custom-danger {
-    background: linear-gradient(135deg, #dc3545, #e4606d);
-    color: #fff !important;
-    border: none;
-    border-radius: 999px;
-    padding: 0.9rem 1.6rem;
-    box-shadow: 0 16px 32px rgba(220, 53, 69, 0.16);
-    transition: transform 0.5s ease, box-shadow 0.5s ease, background 0.5s ease;
-}
-
-.btn-custom-danger:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 20px 40px rgba(220, 53, 69, 0.24);
-    background: linear-gradient(135deg, #e4606d, #bd2130);
-}
-
-.btn-custom-danger:active {
-    transform: translateY(0);
-    box-shadow: 0 10px 18px rgba(0, 0, 0, 0.12);
-    background: #b21f2d !important;
-}
-
 .btn-menu {
     background-color: #fff;
     color: var(--secondary);
@@ -232,7 +210,7 @@ textarea {
     flex-direction: column;
 }
 
-.restaurant-card>a {
+.restaurant-card > a {
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -244,14 +222,14 @@ textarea {
     flex: 1;
 }
 
-.restaurant-card .card-body>.mt-auto {
+.restaurant-card .card-body > .mt-auto {
     margin-top: auto;
 }
 
 /* Restaurant Status Styling */
 .restaurant-closed {
     filter: grayscale(0.8) opacity(0.8);
-    transition: transform 0.5 ease, filter 0.5s ease, opacity 0.5s ease;
+    transition: filter 0.5s ease, opacity 0.5s ease;
 }
 
 .restaurant-closed:hover {
@@ -305,7 +283,7 @@ textarea {
     padding: 1.5rem;
 }
 
-.restaurant-card .card-body>*+* {
+.restaurant-card .card-body > * + * {
     margin-top: 1rem;
 }
 
@@ -490,7 +468,6 @@ footer p {
     font-weight: 600;
     color: white !important;
     box-shadow: 0 16px 32px rgba(166, 216, 105, 0.16);
-    transition: transform 0.5s ease, box-shadow 0.5s ease;
 }
 
 .btn-dashboard-submit:hover {
@@ -612,8 +589,7 @@ footer p {
     box-shadow: 0 8px 20px rgba(255, 159, 67, 0.3);
 }
 
-.category-emoji,
-.category-img {
+.category-emoji, .category-img {
     display: block;
     margin: 0 auto 0.8rem;
     width: 4rem;
@@ -633,7 +609,7 @@ footer p {
     border: 2px solid white;
 }
 
-.category-btn:hover .category-img,
+.category-btn:hover .category-img, 
 .category-btn:hover .category-emoji {
     transform: scale(1.1);
 }
@@ -651,10 +627,4 @@ footer p {
 .badge-tiny {
     font-size: 0.5rem;
     padding: 0.2em 0.4em;
-}
-
-/* Space for track-orders link in header */
-.custom-header a[href="/track-orders"] {
-    margin-left: 8px;
-    margin-right: 8px !important;
 }

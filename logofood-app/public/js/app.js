@@ -716,6 +716,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     initAutoGeocode('registerStreet', 'registerNumber', 'registerZip', 'registerLatitude', 'registerLongitude', 'registerForm');
+    initAutoGeocode('registerStreet', 'registerNumber', 'registerZip', 'registerLatitude', 'registerLongitude', 'registerRestaurantForm');
 
     // Toggle Register Map
     const toggleRegisterMapBtn = document.getElementById('toggleRegisterMap');
@@ -733,6 +734,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         numberId: 'registerNumber',
                         zipId: 'registerZip'
                     });
+                    // Directly save exact coordinates selected on the map
+                    const latEl = document.getElementById('registerLatitude');
+                    const lonEl = document.getElementById('registerLongitude');
+                    if (latEl) latEl.value = lat;
+                    if (lonEl) lonEl.value = lon;
                 }, {
                     searchInputId: 'registerAddressSearch',
                     resultsContainerId: 'registerAddressResults',
@@ -742,6 +748,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             numberId: 'registerNumber',
                             zipId: 'registerZip'
                         });
+                        // Directly save exact coordinates from selected search result
+                        const latEl = document.getElementById('registerLatitude');
+                        const lonEl = document.getElementById('registerLongitude');
+                        if (latEl) latEl.value = selected.lat;
+                        if (lonEl) lonEl.value = selected.lon;
                     }
                 });
             }
