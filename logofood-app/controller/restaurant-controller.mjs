@@ -6,7 +6,7 @@ import * as restaurantModel from '../model/restaurant-model.mjs';
 import * as orderModel from '../model/order-model.mjs';
 import * as accountModel from '../model/account-model.mjs';
 import { validationResult } from 'express-validator';
-import { getDistanceKm } from '../utils/geo-utils.mjs';
+import { getDistanceKm, calculateTravelMinutes } from '../utils/geo-utils.mjs';
 
 /** GET /restaurant/:id — public menu view */
 export async function showRestaurant(req, res) {
@@ -38,7 +38,7 @@ export async function showRestaurant(req, res) {
 
     // 3. Calculate delivery time
     const prepMinutes = Number.parseInt(restaurant.estimated_preparation_time, 10) || 0;
-    const travelMinutes = Math.max(5, Math.round(distanceKm / 18 * 60));
+    const travelMinutes = calculateTravelMinutes(distanceKm);
     restaurant.deliveryMinutes = prepMinutes + travelMinutes;
 
     const categories = await restaurantModel.getRestaurantMenu(req.params.id);

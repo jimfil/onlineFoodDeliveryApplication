@@ -169,12 +169,12 @@
 {{!-- Category Buttons --}}
 <section class="container mb-5 {{#if noAddress}}d-none{{/if}}" id="categorySection">
     <div class="category-scroll d-flex">
-        <div class="category-btn active btn-select-category" data-category="all">
+        <div class="category-btn {{#eq activeCategory 'all'}}active{{/eq}} btn-select-category" data-category="all">
             <span class="category-emoji">🍴</span>
             <span class="category-name">Όλα</span>
         </div>
         {{#each categories}}
-        <div class="category-btn btn-select-category" data-category="{{name}}">
+        <div class="category-btn {{#eq ../activeCategory name}}active{{/eq}} btn-select-category" data-category="{{name}}">
             {{#if image_url}}
             <img src="{{image_url}}" class="category-img" alt="{{name}}">
             {{else}}

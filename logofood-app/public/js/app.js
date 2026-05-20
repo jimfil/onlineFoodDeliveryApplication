@@ -1111,7 +1111,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // Category selection & filtering
-    let selectedCategory = 'all';
+    const urlParams = new URLSearchParams(window.location.search);
+    let selectedCategory = urlParams.get('category') || 'all';
 
     function applyFilters() {
         const searchInput = document.getElementById('searchRestaurant');

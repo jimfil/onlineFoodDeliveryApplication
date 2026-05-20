@@ -5,7 +5,7 @@
 import * as restaurantModel from '../model/restaurant-model.mjs';
 import * as userModel from '../model/user-model.mjs';
 import { validationResult } from 'express-validator';
-import { getDistanceKm } from '../utils/geo-utils.mjs';
+import { calculateTravelMinutes } from '../utils/geo-utils.mjs';
 
 
 
@@ -104,7 +104,7 @@ export async function showBrowse(req, res) {
       // Distance is already filtered <= 4km in SQL, but we calculate travel time here
       if (r.distanceKm != null) {
         result.distanceKm = Number(r.distanceKm.toFixed(1));
-        const travelMinutes = Math.max(2, Math.round(r.distanceKm / 18 * 60));
+        const travelMinutes = calculateTravelMinutes(r.distanceKm);
         result.deliveryMinutes = prepMinutes + travelMinutes;
         result.travelMinutes = travelMinutes;
       }

@@ -10,3 +10,7 @@ export function getDistanceKm(lat1, lon1, lat2, lon2) {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return 6371 * c;
 }
+
+export function calculateTravelMinutes(distanceKm) {
+  return Math.max(5, Math.round(distanceKm / 18 * 60));
+}
